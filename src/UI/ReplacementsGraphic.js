@@ -104,7 +104,7 @@ Namespace.ReplacementGraphic = class
     {
         // Update our drawing parameters if necessary
         if ( Namespace.UiUtils.NeedToRescale(this.drawParams, ctx) ) {
-            this._updateDrawParams(ctx);
+            if (!this._updateDrawParams(ctx)) { return; }
         }
 
         const dp = this.drawParams;
@@ -136,6 +136,10 @@ Namespace.ReplacementGraphic = class
         const objB = this.replacement.objFromModified;
         const initialGraphic = wkspUi.initialStringGraphic.getChildGraphic(objA);
         const modifiedGraphic = wkspUi.modifiedStringGraphic.getChildGraphic(objB);
+        if (!initialGraphic || !modifiedGraphic) { 
+            dp.canvasWidth = dp.canvasHeight = 0;
+            return false; 
+        }
 
         const pti = initialGraphic.drawParams.attachPoints['repl'];
         const ptm = modifiedGraphic.drawParams.attachPoints['repl'];
@@ -146,6 +150,8 @@ Namespace.ReplacementGraphic = class
         dp.rotAngle = 0;
         dp.startAngle = Math.PI;
         dp.endAngle = 2 * Math.PI;
+
+        return true;
     }
     
 };

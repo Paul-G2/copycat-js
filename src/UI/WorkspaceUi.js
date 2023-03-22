@@ -28,9 +28,9 @@ Namespace.WorkspaceUi = class
         this.bondColor = '#1581e7';
         this.correspColor = '#a020f0';
         this.letterColor = '#000000';
-        this.answerLetterColor = '#ff0000';
+        this.answerLetterColor = '#d20000';
         this.replColor = '#964B00';
-        this.ruleColor = '#ff0000';
+        this.ruleColor = '#d20000';
         this.descriptionColor = '#c0c0c0';
         this.activeDescriptionColor = '#909090';        
 

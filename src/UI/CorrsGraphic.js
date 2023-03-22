@@ -209,7 +209,7 @@ Namespace.CorrGraphic = class
         // Update our drawing parameters if necessary
         const UiUtils = Namespace.UiUtils;
         if ( UiUtils.NeedToRescale(this.drawParams, ctx) ) {
-            this._updateDrawParams(ctx);
+            if (!this._updateDrawParams(ctx)) { return; }
         }
 
         const dp = this.drawParams;
@@ -278,6 +278,10 @@ Namespace.CorrGraphic = class
         const wkspUi = this.parent.wkspUi;
         const initialGraphic = wkspUi.initialStringGraphic.getChildGraphic(objA);
         const targetGraphic = wkspUi.targetStringGraphic.getChildGraphic(objB);
+        if (!initialGraphic || !targetGraphic) { 
+            dp.canvasWidth = dp.canvasHeight = 0;
+            return false; 
+        }
 
         dp.zigzagLinePts = [];
         const CalcZigzagLine = Namespace.UiUtils.CalcZigzagLine;
@@ -333,6 +337,8 @@ Namespace.CorrGraphic = class
             dp.labelPosY - 1.1*dp.textFontSize,
             1.4*dp.textFontSize, 1.4*dp.textFontSize];
         dp.footnumFont = 'italic bold ' + (dp.textFontSize+2).toString() + 'px serif';
+
+        return true;
     }
     
 };

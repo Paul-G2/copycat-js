@@ -184,7 +184,7 @@ Namespace.BondGraphic = class
         // Update our drawing parameters if necessary
         const UiUtils = Namespace.UiUtils;
         if ( UiUtils.NeedToRescale(this.drawParams, ctx)) {
-            this._updateDrawParams(ctx);
+            if (!this._updateDrawParams(ctx)) { return; }
         }
 
         const dp = this.drawParams;
@@ -226,6 +226,11 @@ Namespace.BondGraphic = class
         // Get the start and ednp points of the bond line
         const leftObjGraphic = parent.stringGraphic. getChildGraphic(bond.leftObject);
         const rightObjGraphic = parent.stringGraphic.getChildGraphic(bond.rightObject);
+        if (!leftObjGraphic || !rightObjGraphic) { 
+            dp.canvasWidth = dp.canvasHeight = 0;
+            return false; 
+        }
+
         dp.pta = leftObjGraphic.drawParams.attachPoints.bondR1;
         dp.ptb = rightObjGraphic.drawParams.attachPoints.bondL1;
 
@@ -269,6 +274,7 @@ Namespace.BondGraphic = class
             built: []
         };
 
+        return true;
     }
     
 };

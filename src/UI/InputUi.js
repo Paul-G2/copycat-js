@@ -29,7 +29,9 @@ Namespace.InputUi = class {
         this.inputFont = {family:'serif', weight: 'bold', 
             style: 'italic', size: '3.5vmin'};
         this.inputFontColor = '#1581e7';
-        this.inputDisabledFontColor = '#808080';
+        this.answerFontColor = '#d20000';
+        this.inputDisabledFontColor = '#6eb4f2';
+        this.msgFontColor = '#d20000';
         this.inputBkgndColor = '#dfdfdf';
         
         this._buildUi();
@@ -70,7 +72,8 @@ Namespace.InputUi = class {
 
         const wd = this.answerStringInput = UiUtils.CreateElement('input',
             'answer-string-input', this.mainDiv, {left:'79%'}, {type:'text'});
-        wd.disabled = true;
+        wd.readOnly = true;
+        wd.className += " noselect";
 
         // Configure the text-input elements
         const font = this.inputFont;
@@ -79,7 +82,8 @@ Namespace.InputUi = class {
                 textAlign:'center', border:'1px solid gray', 
                 fontFamily: font.family, fontWeight: font.weight,
                 fontStyle: font.style, fontSize: font.size, 
-                color:this.inputFontColor, background:this.inputBkgndColor});
+                color: (w == wd) ? this.answerFontColor : this.inputFontColor, 
+                background:this.inputBkgndColor});
             w.setAttribute('spellcheck', 'false');
         }
         const wksp = this.copycat.workspace;
@@ -113,7 +117,7 @@ Namespace.InputUi = class {
             {top:'74%', left:'0%', width:'100%', height:'24%', display:'flex', 
             alignItems:'center', justifyContent:'center',
             fontWeight: font.weight, fontStyle: font.style, 
-            fontSize: font.size, color:'#ff0000'}); 
+            fontSize: '3vmin', color:this.msgFontColor}); 
         this.messageDiv.className += " noselect";   
 
         // Colon separator
@@ -219,8 +223,6 @@ Namespace.InputUi = class {
         this.modifiedStringInput.style.color = enabled ? 
             this.inputFontColor : this.inputDisabledFontColor;
         this.targetStringInput.style.color = enabled ? 
-            this.inputFontColor : this.inputDisabledFontColor;
-        this.answerStringInput.style.color = enabled ? 
             this.inputFontColor : this.inputDisabledFontColor;
     }
 };
