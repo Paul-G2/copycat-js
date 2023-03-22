@@ -7586,7 +7586,7 @@ Namespace.BondGraphic = class
         // Update our drawing parameters if necessary
         const UiUtils = Namespace.UiUtils;
         if ( UiUtils.NeedToRescale(this.drawParams, ctx)) {
-            this._updateDrawParams(ctx);
+            if (!this._updateDrawParams(ctx)) { return; }
         }
 
         const dp = this.drawParams;
@@ -7628,6 +7628,11 @@ Namespace.BondGraphic = class
         // Get the start and ednp points of the bond line
         const leftObjGraphic = parent.stringGraphic. getChildGraphic(bond.leftObject);
         const rightObjGraphic = parent.stringGraphic.getChildGraphic(bond.rightObject);
+        if (!leftObjGraphic || !rightObjGraphic) { 
+            dp.canvasWidth = dp.canvasHeight = 0;
+            return false; 
+        }
+
         dp.pta = leftObjGraphic.drawParams.attachPoints.bondR1;
         dp.ptb = rightObjGraphic.drawParams.attachPoints.bondL1;
 
@@ -7671,6 +7676,7 @@ Namespace.BondGraphic = class
             built: []
         };
 
+        return true;
     }
     
 };
@@ -8299,7 +8305,7 @@ Namespace.CorrGraphic = class
         // Update our drawing parameters if necessary
         const UiUtils = Namespace.UiUtils;
         if ( UiUtils.NeedToRescale(this.drawParams, ctx) ) {
-            this._updateDrawParams(ctx);
+            if (!this._updateDrawParams(ctx)) { return; }
         }
 
         const dp = this.drawParams;
@@ -8368,6 +8374,10 @@ Namespace.CorrGraphic = class
         const wkspUi = this.parent.wkspUi;
         const initialGraphic = wkspUi.initialStringGraphic.getChildGraphic(objA);
         const targetGraphic = wkspUi.targetStringGraphic.getChildGraphic(objB);
+        if (!initialGraphic || !targetGraphic) { 
+            dp.canvasWidth = dp.canvasHeight = 0;
+            return false; 
+        }
 
         dp.zigzagLinePts = [];
         const CalcZigzagLine = Namespace.UiUtils.CalcZigzagLine;
@@ -8423,6 +8433,8 @@ Namespace.CorrGraphic = class
             dp.labelPosY - 1.1*dp.textFontSize,
             1.4*dp.textFontSize, 1.4*dp.textFontSize];
         dp.footnumFont = 'italic bold ' + (dp.textFontSize+2).toString() + 'px serif';
+
+        return true;
     }
     
 };
@@ -9021,7 +9033,9 @@ Namespace.InputUi = class {
         this.inputFont = {family:'serif', weight: 'bold', 
             style: 'italic', size: '3.5vmin'};
         this.inputFontColor = '#1581e7';
-        this.inputDisabledFontColor = '#808080';
+        this.answerFontColor = '#d20000';
+        this.inputDisabledFontColor = '#6eb4f2';
+        this.msgFontColor = '#d20000';
         this.inputBkgndColor = '#dfdfdf';
         
         this._buildUi();
@@ -9062,7 +9076,8 @@ Namespace.InputUi = class {
 
         const wd = this.answerStringInput = UiUtils.CreateElement('input',
             'answer-string-input', this.mainDiv, {left:'79%'}, {type:'text'});
-        wd.disabled = true;
+        wd.readOnly = true;
+        wd.className += " noselect";
 
         // Configure the text-input elements
         const font = this.inputFont;
@@ -9071,7 +9086,8 @@ Namespace.InputUi = class {
                 textAlign:'center', border:'1px solid gray', 
                 fontFamily: font.family, fontWeight: font.weight,
                 fontStyle: font.style, fontSize: font.size, 
-                color:this.inputFontColor, background:this.inputBkgndColor});
+                color: (w == wd) ? this.answerFontColor : this.inputFontColor, 
+                background:this.inputBkgndColor});
             w.setAttribute('spellcheck', 'false');
         }
         const wksp = this.copycat.workspace;
@@ -9105,7 +9121,7 @@ Namespace.InputUi = class {
             {top:'74%', left:'0%', width:'100%', height:'24%', display:'flex', 
             alignItems:'center', justifyContent:'center',
             fontWeight: font.weight, fontStyle: font.style, 
-            fontSize: font.size, color:'#ff0000'}); 
+            fontSize: '3vmin', color:this.msgFontColor}); 
         this.messageDiv.className += " noselect";   
 
         // Colon separator
@@ -9211,8 +9227,6 @@ Namespace.InputUi = class {
         this.modifiedStringInput.style.color = enabled ? 
             this.inputFontColor : this.inputDisabledFontColor;
         this.targetStringInput.style.color = enabled ? 
-            this.inputFontColor : this.inputDisabledFontColor;
-        this.answerStringInput.style.color = enabled ? 
             this.inputFontColor : this.inputDisabledFontColor;
     }
 };
@@ -9500,7 +9514,7 @@ Namespace.ReplacementGraphic = class
     {
         // Update our drawing parameters if necessary
         if ( Namespace.UiUtils.NeedToRescale(this.drawParams, ctx) ) {
-            this._updateDrawParams(ctx);
+            if (!this._updateDrawParams(ctx)) { return; }
         }
 
         const dp = this.drawParams;
@@ -9532,6 +9546,10 @@ Namespace.ReplacementGraphic = class
         const objB = this.replacement.objFromModified;
         const initialGraphic = wkspUi.initialStringGraphic.getChildGraphic(objA);
         const modifiedGraphic = wkspUi.modifiedStringGraphic.getChildGraphic(objB);
+        if (!initialGraphic || !modifiedGraphic) { 
+            dp.canvasWidth = dp.canvasHeight = 0;
+            return false; 
+        }
 
         const pti = initialGraphic.drawParams.attachPoints['repl'];
         const ptm = modifiedGraphic.drawParams.attachPoints['repl'];
@@ -9542,6 +9560,8 @@ Namespace.ReplacementGraphic = class
         dp.rotAngle = 0;
         dp.startAngle = Math.PI;
         dp.endAngle = 2 * Math.PI;
+
+        return true;
     }
     
 };
@@ -10939,9 +10959,9 @@ Namespace.WorkspaceUi = class
         this.bondColor = '#1581e7';
         this.correspColor = '#a020f0';
         this.letterColor = '#000000';
-        this.answerLetterColor = '#ff0000';
+        this.answerLetterColor = '#d20000';
         this.replColor = '#964B00';
-        this.ruleColor = '#ff0000';
+        this.ruleColor = '#d20000';
         this.descriptionColor = '#c0c0c0';
         this.activeDescriptionColor = '#909090';        
 
