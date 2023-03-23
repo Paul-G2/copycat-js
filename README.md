@@ -11,7 +11,7 @@ and [Melanie Mitchell](https://melaniemitchell.me).
 [You can try it out here.](https://paul-g2.github.io/copycat-js/)
 
 Copycat is a computer model of human analogy-making. 
-It tries to solve problems of the form "<b><i>abc</b></i> is to <b><i>abd</b></i> as <b><i>ijk</b></i> is to what?"
+It tries to solve letter puzzles of the form "<b><i>abc</b></i> is to <b><i>abd</b></i> as <b><i>ijk</b></i> is to what?"
 
 It's internal workings are described in great detail in the books 
 [Fluid Concepts and Creative Analogies](https://www.amazon.com/Fluid-Concepts-Creative-Analogies-Fundamental/dp/0465024750), and 
