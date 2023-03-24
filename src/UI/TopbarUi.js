@@ -57,6 +57,18 @@ Namespace.TopbarUi = class {
         ); 
         this.titleSpan.innerHTML = 'Copycat';
         this.titleSpan.className += " noselect";
+
+        this.helpBtn = UiUtils.CreateElement('button', 'help-btn',
+            this.mainDiv, {top:'22%', height:'56%', right:'2vh', width:'10%',
+            display:'flex', alignItems:'center', justifyContent:'center',
+            color:'#404040', fontFamily:'Arial', fontWeight:'normal',
+            fontSize: '3vh', background:'#dfdfdf', border:'1px solid #404040' }
+        );
+        this.helpBtn.innerHTML = 'Help';
+        this.helpBtn.className += " noselect";
+        this.helpBtn.onclick = this._onHelpBtnClick.bind(this);
+
+        this.helpDialog = new Namespace.HelpDialog(document.getElementById('app_area'));
     }
 
 
@@ -80,6 +92,24 @@ Namespace.TopbarUi = class {
     {    
         // Nothing to do here
     }
+
+
+    /**
+     * Handler for help-button clicks.
+     * @private
+     * 
+     */
+    _onHelpBtnClick()
+    {    
+        if (this.helpDialog.isShown()) {
+            this.helpDialog.hide();
+        }
+        else {
+            this.helpDialog.show();
+        }
+    }
+
+
 };
 
 

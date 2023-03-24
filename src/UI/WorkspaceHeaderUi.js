@@ -89,7 +89,7 @@ Namespace.WorkspaceHeaderUi = class
         this.speedSlider = UiUtils.CreateElement('input', 'speed_slider',
             this.ctrlsDiv, {width:'70%', height:'10%', top:'60%', left:'15%',
             accentColor:this.fontColor},
-            {type:'range', min:1, max:100, value:50});
+            {type:'range', min:1, max:100, value:55});
         this.speedSlider.draggable = true;
         this.speedSlider.ondragstart = function(e) { 
             e.preventDefault(); 

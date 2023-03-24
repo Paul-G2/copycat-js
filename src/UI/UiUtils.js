@@ -73,6 +73,18 @@ Namespace.UiUtils.StyleElement = function(elem, styles)
 };
 
 
+/**
+ * Tries to determine whether we're on a touch device.
+ * @static
+ * 
+ */
+Namespace.UiUtils.isTouchDevice = function()
+{
+    // This test is fallible, but it seems to be the best we can do.
+    return ( ('ontouchstart' in document.documentElement) || window.navigator.msMaxTouchPoints );
+};
+
+
 /** 
  * Resizes a given canvas's raster to match its display size.
  *
