@@ -613,8 +613,8 @@ Namespace.Dialog = class
      * @constructor
      * 
      * @param {HTMLElement} [parent=document.body] - The dialog's parent element.
-     * @param {Number} width - The dialog width, in vw units
-     * @param {Number} height - The dialog height, in vh units.
+     * @param {Number} width - The dialog width, in svw units
+     * @param {Number} height - The dialog height, in svh units.
      * @param {String} [title] - Text to be displayed on the dialog's title bar.
      * @param {Boolean} [modal=false] - Whether the dialog is modal. (Currently 
      *      only non-modal is supported.)
@@ -659,14 +659,14 @@ Namespace.Dialog = class
         // Container div
         this.mainDiv = UiUtils.CreateElement('div', 'dialog_maindiv', this.parent); 
         UiUtils.StyleElement(this.mainDiv, {display:'none', width:
-            this.width.toString() + 'vw', height:this.height.toString() + 'vh', 
-            left:((100 - this.width)/2).toString() + 'vw', 
-            top:((100 - this.height)/2).toString() + 'vh', 
+            this.width.toString() + 'svw', height:this.height.toString() + 'svh', 
+            left:((100 - this.width)/2).toString() + 'svw', 
+            top:((100 - this.height)/2).toString() + 'svh', 
             zIndex:'10', backgroundColor:bkgndColor,
             border:'1px solid black'} );
             
         // Titlebar 
-        const titleFontSize = (.03 * this.height).toString() + 'vh';
+        const titleFontSize = (.03 * this.height).toString() + 'svh';
         this.titleDiv = UiUtils.CreateElement('div', 'dialog_titlediv', this.mainDiv); 
         this.titleDiv.innerHTML = title;
         UiUtils.StyleElement(this.titleDiv, {
@@ -9294,7 +9294,8 @@ Namespace.HelpDialog = class extends Namespace.Dialog
     {
         this.textDiv = Namespace.UiUtils.CreateElement('div', 'text-div',
             this.userDiv, {top:'3%', left:'3%', width:'94%', height:'94%',
-            fontSize:'1.7vh', fontFamily:this.fontFamily});
+            fontSize:'1.7svh', fontFamily:this.fontFamily,
+            overflow:'auto'});
 
         this.textDiv.innerHTML =
         '<p>Copycat is a computer model of human analogy-making.</p>' + 
