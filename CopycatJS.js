@@ -613,8 +613,8 @@ Namespace.Dialog = class
      * @constructor
      * 
      * @param {HTMLElement} [parent=document.body] - The dialog's parent element.
-     * @param {Number} width - The dialog width, in svw units
-     * @param {Number} height - The dialog height, in svh units.
+     * @param {Number} width - The dialog width, in percentage units
+     * @param {Number} height - The dialog height, in percentage units.
      * @param {String} [title] - Text to be displayed on the dialog's title bar.
      * @param {Boolean} [modal=false] - Whether the dialog is modal. (Currently 
      *      only non-modal is supported.)
@@ -659,14 +659,14 @@ Namespace.Dialog = class
         // Container div
         this.mainDiv = UiUtils.CreateElement('div', 'dialog_maindiv', this.parent); 
         UiUtils.StyleElement(this.mainDiv, {display:'none', width:
-            this.width.toString() + 'svw', height:this.height.toString() + 'svh', 
-            left:((100 - this.width)/2).toString() + 'svw', 
-            top:((100 - this.height)/2).toString() + 'svh', 
+            this.width.toString() + '%', height:this.height.toString() + '%', 
+            left:((100 - this.width)/2).toString() + '%', 
+            top:((100 - this.height)/2).toString() + '%', 
             zIndex:'10', backgroundColor:bkgndColor,
             border:'1px solid black'} );
             
         // Titlebar 
-        const titleFontSize = (.03 * this.height).toString() + 'svh';
+        const titleFontSize = (.03 * this.height).toString() + 'vh';
         this.titleDiv = UiUtils.CreateElement('div', 'dialog_titlediv', this.mainDiv); 
         this.titleDiv.innerHTML = title;
         UiUtils.StyleElement(this.titleDiv, {
@@ -9292,12 +9292,16 @@ Namespace.HelpDialog = class extends Namespace.Dialog
 
     _buildUi()
     {
+        Namespace.UiUtils.StyleElement(
+            this.userDiv, {overflowX:'auto', overflowY:'scroll'});
+
         this.textDiv = Namespace.UiUtils.CreateElement('div', 'text-div',
-            this.userDiv, {top:'3%', left:'3%', width:'94%', height:'94%',
-            fontSize:'1.7svh', fontFamily:this.fontFamily,
-            overflow:'auto'});
+            this.userDiv, {left:'3%', width:'94%', height:'100%',
+            fontSize:'20px', fontFamily:this.fontFamily}
+        );
 
         this.textDiv.innerHTML =
+        '<p></p>' + 
         '<p>Copycat is a computer model of human analogy-making.</p>' + 
         '<p>It tries to solve letter puzzles of the form "<b><i>abc</i></b> is to <b><i>abd</i></b> as <b><i>ijk</i></b> is to what?"</p>' +
         '<p>You can enter puzzle strings in the green upper-left area, then click the <i>play</i> button to watch Copycat "think" about ' +
@@ -9326,7 +9330,6 @@ Namespace.HelpDialog = class extends Namespace.Dialog
         'uses to perform its work. The number of each type of codelet currently in Copycat&rsquo;s stack in shown in a dynamical ' +
         'bar graph.</p>' +
 
-        '<br/>' +
         '<p>For (much) more information, check out the book <i>Fluid Concepts and Creative Analogies</i> by Douglas Hofstadter et. al.</p>';
     }
 
@@ -10599,12 +10602,12 @@ Namespace.TopbarUi = class {
         this.titleSpan.className += " noselect";
 
         this.helpBtn = UiUtils.CreateElement('button', 'help-btn',
-            this.mainDiv, {top:'22%', height:'56%', right:'2vh', width:'10%',
+            this.mainDiv, {top:'22%', height:'56%', right:'2vh', width:'auto',
             display:'flex', alignItems:'center', justifyContent:'center',
             color:'#404040', fontFamily:'Arial', fontWeight:'normal',
             fontSize: '3vh', background:'#dfdfdf', border:'1px solid #404040' }
         );
-        this.helpBtn.innerHTML = 'Help';
+        this.helpBtn.innerHTML = '&nbsp;&nbsp;Help&nbsp;&nbsp;';
         this.helpBtn.className += " noselect";
         this.helpBtn.onclick = this._onHelpBtnClick.bind(this);
 
