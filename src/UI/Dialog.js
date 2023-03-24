@@ -14,8 +14,8 @@ Namespace.Dialog = class
      * @constructor
      * 
      * @param {HTMLElement} [parent=document.body] - The dialog's parent element.
-     * @param {Number} width - The dialog width, in vw units
-     * @param {Number} height - The dialog height, in vh units.
+     * @param {Number} width - The dialog width, in percentage units
+     * @param {Number} height - The dialog height, in percentage units.
      * @param {String} [title] - Text to be displayed on the dialog's title bar.
      * @param {Boolean} [modal=false] - Whether the dialog is modal. (Currently 
      *      only non-modal is supported.)
@@ -60,9 +60,9 @@ Namespace.Dialog = class
         // Container div
         this.mainDiv = UiUtils.CreateElement('div', 'dialog_maindiv', this.parent); 
         UiUtils.StyleElement(this.mainDiv, {display:'none', width:
-            this.width.toString() + 'vw', height:this.height.toString() + 'vh', 
-            left:((100 - this.width)/2).toString() + 'vw', 
-            top:((100 - this.height)/2).toString() + 'vh', 
+            this.width.toString() + '%', height:this.height.toString() + '%', 
+            left:((100 - this.width)/2).toString() + '%', 
+            top:((100 - this.height)/2).toString() + '%', 
             zIndex:'10', backgroundColor:bkgndColor,
             border:'1px solid black'} );
             

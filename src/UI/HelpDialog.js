@@ -26,11 +26,16 @@ Namespace.HelpDialog = class extends Namespace.Dialog
 
     _buildUi()
     {
+        Namespace.UiUtils.StyleElement(
+            this.userDiv, {overflowX:'auto', overflowY:'scroll'});
+
         this.textDiv = Namespace.UiUtils.CreateElement('div', 'text-div',
-            this.userDiv, {top:'3%', left:'3%', width:'94%', height:'94%',
-            fontSize:'1.7vh', fontFamily:this.fontFamily});
+            this.userDiv, {left:'3%', width:'94%', height:'100%',
+            fontSize:'20px', fontFamily:this.fontFamily}
+        );
 
         this.textDiv.innerHTML =
+        '<p></p>' + 
         '<p>Copycat is a computer model of human analogy-making.</p>' + 
         '<p>It tries to solve letter puzzles of the form "<b><i>abc</i></b> is to <b><i>abd</i></b> as <b><i>ijk</i></b> is to what?"</p>' +
         '<p>You can enter puzzle strings in the green upper-left area, then click the <i>play</i> button to watch Copycat "think" about ' +
@@ -59,7 +64,6 @@ Namespace.HelpDialog = class extends Namespace.Dialog
         'uses to perform its work. The number of each type of codelet currently in Copycat&rsquo;s stack in shown in a dynamical ' +
         'bar graph.</p>' +
 
-        '<br/>' +
         '<p>For (much) more information, check out the book <i>Fluid Concepts and Creative Analogies</i> by Douglas Hofstadter et. al.</p>';
     }
 

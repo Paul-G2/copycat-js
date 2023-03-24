@@ -59,12 +59,12 @@ Namespace.TopbarUi = class {
         this.titleSpan.className += " noselect";
 
         this.helpBtn = UiUtils.CreateElement('button', 'help-btn',
-            this.mainDiv, {top:'22%', height:'56%', right:'2vh', width:'10%',
+            this.mainDiv, {top:'22%', height:'56%', right:'2vh', width:'auto',
             display:'flex', alignItems:'center', justifyContent:'center',
             color:'#404040', fontFamily:'Arial', fontWeight:'normal',
             fontSize: '3vh', background:'#dfdfdf', border:'1px solid #404040' }
         );
-        this.helpBtn.innerHTML = 'Help';
+        this.helpBtn.innerHTML = '&nbsp;&nbsp;Help&nbsp;&nbsp;';
         this.helpBtn.className += " noselect";
         this.helpBtn.onclick = this._onHelpBtnClick.bind(this);
 
