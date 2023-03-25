@@ -20,6 +20,7 @@
         this.ctx = ctx;
         this.codelets = [];
         this.numCodeletsRun = 0;
+        this.lastRunCodelet = null;
         this.factory = new Namespace.Codelets.CodeletFactory(ctx);
     }
 
@@ -108,6 +109,7 @@
         try{
             this.numCodeletsRun += 1;
             chosen.run();
+            this.lastRunCodelet = chosen;
         } catch (e) {
             this.ctx.reporter.error(e);
         }
