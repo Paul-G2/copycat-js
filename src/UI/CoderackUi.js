@@ -125,7 +125,20 @@ Namespace.CoderackUi = class {
             let count = (r == dp.nRows-1) ? totalCodelets : counts[r];          
             ctx.fillText(count.toString(), ...dp.countCoords[r]);
         }
-        
+
+        // Draw the last-run-codelet indicator
+        if (coderack.lastRunCodelet) {
+            const row = this.codeletDict[coderack.lastRunCodelet.name];
+            const verts = dp.lastRunIndicatorCoords[row];
+            ctx.fillStyle = 'black';
+            ctx.beginPath();   
+            ctx.moveTo(...verts[0]);  
+            ctx.lineTo(...verts[1]); 
+            ctx.lineTo(...verts[2]); 
+            ctx.closePath(); 
+            ctx.fill();            
+        }
+
         // Draw the bar graphs
         let probs = coderack.getCodeletRunProbabilities();
         const groupedProbs = Object.fromEntries(
@@ -133,11 +146,12 @@ Namespace.CoderackUi = class {
         for (let i=0; i<probs.length; i++) {
             groupedProbs[coderack.codelets[i].name] += probs[i];
         }
+        ctx.fillStyle = 'black';
         for (let r=0; r<dp.nRows-1; r++) {    
             let prob = groupedProbs[this.codeletList[r].id];
             let bar = dp.bars[r];
             ctx.beginPath();
-            ctx.fillRect(bar.l, bar.t, prob*bar.w, bar.h);
+            ctx.fillRect(bar.l, bar.t, Math.min(1, 1.2*prob)*bar.w, bar.h);
             ctx.stroke();
         }
     }
@@ -241,6 +255,16 @@ Namespace.CoderackUi = class {
             let y = dp.tableTopOffset + (r + 0.5)*dp.cellHeight + 
                 0.5*meas.actualBoundingBoxAscent;
             dp.countCoords.push([column0Width/2, y]);
+        }
+
+        // Last-run indicator coordinates
+        dp.lastRunIndicatorCoords = [];
+        for (let r=0; r<dp.nRows; r++) {
+            const y0 = dp.tableTopOffset + r*dp.cellHeight + 1;
+            const y1 = y0 + dp.cellHeight/3;
+            const x0 = (2/3)*column0Width;
+            const x1 = column0Width;
+            dp.lastRunIndicatorCoords.push([[x0,y0], [x1,y0], [x1,y1]]);
         }
 
         // Bar graph coordinates

@@ -60,9 +60,9 @@ Namespace.HelpDialog = class extends Namespace.Dialog
         '<p>In the yellow <i>Slipnet</i> area, Copycat&rsquo;s built-in concepts are shown in a grid. ' + 
         'The size of the dot over each concept indicates how important that concept is to Copycat at the current moment.</p>' +
 
-        '<p>The pink <i>Coderack</i> area displays a list of the subroutines or "codelets" that Copycat ' +
-        'uses to perform its work. The number of each type of codelet currently in Copycat&rsquo;s stack in shown in a dynamical ' +
-        'bar graph.</p>' +
+        '<p>The pink <i>Coderack</i> area displays the list of the subroutines or "codelets" that Copycat ' +
+        'uses to perform its work. The number of each type of codelet currently in the coderack in shown in a dynamical ' +
+        'bar graph. The last-run codelet is indicated by a black triangle.</p>' +
 
         '<p>For (much) more information, check out the book <i>Fluid Concepts and Creative Analogies</i> by Douglas Hofstadter et. al.</p>';
     }
