@@ -100,5 +100,8 @@ div#coderack_area {
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none;
-  }
+}
+p + ul {
+    margin-top: -16px;
+}
 

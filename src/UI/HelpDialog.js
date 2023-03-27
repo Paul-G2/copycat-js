@@ -43,18 +43,24 @@ Namespace.HelpDialog = class extends Namespace.Dialog
 
         '<p>Some interesting examples to try are:</p>' +
         '<ul>' +
-        '<li> <b><i>abc</b></i> &#x2192; <b><i>abd</b></i>, &nbsp; <b><i>kji</b></i> &#x2192; ?</li>' +
-        '<li> <b><i>abc</b></i> &#x2192; <b><i>abd</b></i>, &nbsp; <b><i>iijjkk</b></i> &#x2192; ? </li>' +
-        '<li> <b><i>abc</b></i> &#x2192; <b><i>abd</b></i>, &nbsp; <b><i>mrrjjj</b></i> &#x2192; ?</li>' +
+            '<li> <b><i>abc</b></i> &#x2192; <b><i>abd</b></i>, &nbsp; <b><i>kji</b></i> &#x2192; ?</li>' +
+            '<li> <b><i>abc</b></i> &#x2192; <b><i>abd</b></i>, &nbsp; <b><i>iijjkk</b></i> &#x2192; ? </li>' +
+            '<li> <b><i>abc</b></i> &#x2192; <b><i>abd</b></i>, &nbsp; <b><i>mrrjjj</b></i> &#x2192; ?</li>' +
         '</ul>' +
 
-        '<p>While it&rsquo;s running, Copycat displays the bonds it finds between adjacent letters (as blue lines), ' +
-        'the correspondences it finds between the initial and target strings (as purple jagged lines), ' + 
-        'groups that it thinks may be important (as green boxes), descriptions of all the letters ' +
-        '(gray text), and other information. A flashing graphic indicates a structure that Copycat is considering ' + 
-        ' but hasn&rsquo;t yet committed to.</p>' + 
+        '<p>The algorithm is probabilistic, so you may get different results each time you run it.</p>' + 
 
-        '<p>The thermometer indicates how "happy" Copycat is with its current progress; lower temperatures ' + 
+        '<p>While running, Copycat displays</p>' +
+        '<ul>' +
+            '<li> bonds it finds between adjacent letters, as blue lines</li>' +
+            '<li> correspondences it finds between the initial and target strings, as purple jagged lines</li>' + 
+            '<li> groups that it thinks may be important, as green boxes</li>' +
+            '<li> descriptions of all the letters, in gray text</li>' +
+        '</ul>' +
+
+        'A flashing graphic indicates a structure that Copycat is considering but hasn&rsquo;t yet committed to.</p>' + 
+        
+        '<p>The thermometer shows how "happy" Copycat is with its current progress; lower temperatures ' + 
         'imply greater happiness.</p>' +
 
         '<p>In the yellow <i>Slipnet</i> area, Copycat&rsquo;s built-in concepts are shown in a grid. ' + 
@@ -64,7 +70,7 @@ Namespace.HelpDialog = class extends Namespace.Dialog
         'uses to perform its work. The number of each type of codelet currently in the coderack is shown in a dynamical ' +
         'bar graph. The last-run codelet is indicated by a black triangle.</p>' +
 
-        '<p>For (much) more information, check out the book <i>Fluid Concepts and Creative Analogies</i> by Douglas Hofstadter et. al.</p>';
+        '<p>For (much) more information, check out the book <i>Fluid Concepts and Creative Analogies</i> by Douglas Hofstadter et al.</p>';
     }
 
 };
