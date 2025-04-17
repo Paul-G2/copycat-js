@@ -54,9 +54,7 @@
     static chooseNeighbor(ctx, sourceObj)
     {
         const candidates = ctx.workspace.objects.filter(o => o.isBeside(sourceObj));
-        const weights = candidates.map( 
-            o => ctx.temperature.getAdjustedValue(o.intraStringSalience) );
-
+        const weights = candidates.map( o => ctx.temperature.getAdjustedValue(o.intraStringSalience) );
         return ctx.randGen.weightedChoice(candidates, weights);
     }
 
@@ -82,16 +80,13 @@
             const numNonSpanningObjects = nonSpanningObjs.length;
             let numMatches = 0;
             if (criterion == 'bondCategory') {
-                numMatches = nonSpanningObjs.filter(o => 
-                    o.rightBond && (o.rightBond.category == nodeToMatch)).length;
+                numMatches = nonSpanningObjs.filter(o => o.rightBond && (o.rightBond.category == nodeToMatch)).length;
             }
             else if (criterion == 'bondDirection') {
-                numMatches = nonSpanningObjs.filter(o => 
-                    o.rightBond && (o.rightBond.directionCategory == nodeToMatch)).length;
+                numMatches = nonSpanningObjs.filter(o => o.rightBond && (o.rightBond.directionCategory == nodeToMatch)).length;
             }
 
-            return (numNonSpanningObjects == 1) ? 100 * numMatches :
-                (100 * numMatches) / (numNonSpanningObjects - 1);            
+            return (numNonSpanningObjects == 1) ? 100 * numMatches : (100 * numMatches) / (numNonSpanningObjects - 1);            
         };
 
 
@@ -105,14 +100,12 @@
         const targets = targetRelevance + targetUnhappiness;
 
         // Choose a source object.
-        var result;
+        let result;
+        const Utils = Namespace.Codelets.CodeletUtils;
         if (ctx.randGen.weightedGreaterThan(targets, initials)) {
-            result = Namespace.Codelets.CodeletUtils.chooseUnmodifiedObject(
-                ctx, 'intraStringSalience',  wksp.targetWString.objects);
-        }
-        else {
-            result = Namespace.Codelets.CodeletUtils.chooseUnmodifiedObject(
-                ctx, 'intraStringSalience', wksp.initialWString.objects);
+            result = Utils.chooseUnmodifiedObject(ctx, 'intraStringSalience',  wksp.targetWString.objects);
+        }else {
+            result = Utils.chooseUnmodifiedObject(ctx, 'intraStringSalience', wksp.initialWString.objects);
         }
 
         return result;
@@ -130,17 +123,13 @@
      */
     static chooseBondFacet(ctx, sourceObj, destObj)
     {
-        let sn = ctx.slipnet;
-
         // The allowed bond facets:
-        const bondFacets = [sn.letterCategory, sn.length];
+        const bondFacets = [ctx.slipnet.letterCategory, ctx.slipnet.length];
 
         // Get the bond facets that are present in both source and destination.
-        const sourceFacets = sourceObj.descriptions.map(
-            d => d.descriptionType).filter(d => bondFacets.includes(d));
+        const sourceFacets = sourceObj.descriptions.map(d => d.descriptionType).filter(d => bondFacets.includes(d));
 
-        const candidateFacets = destObj.descriptions.map(
-            d => d.descriptionType).filter(d => sourceFacets.includes(d));
+        const candidateFacets = destObj.descriptions.map(d => d.descriptionType).filter(d => sourceFacets.includes(d));
 
         // For each such facet, compute a support value based on both the facet's activation
         // and the number of objects in the source's string that share the facet.
@@ -172,7 +161,7 @@
      */
     static structureVsStructure(structure1, weight1, structure2, weight2)
     {
-        const ctx = structure1.ctx;
+        const ctx = structure1.wksp.ctx;
         const temperature = ctx.temperature;
 
         structure1.updateStrength();
@@ -190,10 +179,8 @@
      * 
      * @param {WorkspaceStructure} structure - The structure to test.
      * @param {Number} structureWeight - The weight factor for the structure.
-     * @param {Array<WorkspaceStructure>} incompatibles - The list of 
-     *      incompatible structures.
-     * @param {Number} incompatiblesWeight - The weight factor for the
-     *     incompatible structures. 
+     * @param {Array<WorkspaceStructure>} incompatibles - The list of incompatible structures.
+     * @param {Number} incompatiblesWeight - The weight factor for the incompatible structures. 
      * 
      */
     static fightItOut(structure, structureWeight, incompatibles, incompatiblesWeight)
@@ -201,13 +188,10 @@
         if (!incompatibles || !incompatibles.length) {
             return true;
         }
-        for (let incomp of incompatibles) {
-            if (!Namespace.Codelets.CodeletUtils.structureVsStructure(
-                structure, structureWeight, incomp, incompatiblesWeight)) {
-                    return false;
-            }
-        }
-        return true;
+        
+        return incompatibles.every(incomp => 
+            Namespace.Codelets.CodeletUtils.structureVsStructure(structure, structureWeight, incomp, incompatiblesWeight)
+        );
     }
 
 };

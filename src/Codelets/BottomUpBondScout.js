@@ -17,7 +17,7 @@
      * 
      * @param {Copycat} ctx - The Copycat instance.
      * @param {Number} urgency - The urgency of the codelet.
-     * @param {Array} args - Arguments to pass to the codelet.
+     * @param {Array} args - Arguments to pass to the codelet. (Empty for this codelet.)
      * @param {Number} birthdate - The birthdate of the codelet.
      */
     constructor(ctx, urgency, args, birthdate) 
@@ -33,22 +33,19 @@
     {
         const ctx = this.ctx;
         const sn = ctx.slipnet;
-        const Utils = Namespace.Codelets.CodeletUtils;
 
         // Choose a workspace object at random, based on intra-string salience.
-        const bondSource = Utils.chooseUnmodifiedObject(ctx, 'intraStringSalience', ctx.workspace.objects);
+        const bondSource = CodeletUtils.chooseUnmodifiedObject(ctx, 'intraStringSalience', ctx.workspace.objects);
         if (!bondSource) { return; }
 
         // Choose a neighboring object
-        const bondDest = Utils.chooseNeighbor(ctx, bondSource);
+        const bondDest = CodeletUtils.chooseNeighbor(ctx, bondSource);
         if (!bondDest) { return; }
 
         // Provide UI feedback.
-        if (ctx.ui) {
-            const dummyBond = new Namespace.Bond(bondSource, bondDest, 
-                sn.sameness, sn.letterCategory, sn.letters[0], sn.letters[0]);
-            ctx.ui.workspaceUi.getStringGraphic(dummyBond.string).
-                bondsGraphic.flashGrope(dummyBond);
+        if (ctx.ui && !ctx.batchMode) {
+            const dummyBond = new Namespace.Bond(bondSource, bondDest, sn.sameness, sn.letterCategory, sn.letters[0], sn.letters[0]);
+            ctx.ui.workspaceUi.getStringGraphic(dummyBond.string).bondsGraphic.flashGrope(dummyBond);
         }
 
         // Choose a bond facet
@@ -67,8 +64,7 @@
         }
 
         // Propose the bond
-        ctx.coderack.proposeBond(bondSource, bondDest, bondCategory, bondFacet,
-            sourceDescriptor, destDescriptor);
+        ctx.coderack.proposeBond(bondSource, bondDest, bondCategory, bondFacet, sourceDescriptor, destDescriptor);
     }
 
 };

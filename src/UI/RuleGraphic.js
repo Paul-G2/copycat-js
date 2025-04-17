@@ -42,8 +42,7 @@ Namespace.RuleGraphic = class
             ctx.textAlign = 'center';
             ctx.setLineDash([]);
             ctx.font = dp.font;
-            dp.textLines.forEach(line => 
-                ctx.fillText(line.text, line.x, line.y));
+            dp.textLines.forEach(line => ctx.fillText(line.text, line.x, line.y));
 
             ctx.beginPath();
             ctx.rect(...dp.rect1);
@@ -102,16 +101,13 @@ Namespace.RuleGraphic = class
         const maxLineWidth = Math.max(...measures.map(m => m.width));
         const left = xc - 0.5*maxLineWidth;
         const top = y0 - measures[0].actualBoundingBoxAscent;
-        const bbox = {x:left, y:top, w:maxLineWidth, 
-            h: y0 + yStep*(lines.length-1) - top};
+        const bbox = {x:left, y:top, w:maxLineWidth, h: y0 + yStep*(lines.length-1) - top};
         
         let inflate = 0.66 * fontSize;
-        dp.rect1 = [bbox.x - inflate, bbox.y - inflate, 
-            bbox.w + 2*inflate, bbox.h + 2*inflate];
+        dp.rect1 = [bbox.x - inflate, bbox.y - inflate, bbox.w + 2*inflate, bbox.h + 2*inflate];
             
         inflate = 1.0 * fontSize;
-        dp.rect2 = [bbox.x - inflate, bbox.y - inflate, 
-            bbox.w + 2*inflate, bbox.h + 2*inflate];
+        dp.rect2 = [bbox.x - inflate, bbox.y - inflate, bbox.w + 2*inflate, bbox.h + 2*inflate];
     }
 
 };

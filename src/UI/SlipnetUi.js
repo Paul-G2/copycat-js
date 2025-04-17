@@ -183,12 +183,9 @@ Namespace.SlipnetUi = class {
                 if (node) { 
                     const cx = prevCellRight + 0.5*cellWidths[c];
                     const cy = topOffset + r*cellHeight + dp.maxRadius + 1;
-                    dp.circleCoords[c][r] = 
-                        {x:cx, y:cy};
-                    dp.squareCoords[c][r] = 
-                        {x:cx-mr-1, y:cy-mr-1, w:2*mr+2, h:2*mr+2};
-                    dp.textCoords[c][r] = 
-                        {x:cx, y:cy + dp.maxRadius + dp.labelFontSize*0.85};
+                    dp.circleCoords[c][r] = {x:cx, y:cy};
+                    dp.squareCoords[c][r] = {x:cx-mr-1, y:cy-mr-1, w:2*mr+2, h:2*mr+2};
+                    dp.textCoords[c][r] = {x:cx, y:cy + dp.maxRadius + dp.labelFontSize*0.85};
                 }
             }
             prevCellRight += cellWidths[c];

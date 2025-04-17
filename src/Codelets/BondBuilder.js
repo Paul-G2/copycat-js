@@ -43,20 +43,15 @@
         }
 
         // Fizzle if the bond already exists
-        for (let stringBond of bond.string.bonds) {
-            if (this._sameNeighbors(bond, stringBond) && this._sameCategories(bond, stringBond)) {
-                bond.category.activation = 100;
-                if (bond.directionCategory) {
-                    bond.directionCategory.activation = 100;
-                }
-                return;
-            }
+        if (bond.string.bonds.some(sbond => this._sameNeighbors(bond, sbond) && this._sameCategories(bond, sbond))) {
+            bond.category.activation = 100;
+            if (bond.directionCategory) { bond.directionCategory.activation = 100; }
+            return;
         }
 
         // Provide UI feedback
-        if (ctx.ui) {
-            ctx.ui.workspaceUi.getStringGraphic(bond.string).bondsGraphic.
-                flashProposed(bond);
+        if (ctx.ui && !ctx.batchMode) {
+            ctx.ui.workspaceUi.getStringGraphic(bond.string).bondsGraphic.flashProposed(bond);
         }
 
         // Fight it out with any incompatible bonds
@@ -85,7 +80,7 @@
             }
         }
 
-        // We won! Destroy the incompatibles ann build our bond.
+        // We won! Destroy the incompatibles and build our bond.
         incompatibleBonds.forEach(x => x.break());
         incompatibleGroups.forEach(x => x.break());
         incompatibleCorrespondences.forEach(x => x.break());
@@ -101,8 +96,7 @@
      */
     _sameNeighbors(bond1, bond2) 
     {
-        return (bond1.leftObject == bond2.leftObject) &&
-            (bond1.rightObject == bond2.rightObject);
+        return (bond1.leftObject == bond2.leftObject) && (bond1.rightObject == bond2.rightObject);
     }
 
 
@@ -113,8 +107,7 @@
      */
     _sameCategories(bond1, bond2) 
     {
-        return (bond1.category == bond2.category) &&
-            (bond1.directionCategory == bond2.directionCategory);
+        return (bond1.category == bond2.category) && (bond1.directionCategory == bond2.directionCategory);
     }
 
 
@@ -127,20 +120,22 @@
         const incompatibles = [];
         if (bond.leftObject.leftmost && bond.leftObject.correspondence) 
         {
-            const obj = (bond.string == bond.ctx.workspace.initial) ?
+            const obj = (bond.string == bond.wksp.initialWString) ?
                 bond.leftObject.correspondence.objFromTarget : bond.leftObject.correspondence.objFromInitial;
-            if (obj.leftmost && obj.rightBond) {
-                if (obj.rightBond.directionCategory && (obj.rightBond.directionCategory != bond.directionCategory)) {
+
+            if (obj.leftmost && obj.rightBond && obj.rightBond.directionCategory) {
+                if (obj.rightBond.directionCategory != bond.directionCategory) {
                     incompatibles.push(bond.leftObject.correspondence);
                 }
             }
         }
         if (bond.rightObject.rightmost && bond.rightObject.correspondence)
         {
-            const obj = (bond.string == bond.ctx.workspace.initial) ?
+            const obj = (bond.string == bond.wksp.initialWString) ?
                 bond.rightObject.correspondence.objFromTarget : bond.rightObject.correspondence.objFromInitial;
-            if (obj.rightmost && obj.leftBond) {
-                if (obj.leftBond.directionCategory && (obj.leftBond.directionCategory != bond.directionCategory)) {
+                
+            if (obj.rightmost && obj.leftBond && obj.leftBond.directionCategory) {
+                if (obj.leftBond.directionCategory != bond.directionCategory) {
                     incompatibles.push(bond.rightObject.correspondence);
                 }
             }

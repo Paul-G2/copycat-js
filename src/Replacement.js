@@ -23,7 +23,7 @@
     constructor(objFromInitial, objFromModified, relation) 
     { 
         // WorkspaceStructure members
-        this.ctx = objFromInitial.ctx;
+        this.wksp = objFromInitial.wksp;
         this.string = objFromInitial.string;
         this.totalStrength = 0;
 

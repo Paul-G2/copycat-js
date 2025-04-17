@@ -23,8 +23,7 @@
 
 
     /**
-     * Creates a codelet given its name, passing
-     * the given arguments to the codelet constructor.
+     * Creates a codelet given its name and constructor arguments.
      * 
      * @param {string} name - The name of the codelet.
      * @param {Number} urgency - The urgency of the codelet.

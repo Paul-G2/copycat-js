@@ -33,8 +33,7 @@ Namespace.CorrsGraphic = class
      * @private 
      */
     _sameReferents(corr1, corr2) {
-        return (corr1.objFromInitial === corr2.objFromInitial) &&
-            (corr1.objFromTarget === corr2.objFromTarget);
+        return (corr1.objFromInitial === corr2.objFromInitial) && (corr1.objFromTarget === corr2.objFromTarget);
     }
 
 
@@ -44,10 +43,8 @@ Namespace.CorrsGraphic = class
      * @private 
      */    
     _hasStringSpanningGroups(corr) {
-        return (corr.objFromInitial instanceof Namespace.Group) &&
-            (corr.objFromTarget instanceof Namespace.Group) &&
-            (corr.objFromInitial.spansString()) &&
-            (corr.objFromTarget.spansString());
+        return (corr.objFromInitial instanceof Namespace.Group) && (corr.objFromTarget instanceof Namespace.Group) &&
+               (corr.objFromInitial.spansString()) && (corr.objFromTarget.spansString());
     }
 
 
@@ -61,11 +58,10 @@ Namespace.CorrsGraphic = class
     {
         // Check whether the input strings have changed
         const wkspUi = this.wkspUi;
-        if ((this.initialString !== wkspUi.initialStringGraphic.wstring) ||
-            (this.targetString !== wkspUi.targetStringGraphic.wstring)) {
-                this.initialString = wkspUi.initialStringGraphic.wstring;
-                this.targetString = wkspUi.targetStringGraphic.wstring;
-                this.cache = [];
+        if ((this.initialString !== wkspUi.initialStringGraphic.wstring) || (this.targetString !== wkspUi.targetStringGraphic.wstring)) {
+            this.initialString = wkspUi.initialStringGraphic.wstring;
+            this.targetString = wkspUi.targetStringGraphic.wstring;
+            this.cache = [];
         }
 
         // Get all the correspondences that need to be drawn
@@ -73,16 +69,13 @@ Namespace.CorrsGraphic = class
         const wksp = copycat.workspace;
         const coderack = copycat.coderack;
 
-        let builtCorrs = copycat.workspace.structures.filter(s => 
-            (s instanceof Namespace.Correspondence));
+        let builtCorrs = copycat.workspace.structures.filter(s => (s instanceof Namespace.Correspondence));
 
         let evaluatedCorrs = coderack.codelets.filter(c =>
-            (c instanceof Namespace.Codelets.CorrespondenceStrengthTester)).
-                map(c => c.correspondence);
+            (c instanceof Namespace.Codelets.CorrespondenceStrengthTester)).map(c => c.correspondence);
 
         let proposedCorrs = coderack.codelets.filter(c =>
-            (c instanceof Namespace.Codelets.CorrespondenceBuilder)). 
-                map(c => c.correspondence);
+            (c instanceof Namespace.Codelets.CorrespondenceBuilder)).map(c => c.correspondence);
 
         // Remove duplicates and obsolete cases
         proposedCorrs = proposedCorrs.filter(p =>
@@ -134,9 +127,7 @@ Namespace.CorrsGraphic = class
         if (!correspGraphic) {
             correspGraphic = new Namespace.CorrGraphic(corresp, type, this);
             this.cache.push(correspGraphic);
-            if (this.cache.length > 100) {
-                this.cache.shift();
-            }
+            if (this.cache.length > 100) {this.cache.shift(); }
         }
         correspGraphic.type = type;
         return correspGraphic;
@@ -152,8 +143,7 @@ Namespace.CorrsGraphic = class
     flashProposed(corresp, count=3) 
     {
         if (!this.drawnCorrs.some(c => this._sameReferents(c, corresp))) {
-            const correspGraphic = 
-                new Namespace.CorrGraphic(corresp, 'proposed', this);
+            const correspGraphic = new Namespace.CorrGraphic(corresp, 'proposed', this);
             this.wkspUi.flash(correspGraphic, count);
         }
     }
@@ -168,8 +158,7 @@ Namespace.CorrsGraphic = class
     flashGrope(corresp, count=3)
     {
         if (!this.drawnCorrs.some(c => this._sameReferents(c, corresp))) {
-            const correspGraphic = 
-                new Namespace.CorrGraphic(corresp, 'grope', this);
+            const correspGraphic = new Namespace.CorrGraphic(corresp, 'grope', this);
             this.wkspUi.flash(correspGraphic, count);
         }        
     }
@@ -240,20 +229,14 @@ Namespace.CorrGraphic = class
             ctx.font = dp.footnoteFont;
             ctx.textAlign = 'left';  
 
-            const xOffset = dp.hasStringSpanningGroups ? 0:
-                index * dp.textSpacingX;
-            ctx.fillText((index+1).toString(), 
-                dp.footnotePosX + xOffset, dp.footnotePosY);
-            const cms = this.corr.conceptMappings.concat(
-                this.corr.accessoryConceptMappings);
-            cms.sort( (a, b) => 
-                b.initialDescriptor.depth - a.initialDescriptor.depth);
+            const xOffset = dp.hasStringSpanningGroups ? 0: index * dp.textSpacingX;
+            ctx.fillText((index+1).toString(), dp.footnotePosX + xOffset, dp.footnotePosY);
+            const cms = this.corr.conceptMappings.concat(this.corr.accessoryConceptMappings);
+            cms.sort( (a, b) => b.initialDescriptor.depth - a.initialDescriptor.depth);
             cms.forEach((cm, n) => {
                 const text = cm.initialDescriptor.shortName + ' ' +
-                    String.fromCharCode(8594) + ' ' + 
-                    cm.targetDescriptor.shortName;
-                ctx.fillText(text, dp.textPosX + xOffset, 
-                    dp.textPosY + n*dp.textSpacingY);
+                    String.fromCharCode(8594) + ' ' + cm.targetDescriptor.shortName;
+                ctx.fillText(text, dp.textPosX + xOffset, dp.textPosY + n*dp.textSpacingY);
             });
         }
     }
@@ -291,12 +274,9 @@ Namespace.CorrGraphic = class
             ptt = targetGraphic.drawParams.attachPoints['correspRight'];
             ptb = {x: pti.x + w/24, y: pti.y};
             ptc = {x: ptb.x, y: ptt.y};
-            dp.zigzagLinePts = dp.zigzagLinePts.concat(
-                CalcZigzagLine(ctx, pti.x, pti.y, ptb.x, ptb.y));
-            dp.zigzagLinePts = dp.zigzagLinePts.concat(
-                CalcZigzagLine(ctx, ptb.x, ptb.y, ptc.x, ptc.y));
-            dp.zigzagLinePts = dp.zigzagLinePts.concat(
-                CalcZigzagLine(ctx, ptc.x, ptc.y, ptt.x, ptt.y));
+            dp.zigzagLinePts = dp.zigzagLinePts.concat(CalcZigzagLine(ctx, pti.x, pti.y, ptb.x, ptb.y));
+            dp.zigzagLinePts = dp.zigzagLinePts.concat(CalcZigzagLine(ctx, ptb.x, ptb.y, ptc.x, ptc.y));
+            dp.zigzagLinePts = dp.zigzagLinePts.concat(CalcZigzagLine(ctx, ptc.x, ptc.y, ptt.x, ptt.y));
             dp.straightLinePts = [pti, ptb, ptc, ptt];
         }
         else {
@@ -314,8 +294,7 @@ Namespace.CorrGraphic = class
             built: []
         };
 
-        dp.textFontSize = Math.round(
-            wkspUi.targetStringGraphic.drawParams.fontSize/2.25);
+        dp.textFontSize = Math.round(wkspUi.targetStringGraphic.drawParams.fontSize/2.25);
         dp.footnoteFont = 'italic ' + dp.textFontSize.toString() + 'px serif';
 
         if (!dp.hasStringSpanningGroups) {
@@ -333,8 +312,7 @@ Namespace.CorrGraphic = class
         dp.textSpacingY = 1.2 * dp.textFontSize;
         dp.footnotePosX = dp.textPosX - 0.5*dp.textFontSize;
         dp.footnotePosY = dp.textPosY - 0.5*dp.textFontSize;
-        dp.labelRect = [dp.labelPosX - 0.7*dp.textFontSize,
-            dp.labelPosY - 1.1*dp.textFontSize,
+        dp.labelRect = [dp.labelPosX - 0.7*dp.textFontSize, dp.labelPosY - 1.1*dp.textFontSize,
             1.4*dp.textFontSize, 1.4*dp.textFontSize];
         dp.footnumFont = 'italic bold ' + (dp.textFontSize+2).toString() + 'px serif';
 

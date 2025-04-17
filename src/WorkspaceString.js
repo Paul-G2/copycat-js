@@ -13,18 +13,17 @@
     /**
      * @constructor
      * 
-     * @param {Copycat} ctx - The Copycat instance that will own the string.
+     * @param {Workspace} wksp - The Workspace instance that will own the string.
      * @param {String} jstring - A javascript string to be wrapped.
      */
-    constructor(ctx, jstring) 
+    constructor(wksp, jstring) 
     { 
-        this.ctx = ctx;
+        this.wksp    = wksp;
         this.jstring = jstring || "";
-        this.intraStringUnhappiness = 0;
-
         this.letters = [];
         this.objects = []; // Letters and Groups
-        this.bonds = [];
+        this.bonds   = [];
+        this.intraStringUnhappiness = 0;
 
         // Create a Letter object for each character in the string
         for (let i=0; i<jstring.length; i++) 
@@ -35,7 +34,7 @@
             // Append the Letter to my lists and to the Workspace
             this.objects.push(letter);
             this.letters.push(letter);
-            ctx.workspace.objects.push(letter);
+            wksp.objects.push(letter);
             letter.descriptions.forEach(descr => descr.build());
         }
     }
@@ -77,18 +76,13 @@
      */
     updateRelativeImportances() 
     {
-        const total = this.objects.reduce(
-            function(a,b){return a + b.rawImportance;}, 0); 
+        const total = this.objects.reduce( function(a,b){return a + b.rawImportance;}, 0 ); 
 
         if (total === 0) {
-            for (let obj of this.objects) {
-                obj.relativeImportance = 0;
-            }
+            for (let obj of this.objects) { obj.relativeImportance = 0; }
         }
         else {
-            for (let obj of this.objects) {
-                obj.relativeImportance = obj.rawImportance / total;
-            }
+            for (let obj of this.objects) { obj.relativeImportance = obj.rawImportance / total; }
         }
     }
 
@@ -104,8 +98,7 @@
             this.intraStringUnhappiness = 0;
         }
         else {
-            const total = this.objects.reduce(
-                function(a,b){return a + b.intraStringUnhappiness;}, 0); 
+            const total = this.objects.reduce( function(a,b){return a + b.intraStringUnhappiness;}, 0 ); 
             this.intraStringUnhappiness = total / this.objects.length;
         }
     }

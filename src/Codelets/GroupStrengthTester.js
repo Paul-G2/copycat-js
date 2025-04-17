@@ -37,9 +37,8 @@
         const group = this.group;
 
         // Provide UI feedback
-        if (ctx.ui) {
-            ctx.ui.workspaceUi.getStringGraphic(group.string).
-                groupsGraphic.flashProposed(group);
+        if (ctx.ui && !ctx.batchMode) {
+            ctx.ui.workspaceUi.getStringGraphic(group.string).groupsGraphic.flashProposed(group);
         }
 
         // Maybe fizzle, if the strength is too low
@@ -50,9 +49,7 @@
 
         // Post a GroupBuilder codelet
         group.groupCategory.getRelatedNode(ctx.slipnet.bondCategory).activation = 100;
-        if (group.directionCategory) {
-            group.directionCategory.activation = 100;
-        }
+        if (group.directionCategory) { group.directionCategory.activation = 100; }
         const urgency = Namespace.Codelets.CodeletUtils.getUrgencyBin(strength);
         const newCodelet = ctx.coderack.factory.create('group-builder', urgency, [group]);
         coderack.post(newCodelet);

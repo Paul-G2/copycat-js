@@ -38,8 +38,7 @@
         const Utils = Namespace.Codelets.CodeletUtils;
 
         // Choose an object from the initial string, based on salience.
-        const objFromInitial = Utils.chooseUnmodifiedObject(ctx, 'relativeImportance', 
-            wksp.initialWString.objects);
+        const objFromInitial = Utils.chooseUnmodifiedObject(ctx, 'relativeImportance', wksp.initialWString.objects);
         if (!objFromInitial) { return; }
 
         const descriptors = objFromInitial.relevantDistinguishingDescriptors();
@@ -51,26 +50,21 @@
         for (let m of wksp.getSlippableMappings()) {
             if (m.initialDescriptor == descriptor) {
                 initialDescriptor = m.targetDescriptor;
+                break;
             }
         }
-        const targetCandidates = [];
-        for (let obj of wksp.targetWString.objects) {
-            for (let descr of obj.relevantDescriptions()) {
-                if (descr.descriptor == initialDescriptor) {
-                    targetCandidates.push(obj);
-                }
-            }
-        }
+        const targetCandidates = wksp.targetWString.objects.filter(
+            o => o.relevantDescriptions().some(d => d.descriptor == initialDescriptor));
         if (!targetCandidates.length) { return; }
 
         let objFromTarget = Utils.chooseUnmodifiedObject(ctx, 'interStringSalience', targetCandidates);
         if (objFromInitial.spansString() != objFromTarget.spansString()) { return; }
 
         // Provide UI feedback
-        if (this.ctx.ui) {
+        if (ctx.ui && !ctx.batchMode) {
             const dummyCorresp = new Namespace.Correspondence(
                 objFromInitial, objFromTarget, [], false);
-            this.ctx.ui.workspaceUi.corrsGraphic.flashGrope(dummyCorresp);
+            ctx.ui.workspaceUi.corrsGraphic.flashGrope(dummyCorresp);
         }
 
         // Get the posible concept mappings
@@ -91,23 +85,18 @@
         // If both objects span the strings, check to see if the
         // string description needs to be flipped
         const opposites = distinguishingMappings.filter(m =>
-            (m.initialDescType == sn.stringPositionCategory) &&
-                m.initialDescType != sn.bondFacet);
+            (m.initialDescType == sn.stringPositionCategory) && (m.initialDescType != sn.bondFacet));
         const initialDescriptionTypes = opposites.map(m => m.initialDescType);
         let flipTargetObject = false;
-        if (objFromInitial.spansString() && objFromTarget.spansString() &&
-            initialDescriptionTypes.includes(sn.directionCategory) &&
-              opposites.every(m => m.label == sn.opposite) && (sn.opposite.activation != 100)) {
+        if (objFromInitial.spansString() && objFromTarget.spansString() && (sn.opposite.activation != 100) &&
+            initialDescriptionTypes.includes(sn.directionCategory) && opposites.every(m => m.label == sn.opposite) ) {
                 objFromTarget = objFromTarget.flippedVersion();
-                conceptMappings = Namespace.ConceptMapping.getMappings(
-                    objFromInitial, objFromTarget, objFromInitial.relevantDescriptions(),
-                    objFromTarget.relevantDescriptions()
-                );
+                conceptMappings = Namespace.ConceptMapping.getMappings( objFromInitial, objFromTarget, 
+                    objFromInitial.relevantDescriptions(), objFromTarget.relevantDescriptions() );
                 flipTargetObject = true;
         }
 
-        ctx.coderack.proposeCorrespondence(
-            objFromInitial, objFromTarget, conceptMappings, flipTargetObject);
+        ctx.coderack.proposeCorrespondence(objFromInitial, objFromTarget, conceptMappings, flipTargetObject);
     }
 
 

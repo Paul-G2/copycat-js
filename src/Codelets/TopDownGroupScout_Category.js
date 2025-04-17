@@ -129,8 +129,7 @@
     _singleLetterGroupProbability(letter)
     {
         const sn = this.ctx.slipnet;
-        const group = new Namespace.Group(letter.string, sn.samenessGroup,
-            null, sn.letterCategory, [letter], []);
+        const group = new Namespace.Group(letter.string, sn.samenessGroup, null, sn.letterCategory, [letter], []);
 
         const numSupporters = group._numberOfLocalSupportingGroups();
         if (numSupporters === 0) {

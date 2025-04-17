@@ -46,14 +46,13 @@
         }
 
         // Check to see if all objects are still there
-        for (let o of group.objectList) {
-            if (!wksp.objects.includes(o)) { return; }
+        if (group.objectList.some(o => !wksp.objects.includes(o))) {
+            return;
         }
 
         // Provide UI feedback
-        if (ctx.ui) {
-            ctx.ui.workspaceUi.getStringGraphic(group.string).
-                groupsGraphic.flashProposed(group);
+        if (ctx.ui && !ctx.batchMode) {
+            ctx.ui.workspaceUi.getStringGraphic(group.string).groupsGraphic.flashProposed(group);
         }
 
         // Check to see if bonds have the same direction
@@ -76,7 +75,7 @@
 
             const n = group.objectList.length;
             let next = group.objectList[n-1];
-            for (let i=n-2; i>=0; i--) { // Don't use reverse(); it changes the array
+            for (let i=n-2; i>=0; i--) { // Don't use reverse(), as it changes the array
                 const obj = group.objectList[i];
                 const rightBond = obj.rightBond;
                 if (rightBond) {
@@ -108,18 +107,16 @@
         incompatibleBonds.forEach(b => b.break());
 
         // Create new bonds
-        var source, destination;
+        let source, dest;
         group.bondList = [];
         for (let i=1; i<group.objectList.length; i++) {
             const object1 = group.objectList[i - 1];
             const object2 = group.objectList[i];
             if (!object1.rightBond) {
-                [source, destination] = 
-                    (group.directionCategory == sn.right) ? [object1, object2] : [object2, object1];
+                [source, dest] = (group.directionCategory == sn.right) ? [object1, object2] : [object2, object1];
                 const category = group.groupCategory.getRelatedNode(sn.bondCategory);
                 const facet = group.facet;
-                const newBond = new Namespace.Bond(source, destination, category, facet,
-                    source.getDescriptor(facet), destination.getDescriptor(facet));
+                const newBond = new Namespace.Bond(source, dest, category, facet, source.getDescriptor(facet), dest.getDescriptor(facet));
                 newBond.build();
             }
             group.bondList.push(object1.rightBond);

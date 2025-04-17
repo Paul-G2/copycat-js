@@ -73,6 +73,17 @@ div#workspace_area {
     width: 60%;
     background: #ffffff;
 }
+div#batchmode_area {
+    margin: 0;
+    padding: 0;  
+    position: absolute;
+    top: 15%;
+    height: 85%;
+    left: 0px;
+    width: 100%;
+    background: #ffffff;
+    display: none;
+}
 div#slipnet_area {
     margin: 0;
     padding: 0;  

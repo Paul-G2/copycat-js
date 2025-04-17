@@ -34,8 +34,7 @@ Namespace.BondsGraphic = class
      * @private 
      */
     _sameReferents(b1, b2) {
-        return (b1.source === b2.source) &&
-            (b1.destination === b2.destination);
+        return (b1.source === b2.source) && (b1.destination === b2.destination);
     }
 
     /**
@@ -50,16 +49,13 @@ Namespace.BondsGraphic = class
         const wksp = this.wkspUi.workspace;
         const coderack = this.wkspUi.copycat.coderack;
 
-        let builtBonds = wksp.structures.filter(s => 
-            (s instanceof Namespace.Bond) && (s.source.string == this.wstring));
+        let builtBonds = wksp.structures.filter(s => (s instanceof Namespace.Bond) && (s.source.string == this.wstring));
 
         let evaluatedBonds = coderack.codelets.filter(c =>
-            (c instanceof Namespace.Codelets.BondStrengthTester) && 
-            (c.bond.source.string == this.wstring)).map(c => c.bond);
+            (c instanceof Namespace.Codelets.BondStrengthTester) && (c.bond.source.string == this.wstring)).map(c => c.bond);
 
         let proposedBonds = coderack.codelets.filter(c =>
-            (c instanceof Namespace.Codelets.BondBuilder) && 
-            (c.bond.source.string == this.wstring)).map(c => c.bond);
+            (c instanceof Namespace.Codelets.BondBuilder) && (c.bond.source.string == this.wstring)).map(c => c.bond);
 
         // Remove duplicates and obsolete cases
         proposedBonds = proposedBonds.filter(p =>
@@ -127,8 +123,7 @@ Namespace.BondsGraphic = class
     flashProposed(bond, count=3) 
     {
         if (!this.drawnBonds.some(b => this._sameReferents(b, bond))) {
-            const bondGraphic = 
-                new Namespace.BondGraphic(bond, 'proposed', this);
+            const bondGraphic = new Namespace.BondGraphic(bond, 'proposed', this);
             this.wkspUi.flash(bondGraphic, count);
         }
     }
@@ -143,8 +138,7 @@ Namespace.BondsGraphic = class
     flashGrope(bond, count=3)
     {
         if (!this.drawnBonds.some(b => this._sameReferents(b, bond))) {
-            const bondGraphic = 
-                new Namespace.BondGraphic(bond, 'grope', this);
+            const bondGraphic = new Namespace.BondGraphic(bond, 'grope', this);
             this.wkspUi.flash(bondGraphic, count);
         }        
     }
@@ -237,24 +231,20 @@ Namespace.BondGraphic = class
         // Get the control point (for drawing a curved line)
         const sn = parent.wkspUi.copycat.slipnet;
         const stringDp = parent.stringGraphic.drawParams;
-        const bump = bond.directionCategory == sn.right ? 
-            1.0*stringDp.fontSize : 0.4*stringDp.fontSize;
+        const bump = bond.directionCategory == sn.right ? 1.0*stringDp.fontSize : 0.4*stringDp.fontSize;
         dp.ptc = {x: (dp.pta.x + dp.ptb.x)/2, y: Math.min(dp.pta.y, dp.ptb.y) - bump};
 
         // Calculate the grope lines
         const CalcZigzagLine = Namespace.UiUtils.CalcZigzagLine;
         const gBump =  0.25*stringDp.fontSize;
         const ptg = {x: (dp.pta.x + dp.ptb.x)/2, y: (dp.pta.y + dp.ptb.y)/2 - gBump};
-        dp.gropeLineA = CalcZigzagLine(ctx, dp.pta.x, dp.pta.y, 
-            dp.pta.x + 0.8*(ptg.x - dp.pta.x), dp.pta.y + 0.8*(ptg.y - dp.pta.y));
-        dp.gropeLineB = CalcZigzagLine(ctx, dp.ptb.x, dp.ptb.y,
-            dp.ptb.x + 0.8*(ptg.x - dp.ptb.x), dp.ptb.y + 0.8*(ptg.y - dp.ptb.y));
+        dp.gropeLineA = CalcZigzagLine(ctx, dp.pta.x, dp.pta.y, dp.pta.x + 0.8*(ptg.x - dp.pta.x), dp.pta.y + 0.8*(ptg.y - dp.pta.y));
+        dp.gropeLineB = CalcZigzagLine(ctx, dp.ptb.x, dp.ptb.y, dp.ptb.x + 0.8*(ptg.x - dp.ptb.x), dp.ptb.y + 0.8*(ptg.y - dp.ptb.y));
 
         // Calculate the arrow points
         dp.arrowLines = [];
         const arrowScale = h/125;
-        const ptab = {x: dp.pta.x/4 + dp.ptc.x/2 + dp.ptb.x/4, 
-                      y: dp.pta.y/4 + dp.ptc.y/2 + dp.ptb.y/4};
+        const ptab = {x: dp.pta.x/4 + dp.ptc.x/2 + dp.ptb.x/4,  y: dp.pta.y/4 + dp.ptc.y/2 + dp.ptb.y/4};
         if (bond.directionCategory == sn.right) {
             let ptaa = {x: ptab.x - arrowScale, y:ptab.y - 0.9*arrowScale};
             let ptac = {x: ptab.x - arrowScale, y:ptab.y + 0.9*arrowScale};

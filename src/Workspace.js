@@ -14,27 +14,24 @@
      * @constructor
      * 
      * @param {Copycat} ctx - The Copycat instance.
+     * @param {String} [initialString] - The 'A' in A:B -> C:D
+     * @param {String} [modifiedString] - The 'B' in A:B -> C:D
+     * @param {String} [targetString] - The 'C' in A:B -> C:D
      */
-    constructor(ctx) 
+    constructor(ctx, initialString='abc', modifiedString='abd', targetString='pqr') 
     { 
         this.ctx = ctx;
-
-        this.initialJString = '';
-        this.modifiedJString = '';
-        this.targetJString = '';
-
-        this.initialWString = null;
-        this.modifiedWString = null;
-        this.targetWString = null;
-        
+        this.objects = [];
+        this.structures = [];
+        this.changedObject = null;
+        this.rule = null;
         this.intraStringUnhappiness = 0;
         this.interStringUnhappiness = 0;
 
-        this.finalAnswer = null;
-        this.changedObject = null;
-        this.rule = null;
-        this.objects = [];
-        this.structures = [];
+        this.initialWString  = new Namespace.WorkspaceString(this, initialString?.toLowerCase() || '');
+        this.modifiedWString = new Namespace.WorkspaceString(this, modifiedString?.toLowerCase() || '');
+        this.targetWString   = new Namespace.WorkspaceString(this, targetString?.toLowerCase() || '');
+        this.finalAnswer     = null; // A javascript string
     }
 
 
@@ -43,8 +40,8 @@
      */
     synopsis()
     {
-        return '<Workspace: ' + this.initialJString + ':' + 
-            this.modifiedJString + ' :: ' + this.targetJString  + ':?>';
+        return '<Workspace: ' + this.initialWString.jstring + ':' + 
+            this.modifiedWString.jstring + ' :: ' + this.targetWString.jstring  + ':?>';
     }
 
 
@@ -52,9 +49,9 @@
      * Resets the workspace to its initial state, optionally modifying the 
      * input strings.
      * 
-     * @param {String} [initialString] - The 'a' in a:b -> c:d
-     * @param {String} [modifiedString] - The 'b' in a:b -> c:d
-     * @param {String} [targetString] - The 'd' in a:b -> c:d
+     * @param {String} [initialString] - The 'A' in A:B -> C:D
+     * @param {String} [modifiedString] - The 'B' in A:B -> C:D
+     * @param {String} [targetString] - The 'C' in A:B -> C:D
      * 
      */
     reset(initialString=null, modifiedString=null, targetString=null)
@@ -67,22 +64,11 @@
         this.rule = null;
         this.intraStringUnhappiness = 0;
         this.interStringUnhappiness = 0;
-
-        // Cache the problem-specification strings, or use the existing ones
-        this.initialJString = 
-            initialString ? initialString.toLowerCase() : this.initialJString;
-        this.modifiedJString = 
-            modifiedString ? modifiedString.toLowerCase() : this.modifiedJString;
-        this.targetJString = 
-            targetString ? targetString.toLowerCase() : this.targetJString;
         
-        // Create (or re-create) the WorkspaceStrings
-        this.initialWString = 
-            new Namespace.WorkspaceString(this.ctx, this.initialJString);
-        this.modifiedWString = 
-            new Namespace.WorkspaceString(this.ctx, this.modifiedJString);
-        this.targetWString = 
-            new Namespace.WorkspaceString(this.ctx, this.targetJString);
+        // Create or reset the WorkspaceStrings
+        this.initialWString  = new Namespace.WorkspaceString(this, initialString?.toLowerCase() || this.initialWString.jstring);
+        this.modifiedWString = new Namespace.WorkspaceString(this, modifiedString?.toLowerCase() || this.modifiedWString.jstring);
+        this.targetWString   = new Namespace.WorkspaceString(this, targetString?.toLowerCase() || this.targetWString.jstring);
     }
 
 
@@ -119,17 +105,14 @@
     calcTemperature()
     {
         // First, update my happiness values
-        this.intraStringUnhappiness = Math.min(100, 0.5 * this.objects.map(
-            o => o.relativeImportance * o.intraStringUnhappiness).
-                reduce((a,b) => a+b, 0));
+        this.intraStringUnhappiness = 
+            Math.min(100, 0.5 * this.objects.map(o => o.relativeImportance * o.intraStringUnhappiness).reduce((a,b) => a+b, 0));
             
-        this.interStringUnhappiness = Math.min(100, 0.5 * this.objects.map(
-            o => o.relativeImportance * o.interStringUnhappiness).
-                reduce((a,b) => a+b, 0));
+        this.interStringUnhappiness = 
+            Math.min(100, 0.5 * this.objects.map(o => o.relativeImportance * o.interStringUnhappiness).reduce((a,b) => a+b, 0));
                 
-        const totalUnhappiness = Math.min(100, 0.5 * this.objects.map(
-            o => o.relativeImportance * o.totalUnhappiness).
-                reduce((a,b) => a+b, 0));
+        const totalUnhappiness = 
+            Math.min(100, 0.5 * this.objects.map(o => o.relativeImportance * o.totalUnhappiness).reduce((a,b) => a+b, 0));
 
         // Now, calculate the temperature
         let ruleWeakness = 100;
@@ -153,11 +136,9 @@
             result.push(...this.changedObject.correspondence.conceptMappings);
         }
 
-        const corresps = this.initialWString.objects.filter(
-            o => o.correspondence).map(o => o.correspondence);
-        corresps.forEach(corresp => 
-            result.push(...corresp.getSlippableMappings().filter(
-                m => !m.isNearlyContainedIn(result)))
+        const corresps = this.initialWString.objects.filter(o => o.correspondence).map(o => o.correspondence);
+        corresps.forEach( 
+            corresp => result.push(...corresp.getSlippableMappings().filter(m => !m.isNearlyContainedIn(result))) 
         );
 
         return result;

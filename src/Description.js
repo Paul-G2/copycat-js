@@ -7,8 +7,7 @@
  * @classdesc
  * This class encapsulates a description of a Letter or Group.
  * 
- * A description consists of a (descriptionType, descriptor) pair. Some 
- * examples are: 
+ * A description consists of a (descriptionType, descriptor) pair. Some examples are: 
  * <ul style="list-style: none;">
  *   <li> (objectCategory, letter) </li>
  *   <li> (letterCategory, a) </li>
@@ -23,14 +22,13 @@
      * @constructor
      * 
      * @param {WorkspaceObject} obj - The object being described.
-     * @param {SlipNode} descriptionType - The aspect being described, 
-     * e.g., objectCategory.
+     * @param {SlipNode} descriptionType - The aspect being described, e.g., objectCategory.
      * @param {SlipNode} descriptor - The value of the aspect, e.g., letter.
      */
     constructor(obj, descriptionType, descriptor) 
     { 
         // WorkspaceStructure members
-        this.ctx = obj.ctx;
+        this.wksp = obj.wksp;
         this.string = obj.string;
         this.totalStrength = 0;
 
@@ -46,7 +44,7 @@
      */
     synopsis(type)
     {
-        const wksp = this.ctx.workspace;
+        const wksp = this.wksp;
         let s = this.object.synopsis(1);
 
         if (this.object.string == wksp.initialWString) {
@@ -75,8 +73,7 @@
      */
     sameAs(other) 
     {
-        return ((other.descriptionType == this.descriptionType) && 
-            (other.descriptor == this.descriptor));
+        return ((other.descriptionType == this.descriptionType) && (other.descriptor == this.descriptor));
     }
 
 
@@ -105,11 +102,7 @@
         let numDescribedLikeThis = 0;
         for (let other of this.string.objects.filter(o => o != this.object)) {
             if ( !this.object.isWithin(other) && !other.isWithin(this.object) ) {
-                for (let od of other.descriptions) {
-                    if (od.descriptionType == this.descriptionType) {
-                        numDescribedLikeThis += 1;
-                    }
-                }
+                numDescribedLikeThis += other.descriptions.filter(od => od.descriptionType == this.descriptionType).length;
             }
         }
         const supportVals = [0, 20, 60, 90, 100]; 
@@ -135,10 +128,8 @@
         if (!this.object.hasDescriptor(this.descriptor)) {
             this.object.descriptions.push(this);
         }
-
-        const wksp = this.ctx.workspace;
-        if (!wksp.structures.includes(this)) {
-            wksp.structures.push(this);   
+        if (!this.wksp.structures.includes(this)) {
+            this.wksp.structures.push(this);   
         }
     }
 
@@ -149,11 +140,8 @@
      */
     break()
     {
-        this.ctx.workspace.structures = 
-            this.ctx.workspace.structures.filter(s => s !== this);
-        
-        this.object.descriptions = 
-            this.object.descriptions.filter(s => s !== this);
+        this.wksp.structures = this.wksp.structures.filter(s => s !== this);
+        this.object.descriptions = this.object.descriptions.filter(s => s !== this);
     }
        
  };

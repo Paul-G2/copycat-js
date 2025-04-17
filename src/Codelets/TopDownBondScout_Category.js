@@ -42,11 +42,9 @@
         if (!bondDest) { return; }
 
         // Provide UI feedback.
-        if (ctx.ui) {
-            const dummyBond = new Namespace.Bond(bondSource, bondDest, 
-                sn.sameness, sn.letterCategory, sn.letters[0], sn.letters[0]);
-            ctx.ui.workspaceUi.getStringGraphic(dummyBond.string).
-                bondsGraphic.flashGrope(dummyBond);
+        if (ctx.ui && !ctx.batchMode) {
+            const dummyBond = new Namespace.Bond(bondSource, bondDest, sn.sameness, sn.letterCategory, sn.letters[0], sn.letters[0]);
+            ctx.ui.workspaceUi.getStringGraphic(dummyBond.string). bondsGraphic.flashGrope(dummyBond);
         }
 
         const bondFacet = CodeletUtils.chooseBondFacet(ctx, bondSource, bondDest);
@@ -60,18 +58,15 @@
         if (forwardBond == sn.identity) {
             forwardBond = sn.sameness;
             backwardBond = sn.sameness;
-        }
-        else {
+        } else {
             backwardBond = destDescriptor.getBondCategory(sourceDescriptor);
         }
 
         if (cat == forwardBond) {
-            ctx.coderack.proposeBond(bondSource, bondDest, cat,
-                bondFacet, sourceDescriptor, destDescriptor);
+            ctx.coderack.proposeBond(bondSource, bondDest, cat, bondFacet, sourceDescriptor, destDescriptor);
         }
         else if (cat == backwardBond) {
-            ctx.coderack.proposeBond(bondDest, bondSource, cat,
-                bondFacet, destDescriptor, sourceDescriptor);
+            ctx.coderack.proposeBond(bondDest, bondSource, cat, bondFacet, destDescriptor, sourceDescriptor);
         }
     }
 

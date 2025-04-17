@@ -63,12 +63,10 @@ Namespace.StringGraphic = class
     getChildGraphic(wrappedObject)
     {
         if (wrappedObject instanceof Namespace.Letter) {
-            return this.lettersGraphic.letterGraphics.find( 
-                lg => lg.letter == wrappedObject );
+            return this.lettersGraphic.letterGraphics.find( lg => lg.letter == wrappedObject );
         }
         else if (wrappedObject instanceof Namespace.Group) {
-            return this.groupsGraphic.groupGraphics.find( 
-                g => g.group == wrappedObject );
+            return this.groupsGraphic.groupGraphics.find( g => g.group == wrappedObject );
         }
         return null;
     }
@@ -95,11 +93,9 @@ Namespace.StringGraphic = class
       
         // Draw our child graphics 
         // (Note that the drawing logic assumes the drawing order shown here.)
-        [this.lettersGraphic, this.descriptionsGraphic, 
-            this.groupsGraphic, this.bondsGraphic].forEach( g => { 
-                if (g) { g.redraw(ctx); }
-            }
-        );
+        [this.lettersGraphic, this.descriptionsGraphic, this.groupsGraphic, this.bondsGraphic].forEach( g => { 
+            if (g) { g.redraw(ctx); }
+        });
     }
 
     
@@ -160,25 +156,19 @@ Namespace.StringGraphic = class
         
         dp.emWidth = ctx.measureText('m').width;
         
-        dp.stringCenterX = (this.quadrant == 0 || this.quadrant == 3) ? 
-            w/4 - w/80 : 3*w/4 + w/80;
+        dp.stringCenterX = (this.quadrant == 0 || this.quadrant == 3) ? w/4 - w/80 : 3*w/4 + w/80;
             
-        const charMetrics = this.jstring.split('').map(
-            c => ctx.measureText(c) );
-        const sumOfCharWidths = charMetrics.reduce( (a,b) => 
-            a + b.actualBoundingBoxLeft + b.actualBoundingBoxRight, 0 );
+        const charMetrics = this.jstring.split('').map( c => ctx.measureText(c) );
+        const sumOfCharWidths = charMetrics.reduce( (a,b) => a + b.actualBoundingBoxLeft + b.actualBoundingBoxRight, 0 );
         
         const nChars = this.jstring.length;
-        dp.charSpacing = Math.min(5*sumOfCharWidths/nChars, 
-            (0.40*w - sumOfCharWidths)/(nChars-1));
+        dp.charSpacing = Math.min(5*sumOfCharWidths/nChars, (0.40*w - sumOfCharWidths)/(nChars-1));
 
         dp.stringWidth = sumOfCharWidths + dp.charSpacing*(nChars-1);
         dp.stringStartX = dp.stringCenterX - dp.stringWidth/2;
 
-        dp.maxCharAscent = Math.max(
-            ...(charMetrics.map(m => m.actualBoundingBoxAscent)));
-        dp.maxCharDescent = Math.max(
-            ...(charMetrics.map(m => m.actualBoundingBoxDescent)));
+        dp.maxCharAscent = Math.max(...(charMetrics.map(m => m.actualBoundingBoxAscent)));
+        dp.maxCharDescent = Math.max(...(charMetrics.map(m => m.actualBoundingBoxDescent)));
         dp.top = dp.baselineY - dp.maxCharAscent;
     }
 };

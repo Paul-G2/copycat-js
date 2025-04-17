@@ -14,20 +14,16 @@
     /**
      * @constructor
      * 
-     * @param {Copycat} ctx - The Copycat instance.
-     * @param {SlipNode} facet - The descriptionType of the facet to be 
-     *      replaced. (e.g., letterCategory) 
-     * @param {SlipNode} descriptor - The descriptor of the facet to be 
-     *      replaced. (e.g., rightmost)
-     * @param {SlipNode} category - The category of the facet to be 
-     *      replaced. (e.g., letter)
-     * @param {SlipNode} relation - The relation to be applied. 
-     *      (e.g., successor)
+     * @param {Workspace} wksp - The Wokspace that will contain the Rule.
+     * @param {SlipNode} facet - The descriptionType of the facet to be replaced. (e.g., letterCategory) 
+     * @param {SlipNode} descriptor - The descriptor of the facet to be replaced. (e.g., rightmost)
+     * @param {SlipNode} category - The category of the facet to be replaced. (e.g., letter)
+     * @param {SlipNode} relation - The relation to be applied. (e.g., successor)
      */
-    constructor(ctx, facet, descriptor, category, relation) 
+    constructor(wksp, facet, descriptor, category, relation) 
     { 
         // WorkspaceStructure members
-        this.ctx = ctx;
+        this.wksp = wksp;
         this.string = null;        
         this.totalStrength = 0;
 
@@ -58,10 +54,8 @@
      */
     build()
     {
-        const wksp = this.ctx.workspace;
-        if (wksp.rule) {
-            wksp.structures = wksp.structures.filter(s => s !== wksp.rule);
-        }
+        const wksp = this.wksp;
+        if (wksp.rule) { wksp.structures = wksp.structures.filter(s => s !== wksp.rule); }
         wksp.rule = this;
         wksp.structures.push(this);
         this.activate();
@@ -74,7 +68,7 @@
      */
     break()
     {
-        const wksp = this.ctx.workspace;
+        const wksp = this.wksp;
         if (wksp.rule) {
             wksp.structures = wksp.structures.filter(s => s !== wksp.rule);
             wksp.rule = null;
@@ -114,10 +108,8 @@
             return false;
         }
         return ( 
-            (this.relation == other.relation) && 
-            (this.facet == other.facet) && 
-            (this.category == other.category) && 
-            (this.descriptor == other.descriptor) 
+            (this.relation == other.relation) && (this.facet == other.facet) && 
+            (this.category == other.category) && (this.descriptor == other.descriptor)
         );
     }
     
@@ -139,28 +131,23 @@
     updateStrength()
     {
         // Internal strength
-        const wksp = this.ctx.workspace;
         let internalStrength = 0;
         if (!this.descriptor || !this.relation) {
             internalStrength = 50;
         }
         else
         {
-            let avgDepth = (this.descriptor.depth + this.relation.depth) / 2;
-            avgDepth = Math.pow(avgDepth, 1.1);
+            let avgDepth = Math.pow((this.descriptor.depth + this.relation.depth)/2, 1.1);
 
             let carryOn = true;
             let sharedDescriptorTerm = 0;
-            const changedObjects = wksp.initialWString.objects.filter(
-                o => o.changed);            
+            const changedObjects = this.wksp.initialWString.objects.filter(o => o.changed);            
             if (changedObjects.length > 0) {
-                const changed = changedObjects[0];
-                if (changed && changed.correspondence) {
+                const changedObj = changedObjects[0];
+                if (changedObj && changedObj.correspondence) {
                     sharedDescriptorTerm = 100;
-                    const targetObject = changed.correspondence.objFromTarget;
-                    const slippages = wksp.getSlippableMappings();
-                    const slipnode = this.descriptor.applySlippages(slippages);
-                    if (!targetObject.hasDescriptor(slipnode)) {
+                    const slipnode = this.descriptor.applySlippages( this.wksp.getSlippableMappings() );
+                    if (!changedObj.correspondence.objFromTarget.hasDescriptor(slipnode)) {
                         internalStrength = 0;
                         carryOn = false;
                     }
@@ -170,22 +157,15 @@
             {
                 const conceptualHeight = (100 - this.descriptor.depth) / 10;
                 const sharedDescriptorWeight = Math.pow(conceptualHeight, 1.4); 
-                const depthDifference = 100 - Math.abs(
-                    this.descriptor.depth - this.relation.depth);
+                const depthDifference = 100 - Math.abs(this.descriptor.depth - this.relation.depth);
                 const wtSum = 12 + 18 + sharedDescriptorWeight;
-                internalStrength = (12*depthDifference + 18*avgDepth + 
-                    sharedDescriptorWeight*sharedDescriptorTerm)/wtSum;
+                internalStrength = (12*depthDifference + 18*avgDepth + sharedDescriptorWeight*sharedDescriptorTerm)/wtSum;
                 internalStrength = Math.min(100, internalStrength);
             }
         }
 
-        // External strength
-        const externalStrength = internalStrength;
-
-        // Total strength
-        const wti = internalStrength / 100;
-        const wte = 1 - wti;
-        this.totalStrength = wti*internalStrength + wte*externalStrength;
+        // Total strength 
+        this.totalStrength = internalStrength;  // (External strength for a Rule is zero)
     }
 
 
@@ -195,9 +175,9 @@
      */
     applyRuleToTarget()
     {
-        const wksp = this.ctx.workspace;
+        const wksp = this.wksp;
         if (!this.descriptor || !this.relation) {
-            return wksp.targetJString;
+            return wksp.targetWString.jstring;
         }
 
         const slippages = wksp.getSlippableMappings();
@@ -207,26 +187,23 @@
         this.relation = this.relation.applySlippages(slippages);
         
         // Generate the final string
-        const changeds = wksp.targetWString.objects.filter(o => 
-            o.hasDescriptor(this.descriptor) && o.hasDescriptor(this.category));
+        const changeds = wksp.targetWString.objects.filter(o => o.hasDescriptor(this.descriptor) && o.hasDescriptor(this.category));
         if (changeds.length === 0) {
-            return wksp.targetJString;
+            return wksp.targetWString.jstring;
         }
         else if (changeds.length > 1) {
-            this.ctx.reporter.warn("Rule: More than one letter changed. " + 
-            "Sorry, Copycat can't solve problems like this right now.");
+            this.wksp.ctx.reporter.warn("Rule: More than one letter changed. Copycat can't solve problems like this right now.");
             return null;
         }
         else {
             const changed = changeds[0];
             const left = changed.leftIndex - 1;
             const right = changed.rightIndex;
-            const ts = wksp.targetJString;
+            const ts = wksp.targetWString.jstring;
             const changedMiddle = this._changeSubString(ts.substring(left,right));
             if (changedMiddle === null) {
                 return null;
-            }
-            else {
+            } else {
                 return ts.substring(0,left) + changedMiddle + ts.substring(right);
             }
         }
@@ -241,7 +218,7 @@
      */
     _changeSubString(jString)
     {
-        const sn = this.ctx.slipnet;
+        const sn = this.wksp.ctx.slipnet;
         
         if (this.facet == sn.length) {
             if (this.relation == sn.predecessor) {
@@ -260,9 +237,7 @@
                 return null;
             }
             else {
-                const chars = jString.split(''); 
-                const newChars = chars.map(
-                    c => String.fromCharCode(c.charCodeAt(0) - 1)); 
+                const newChars = jString.split('').map( c => String.fromCharCode(c.charCodeAt(0) - 1) ); 
                 return newChars.join('');
             }
         }
@@ -271,9 +246,7 @@
                 return null;
             }
             else {
-                const chars = jString.split(''); 
-                const newChars = chars.map(
-                    c => String.fromCharCode(c.charCodeAt(0) + 1)); 
+                const newChars = jString.split('').map( c => String.fromCharCode(c.charCodeAt(0) + 1) ); 
                 return newChars.join('');
             }
         }

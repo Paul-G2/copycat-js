@@ -13,14 +13,12 @@
     /**
      * @constructor
      * 
-     * @param {String} type - The link type ('category', 'property', '
-     *  instance', 'lateralSlip', or 'lateralNonSlip').
+     * @param {String} type - The link type ('category', 'property', 'instance', 'lateralSlip', or 'lateralNonSlip').
      * @param {SlipNode} source - The source node.
      * @param {SlipNode} destination - The destination node.
      * @param {SlipNode} [label=null] - A SlipNode that labels the link.
-     * @param {Number} [length=0] - The "conceptual distance" between the 
-     *   source and destination nodes. Slippage occurs more easily when 
-     *   this distance is smaller.
+     * @param {Number} [length=0] - The "conceptual distance" between the source and destination nodes. Slippage 
+     *   occurs more easily when this distance is smaller.
      */
     constructor(type, source, destination, label=null, length=0) 
     { 

@@ -5,9 +5,7 @@
     
 /**
  * @classdesc
- * This class is responsible for drawing the Workspace
- *   header area.
- * 
+ * This class is responsible for drawing the Workspace header area.
  */
 Namespace.WorkspaceHeaderUi = class 
 {
@@ -15,8 +13,7 @@ Namespace.WorkspaceHeaderUi = class
      * @constructor
      * 
      * @param {CopycatUi} copycatUi - The parent Ui.
-     * @param {HTMLElement} parentDiv - The html div that hosts
-     *  this ui.
+     * @param {HTMLElement} parentDiv - The html div that hosts this ui.
      */
     constructor(copycatUi, parentDiv) 
     { 
@@ -115,7 +112,7 @@ Namespace.WorkspaceHeaderUi = class
     {
         const copycat = this.copycat;
 
-        if (this._checkInputStrings()) {
+        if (this.copycatUi.checkInputStrings()) {
             if (copycat.state == 'ready' || copycat.state == 'done') {
                 copycat.start();
             }
@@ -133,7 +130,7 @@ Namespace.WorkspaceHeaderUi = class
      */
     _onStepBtnClick()
     {
-        if (this._checkInputStrings()) {
+        if (this.copycatUi.checkInputStrings()) {
             this.copycat.singleStep();
         }
     }
@@ -157,7 +154,7 @@ Namespace.WorkspaceHeaderUi = class
      */
     _onResetBtnClick()
     {
-        if ( (this.copycat.state != 'running') && this._checkInputStrings()) {
+        if ( (this.copycat.state != 'running') && this.copycatUi.checkInputStrings()) {
             this.copycat.reset();
         }
     }
@@ -200,34 +197,6 @@ Namespace.WorkspaceHeaderUi = class
 
 
     /**
-     * Checks whether all input strings are valid.
-     * @private 
-     * 
-     */
-    _checkInputStrings()
-    {
-        const wksp = this.copycat.workspace;
-        const inputStrings = this.copycatUi.inputUi.getInputStrings();
-        const wkspStrings = [wksp.initialJString, wksp.modifiedJString, wksp.targetJString];
-        const inputModified = !inputStrings.every((str, idx) => str.toLowerCase() == wkspStrings[idx]);
-        
-        if (inputModified) {
-            if (inputStrings.every(this.copycat.checkInputString)) {
-                this.copycat.setStrings(...inputStrings);
-                return true;
-            }   
-            else {
-                this.copycatUi.inputUi.displayMessage('Invalid input!');
-                return false;
-            }
-        }
-        else {
-            return true;
-        }
-    }
-
- 
-    /**
      * Updates the enabled/disabled state of the control buttons,
      * based on the current copycat state.
      * @private
@@ -235,43 +204,33 @@ Namespace.WorkspaceHeaderUi = class
      */
     _updateEnabledState()
     {
-        const controls = [this.stepBtn, this.goBtn, this.pauseBtn, this.resetBtn];
-        for (let ctrl of controls) {
-            this._setEnabled(ctrl, true);
-        }
+        const setEnabled = function(ctrl, enabled) { 
+            ctrl.disabled = !enabled; 
+            ctrl.style.opacity = enabled ? '1.0' : '0.4';
+        };
+
+        [this.stepBtn, this.goBtn, this.pauseBtn, this.resetBtn].forEach( ctrl => setEnabled(ctrl, true) );
 
         switch (this.copycat.state) 
         {
             case 'ready':
-                this._setEnabled(this.pauseBtn, false);
+                setEnabled(this.pauseBtn, false);
                 break;
             case 'paused':
-                this._setEnabled(this.pauseBtn, false);
+                setEnabled(this.pauseBtn, false);
                 break;
             case 'running':
-                this._setEnabled(this.stepBtn, false);
-                this._setEnabled(this.goBtn, false);
-                this._setEnabled(this.resetBtn, false);
+                setEnabled(this.stepBtn, false);
+                setEnabled(this.goBtn, false);
+                setEnabled(this.resetBtn, false);
                 break;
             case 'done':
-                this._setEnabled(this.stepBtn, false);
-                this._setEnabled(this.pauseBtn, false);
+                setEnabled(this.stepBtn, false);
+                setEnabled(this.pauseBtn, false);
                 break;
             default:
                 break;
         }
-    }
-
-
-    /**
-     * Enables or disables a given UI element.
-     * @private
-     * 
-     */
-    _setEnabled(element, enabled)
-    {
-        element.disabled = !enabled;
-        element.style.opacity = enabled ? '1.0' : '0.4';
     }
 
 
@@ -338,17 +297,14 @@ Namespace.WorkspaceHeaderUi = class
         ctx.font = dp.subTitleFont;
         ctx.fillStyle = dp.titleFontColor;
         ctx.clearRect(...dp.subTitleRect);
-        ctx.fillText('(Codelets run: ' + numCodeletsRun.toString() + ')', 
-            ...dp.subTitleLoc);
+        ctx.fillText('(Codelets run: ' + numCodeletsRun.toString() + ')', ...dp.subTitleLoc);
 
         // Draw the thermometer stem
-        const temperature = Math.max(0, Math.min(100, 
-            copycat.temperature.value().toFixed(0))); 
+        const temperature = Math.max(0, Math.min(100, copycat.temperature.value().toFixed(0))); 
         ctx.fillStyle = 'red';
         ctx.strokeStyle = 'black';
         ctx.clearRect(...dp.hgRect);
-        ctx.fillRect(dp.hgRect[0], dp.hgRect[1], 
-            (dp.hgRect[2]-1)*(temperature/100), dp.hgRect[3]);
+        ctx.fillRect(dp.hgRect[0], dp.hgRect[1], (dp.hgRect[2]-1)*(temperature/100), dp.hgRect[3]);
         UiUtils.DrawLine(ctx, ...dp.hgTopLine);
         UiUtils.DrawLine(ctx, ...dp.hgBtmLine);
                
