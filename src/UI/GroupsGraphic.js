@@ -33,8 +33,7 @@ Namespace.GroupsGraphic = class
      * @private 
      */
     _sameReferents(g1, g2) {
-        return (g1.leftObject === g2.leftObject) &&
-            (g1.rightObject === g2.rightObject);
+        return (g1.leftObject === g2.leftObject) && (g1.rightObject === g2.rightObject);
     }
 
 
@@ -104,9 +103,7 @@ Namespace.GroupsGraphic = class
         if (!groupGraphic) {
             groupGraphic = new Namespace.GroupGraphic(group, type, this);
             this.cache.push(groupGraphic);
-            if (this.cache.length > 100) {
-                this.cache.shift();
-            }
+            if (this.cache.length > 100) { this.cache.shift(); }
         }
 
         groupGraphic.type = type;
@@ -123,8 +120,7 @@ Namespace.GroupsGraphic = class
     flashProposed(group, count=3) 
     {
         if (!this.drawnGroups.some(c => this._sameReferents(c, group))) {
-            const groupGraphic = 
-                new Namespace.GroupGraphic(group, 'proposed', this);
+            const groupGraphic = new Namespace.GroupGraphic(group, 'proposed', this);
             this.wkspUi.flash(groupGraphic, count);
         }
     }
@@ -139,8 +135,7 @@ Namespace.GroupsGraphic = class
     flashGrope(group, count=3)
     {
         if (!this.drawnGroups.some(c => this._sameReferents(c, group))) {
-            const groupGraphic = 
-                new Namespace.GroupGraphic(group, 'grope', this);
+            const groupGraphic = new Namespace.GroupGraphic(group, 'grope', this);
             this.wkspUi.flash(groupGraphic, count);
         }        
     }
@@ -253,12 +248,9 @@ Namespace.GroupGraphic = class
         ptb = {x: dp.x + dp.w, y: dp.y};
         ptc = {x: dp.x + dp.w, y: dp.y + dp.h};
         ptd = {x: dp.x + 3*dp.w/4, y: dp.y + dp.h};
-        dp.zigzagRightPts = dp.zigzagRightPts.concat(
-            CalcZigzagLine(ctx, pta.x, pta.y, ptb.x, ptb.y));
-        dp.zigzagRightPts = dp.zigzagRightPts.concat(
-            CalcZigzagLine(ctx, ptb.x, ptb.y, ptc.x, ptc.y));
-        dp.zigzagRightPts = dp.zigzagRightPts.concat(
-            CalcZigzagLine(ctx, ptc.x, ptc.y, ptd.x, ptd.y));
+        dp.zigzagRightPts = dp.zigzagRightPts.concat( CalcZigzagLine(ctx, pta.x, pta.y, ptb.x, ptb.y) );
+        dp.zigzagRightPts = dp.zigzagRightPts.concat( CalcZigzagLine(ctx, ptb.x, ptb.y, ptc.x, ptc.y) );
+        dp.zigzagRightPts = dp.zigzagRightPts.concat( CalcZigzagLine(ctx, ptc.x, ptc.y, ptd.x, ptd.y) );
 
         const sn = this.parent.wkspUi.copycat.slipnet;
         dp.arrowLines = [];

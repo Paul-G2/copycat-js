@@ -27,15 +27,13 @@ Namespace.LettersGraphic = class
         if (stringGraphic.quadrant != 2) {
             const wstring = this.stringGraphic.wstring;
             for (let i=0; i<wstring.length; i++) {
-                this.letterGraphics.push( 
-                    new Namespace.LetterGraphic(wstring.letters[i], i, this) );
+                this.letterGraphics.push( new Namespace.LetterGraphic(wstring.letters[i], i, this) );
             }
         }
         else {
             const jstring = this.stringGraphic.jstring;
             for (let i=0; i<jstring.length; i++) {
-                this.letterGraphics.push( 
-                    new Namespace.LetterGraphic(jstring[i], i, this) );
+                this.letterGraphics.push( new Namespace.LetterGraphic(jstring[i], i, this) );
             }        
         }
 
@@ -98,8 +96,7 @@ Namespace.LetterGraphic = class
         const dp = this.drawParams; 
         ctx.font = dp.font;
         ctx.textAlign = 'left';
-        ctx.fillStyle = (this.stringGraphic == wkspUi.answerStringGraphic) ? 
-            wkspUi.answerLetterColor : wkspUi.letterColor;
+        ctx.fillStyle = (this.stringGraphic == wkspUi.answerStringGraphic) ? wkspUi.answerLetterColor : wkspUi.letterColor;
         ctx.fillText(this.char, dp.x, dp.y);
     }            
 
@@ -125,13 +122,11 @@ Namespace.LetterGraphic = class
     
         // Calculate the letter's bounding box
         const charMetrics = ctx.measureText(this.char);
-        dp.charWidth = charMetrics.actualBoundingBoxLeft + 
-            charMetrics.actualBoundingBoxRight;
+        dp.charWidth = charMetrics.actualBoundingBoxLeft + charMetrics.actualBoundingBoxRight;
         const charHeight = charMetrics.fontBoundingBoxAscent;
     
         dp.x = (this.index === 0) ? stringDp.stringStartX :
-            this.parent.letterGraphics[this.index-1].drawParams.bbox.r + 
-            stringDp.charSpacing;
+            this.parent.letterGraphics[this.index-1].drawParams.bbox.r + stringDp.charSpacing;
         dp.y = stringDp.baselineY;
 
         dp.bbox = {

@@ -47,14 +47,9 @@
         if (rule.totalStrength === 0) { return; }
 
         // If a different rule already exists, then fight.
-        if (wksp.rule) {
-            if (!Utils.structureVsStructure(rule, 1.0, wksp.rule, 1.0)) {
-                return;
-            }
-        }
-
-        // Build the rule
-        rule.build();
+        if ( !wksp.rule || Utils.structureVsStructure(rule, 1.0, wksp.rule, 1.0)) {
+            rule.build();
+        }       
     }
 
     

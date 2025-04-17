@@ -46,7 +46,7 @@ Namespace.Flasher = class
     flash(graphic, flashCount)
     {
         if (flashCount <= 0) { return; }
-        if (this.copycat.stepDelay < 10) { return;} // Don't flash if we're trying to be fast
+        if (this.copycat.stepDelay < 10) { return;} // Don't flash if we're trying to run fast
 
         this.flashables.push( {graphic:graphic, flashCount:flashCount} );
 
@@ -75,8 +75,7 @@ Namespace.Flasher = class
     { 
         window.requestAnimationFrame( () => 
         {          
-            this.canvasCtx.clearRect(
-                0, 0, this.canvas.width, this.canvas.height);
+            this.canvasCtx.clearRect(0, 0, this.canvas.width, this.canvas.height);
             
             // Draw the first-in-line item
             const f = this.flashables[0];
@@ -89,14 +88,12 @@ Namespace.Flasher = class
             // Erase everything after a delay
             setTimeout( () => {
                 window.requestAnimationFrame( () => {    
-                    this.canvasCtx.clearRect(
-                        0, 0, this.canvas.width, this.canvas.height);
+                    this.canvasCtx.clearRect(0, 0, this.canvas.width, this.canvas.height);
                     
                     if (this.flashables.length === 0) {
                         this.state = 'idle';
                         this.wkspUi.redraw();
-                    } 
-                    else {
+                    } else {
                         setTimeout(
                             () => { this._animationLoop(); }, 
                             Math.min(100, 1.5*this.copycat.stepDelay)

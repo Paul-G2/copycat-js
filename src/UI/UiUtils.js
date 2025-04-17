@@ -19,21 +19,21 @@ Namespace.UiUtils = class {
  */
 Namespace.UiUtils.CreateElement = function(type, id, parent, styles, props) 
 {
-    var elem = document.createElement(type);
+    const elem = document.createElement(type);
     elem.id = id;
     if (parent) { parent.append(elem); }
 
     if (styles) {
-        for (var styName in styles) {
+        for (let styName in styles) {
             if (Object.prototype.hasOwnProperty.call(styles, styName)) {
-                var val = styles[styName];
+                let val = styles[styName];
                 if (typeof val === 'number') { val = val.toString() + 'px'; }
                 elem.style[styName] = val;
             }
         }
     }
     if (props) {
-        for (var propName in props) {
+        for (let propName in props) {
             if (Object.prototype.hasOwnProperty.call(props, propName)) {
                 elem[propName] = props[propName];
             }
@@ -56,9 +56,9 @@ Namespace.UiUtils.CreateElement = function(type, id, parent, styles, props)
  */
 Namespace.UiUtils.StyleElement = function(elem, styles) 
 {
-    for (var propName in styles) {
+    for (let propName in styles) {
         if (Object.prototype.hasOwnProperty.call(styles, propName)) {
-            var val = styles[propName];
+            let val = styles[propName];
             if (typeof val === 'number') { val = val.toString() + 'px'; }
             elem.style[propName] = val;
         }

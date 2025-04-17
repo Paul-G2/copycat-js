@@ -75,19 +75,16 @@
     weightedChoice(seq, weights)
     {
         if (!seq || !seq.length) {
-            // Apparently, many callers rely on this behavior.
-            return null;
+            return null; // (Apparently, many callers rely on this behavior)
         }
 
         const N = seq.length;
         if ( N !== weights.length ){
-            throw new Error("Incompatible array lengths, " + 
-                "in RandGen.weightedChoice");
+            throw new Error("Incompatible array lengths, in RandGen.weightedChoice");
         }
 
         let csum = 0;
         const cumWeights = weights.map((csum = 0, n => csum += n));
-
         const r = this.rng() * cumWeights[N-1];
         let idx = N-1;
         for (let i=0; i<N; i++){
@@ -186,7 +183,7 @@
     static _sfc32(a, b, c, d) {
         return function() {
           a >>>= 0; b >>>= 0; c >>>= 0; d >>>= 0; 
-          var t = (a + b) | 0;
+          let t = (a + b) | 0;
           a = b ^ b >>> 9;
           b = c + (c << 3) | 0;
           c = (c << 21 | c >>> 11);

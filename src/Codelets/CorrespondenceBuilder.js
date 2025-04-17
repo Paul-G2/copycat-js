@@ -40,8 +40,7 @@
         const objFromInitial = corresp.objFromInitial;
         const objFromTarget = corresp.objFromTarget;
 
-        // If either of the two objects (or possibly a flipped version) no longer 
-        // exists, then fizzle.
+        // If either of the two objects (or possibly a flipped version) no longer exists, then fizzle.
         const wantFlip = corresp.flipTargetObject;
         const flippedTargetObj = wantFlip ? objFromTarget.flippedVersion() : null;
         const objsExist = wksp.objects.includes(objFromInitial) && (wksp.objects.includes(objFromTarget) ||
@@ -66,14 +65,11 @@
     
         // Fight incompatibles.
         // The weights for the fight depend on the letter-span of the objects.
-        // This is one of the reasons the program prefers correspondences to groups 
-        // rather than to letters.  Another reason is that groups are more salient
-        // than letters, so they are more likely to be chosen by correspondence scouts.
+        // This is one of the reasons the program prefers correspondences to groups rather than to letters.  
+        // Another reason is that groups are more salient than letters, so they are more likely to be chosen by correspondence scouts.
         const incompatibles = wksp.initialWString.objects.filter(o =>
-            o.correspondence && corresp.isIncompatibleWith(o.correspondence)).
-            map(o => o.correspondence);
-        if (incompatibles && incompatibles.length) 
-        {
+            o.correspondence && corresp.isIncompatibleWith(o.correspondence)).map(o => o.correspondence);
+        if (incompatibles.length) {
             const correspSpan = corresp.objFromInitial.letterSpan() + corresp.objFromTarget.letterSpan();
             for (let incompat of incompatibles) {
                 const incompatSpan = incompat.objFromInitial.letterSpan() + incompat.objFromTarget.letterSpan();
@@ -83,12 +79,10 @@
             }
         }
 
-        // If there is an incompatible bond, then fight against it, and its
-        // group, if any. 
-        var incompatibleBond;
-        var incompatibleGroup;
-        if ((objFromInitial.leftmost || objFromInitial.rightmost) &&
-                (objFromTarget.leftmost || objFromTarget.rightmost)) 
+        // If there is an incompatible bond, then fight against it, and its group, if any. 
+        let incompatibleBond;
+        let incompatibleGroup;
+        if ((objFromInitial.leftmost || objFromInitial.rightmost) && (objFromTarget.leftmost || objFromTarget.rightmost)) 
         {
             incompatibleBond = this._getIncompatibleBond(corresp);
             if (incompatibleBond) {
@@ -105,7 +99,7 @@
         }
 
         // If there is an incompatible rule, fight against it
-        var incompatibleRule;
+        let incompatibleRule;
         if (wksp.rule && this._incompatibleRuleCorrespondence(wksp.rule, corresp)) {
             incompatibleRule = wksp.rule;
             if (!SvS(corresp, 1, incompatibleRule, 1)) {
@@ -176,14 +170,10 @@
         }
 
         if (initialBond.directionCategory && targetBond.directionCategory) {
-            const mapping = new Namespace.ConceptMapping(
-                sn.directionCategory, sn.directionCategory,
-                initialBond.directionCategory, targetBond.directionCategory,
-                null, null);
-            for (let cm of corresp.conceptMappings) {
-                if (cm.isIncompatibleWith(mapping)) {
-                    return targetBond;
-                }
+            const mapping = new Namespace.ConceptMapping(sn.directionCategory, sn.directionCategory,
+                initialBond.directionCategory, targetBond.directionCategory, null, null);
+            if (corresp.conceptMappings.some(m => m.isIncompatibleWith(mapping))) {
+                return targetBond;
             }
         }
         return null;
@@ -198,8 +188,7 @@
     _isReflexive(corresp)
     {
         const initial = corresp.objFromInitial;
-        return initial.correspondence && 
-            (initial.correspondence.objFromTarget == corresp.objFromTarget);
+        return initial.correspondence && (initial.correspondence.objFromTarget == corresp.objFromTarget);
     }
 
 };

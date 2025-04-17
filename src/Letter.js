@@ -15,18 +15,17 @@
      * @constructor
      * 
      * @param {WorkspaceString} str - The string that the letter is in.
-     * @param {Number} position - The position of the letter within the 
-     *   string. (Note: The position is 1-based)
+     * @param {Number} position - The (1-based) position of the letter within the string.
      */
     constructor(str, position) 
     { 
         super(str);
-        this.char = str.jstring.charAt(position-1);
-        this.position = position;
-        this.leftIndex = position;
+        this.char       = str.jstring.charAt(position-1);
+        this.position   = position;
+        this.leftIndex  = position;
         this.rightIndex = position;
-        this.leftmost = (position == 1);
-        this.rightmost = (position == str.length);
+        this.leftmost   = (position == 1);
+        this.rightmost  = (position == str.length);
 
         // Create and cache my descriptions
         this._addDescriptions();
@@ -39,32 +38,23 @@
      */
     _addDescriptions()
     {
-        const sn = this.ctx.slipnet;
-        this.descriptions.push(
-            new Namespace.Description(this, sn.objectCategory, sn.letter));
+        const sn = this.wksp.ctx.slipnet;
+        this.descriptions.push(new Namespace.Description(this, sn.objectCategory, sn.letter));
 
-        const us = this.string.jstring.toUpperCase();
-        const charCodeA = 'A'.charCodeAt(0);
-        this.descriptions.push(
-            new Namespace.Description(this, sn.letterCategory, 
-                sn.letters[us.charCodeAt(this.position-1) - charCodeA]));
+        const letterNode = sn.letters[this.string.jstring.toUpperCase().charCodeAt(this.position-1) - 'A'.charCodeAt(0)];
+        this.descriptions.push(new Namespace.Description(this, sn.letterCategory, letterNode));
 
-        const length = this.string.length;
-        if (length == 1) {
-            this.descriptions.push( new Namespace.Description(
-                this, sn.stringPositionCategory, sn.single));
+        if (this.string.length == 1) {
+            this.descriptions.push( new Namespace.Description(this, sn.stringPositionCategory, sn.single) );
         }
         if (this.leftmost) {
-            this.descriptions.push( new Namespace.Description(
-                this, sn.stringPositionCategory, sn.leftmost));
+            this.descriptions.push( new Namespace.Description(this, sn.stringPositionCategory, sn.leftmost) );
         }
         if (this.rightmost) {
-            this.descriptions.push( new Namespace.Description(
-                this, sn.stringPositionCategory, sn.rightmost));
+            this.descriptions.push( new Namespace.Description(this, sn.stringPositionCategory, sn.rightmost) );
         }
-        if (this.position * 2 == length + 1) {
-            this.descriptions.push( new Namespace.Description(
-                this, sn.stringPositionCategory, sn.middle));
+        if (2*this.position == this.string.length + 1) {
+            this.descriptions.push( new Namespace.Description(this, sn.stringPositionCategory, sn.middle) );
         }
     }
 
@@ -80,28 +70,22 @@
 
 
     /**
-     * Indicates whether no other Letter in this Letter's string 
-     * has the same descriptor.
+     * Indicates whether no other Letter in this Letter's string has a descriptor matching the given one.
      * 
-     * @param {SlipNode} descriptor - The descriptor to check.
+     * @param {SlipNode} descriptor - The descriptor to match.
      */
     isDistinguishingDescriptor(descriptor) 
     {
-        let sn = this.ctx.slipnet;
-        if ((descriptor == sn.letter) || (descriptor == sn.group) || 
-          sn.numbers.includes(descriptor)) {
+        let sn = this.wksp.ctx.slipnet;
+        if ((descriptor == sn.letter) || (descriptor == sn.group) || sn.numbers.includes(descriptor)) {
             return false;
         }
         
-        for (let obj of this.string.objects) {
-            if ((obj instanceof Namespace.Letter) && (obj != this)) {
-                for (let descr of obj.descriptions) {
-                    if (descr.descriptor == descriptor) {
-                        return false;
-                    }
-                }
-            }
+        if (this.string.objects.some(obj => (obj instanceof Namespace.Letter) && (obj != this) && 
+            obj.descriptions.some(d => d.descriptor == descriptor))) {
+            return false;
         }
+
         return true;
     }
 

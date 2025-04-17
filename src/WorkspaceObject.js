@@ -13,12 +13,11 @@
     /**
      * @constructor
      * 
-     * @param {WorkspaceString} str - The string that the Letter 
-     *   or Group is in.
+     * @param {WorkspaceString} str - The string that the Letter or Group is in.
      */
     constructor(str) 
     { 
-        this.ctx = str.ctx;
+        this.wksp = str.wksp;
         this.string = str;
         this.changed = false;
         
@@ -61,11 +60,9 @@
         for (let toAdd of descriptionsToAdd) 
         {
             const alreadyHaveIt = this.descriptions.some(d => d.sameAs(toAdd));
-
             if (!alreadyHaveIt) {
-                const newDescr = new Namespace.Description(
-                    this, toAdd.descriptionType, toAdd.descriptor);
-                newDescr.build();
+                const newDescr = new Namespace.Description(this, toAdd.descriptionType, toAdd.descriptor);
+                newDescr.build(); // Adds newDescr to this.descriptions
             }
         }
     }
@@ -101,8 +98,7 @@
         for (let description of this.descriptions) {
             if (description.descriptionType.isFullyActive()) {
                 result += description.descriptor.activation;
-            }
-            else {
+            } else {
                 result += description.descriptor.activation / 20;
             }
         }
@@ -126,20 +122,15 @@
         const intraStringHappiness = this._calculateIntraStringHappiness();
         this.intraStringUnhappiness = 100 - intraStringHappiness;
 
-        let interStringHappiness = 
-            this.correspondence ? this.correspondence.totalStrength : 0;
+        let interStringHappiness = this.correspondence ? this.correspondence.totalStrength : 0;
         this.interStringUnhappiness = 100 - interStringHappiness;
 
-        const averageHappiness = 
-            (intraStringHappiness + interStringHappiness) / 2;
+        const averageHappiness = (intraStringHappiness + interStringHappiness) / 2;
         this.totalUnhappiness = 100 - averageHappiness;
 
-        this.intraStringSalience = 
-            0.2*this.relativeImportance + 0.8*this.intraStringUnhappiness;
-        this.interStringSalience = 
-            0.8*this.relativeImportance + 0.2*this.interStringUnhappiness;
-        this.totalSalience = 
-            (this.intraStringSalience + this.interStringSalience) / 2;
+        this.intraStringSalience = 0.2*this.relativeImportance + 0.8*this.intraStringUnhappiness;
+        this.interStringSalience = 0.8*this.relativeImportance + 0.2*this.interStringUnhappiness;
+        this.totalSalience = (this.intraStringSalience + this.interStringSalience) / 2;
     }
 
 
@@ -170,8 +161,7 @@
      */
     isWithin(other) 
     {
-        return (this.leftIndex >= other.leftIndex &&
-                this.rightIndex <= other.rightIndex);
+        return ((this.leftIndex >= other.leftIndex) && (this.rightIndex <= other.rightIndex));
     }
 
 
@@ -182,8 +172,7 @@
      */
     isOutsideOf(other) 
     {
-        return (this.leftIndex > other.rightIndex ||
-                this.rightIndex < other.leftIndex);
+        return (this.leftIndex > other.rightIndex || this.rightIndex < other.leftIndex);
     }
 
 
@@ -196,8 +185,7 @@
         if (this.string != other.string) {
             return false;
         }
-        return (this.leftIndex == other.rightIndex + 1) ||
-            (other.leftIndex == this.rightIndex + 1);
+        return (this.leftIndex == other.rightIndex + 1) || (other.leftIndex == this.rightIndex + 1);
     }
     
     
@@ -207,8 +195,7 @@
      */
     relevantDescriptions() 
     {
-        return this.descriptions.filter( 
-            x => x.descriptionType.isFullyActive() ) ;
+        return this.descriptions.filter( x => x.descriptionType.isFullyActive() ) ;
     }
 
 
@@ -218,9 +205,8 @@
      */
     relevantDistinguishingDescriptors( ) 
     {
-        return this.relevantDescriptions().filter( 
-            x => this.isDistinguishingDescriptor(x.descriptor) ).
-                map( x => x.descriptor );
+        return this.relevantDescriptions().
+            filter(x => this.isDistinguishingDescriptor(x.descriptor)).map(x => x.descriptor);
     }
     
     
@@ -243,9 +229,7 @@
      */
     getDescriptor(descriptionType) 
     {
-        const match = this.descriptions.find(
-            d => d.descriptionType == descriptionType);
-
+        const match = this.descriptions.find(d => d.descriptionType == descriptionType);
         return match ? match.descriptor : null;
     }
 
@@ -258,9 +242,7 @@
      */
     getDescriptionType(descriptor) 
     {
-        const match = this.descriptions.find(
-            d => d.descriptor == descriptor);
-
+        const match = this.descriptions.find(d => d.descriptor == descriptor);
         return match ? match.descriptionType : null;
     }    
 
@@ -293,8 +275,7 @@
      */
     getCommonGroups(other) 
     {
-        return this.string.objects.filter( obj => 
-            this.isWithin(obj) && other.isWithin(obj) );
+        return this.string.objects.filter( obj => this.isWithin(obj) && other.isWithin(obj) );
     }
 
 
@@ -307,8 +288,7 @@
     letterDistance(other) 
     {
         if (this.string != other.string) {
-            throw new Error("Cannot compare objects from different strings, " + 
-                "in WorkspaceObject.letterDistance");
+            throw new Error("Cannot compare objects from different strings, in WorkspaceObject.letterDistance");
         }
 
         if (other.leftIndex > this.rightIndex) {

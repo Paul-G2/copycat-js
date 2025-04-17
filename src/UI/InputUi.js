@@ -26,8 +26,7 @@ Namespace.InputUi = class {
         this.drawParams = {};
 
         this.bkgndColor = '#b3ddcc';
-        this.inputFont = {family:'serif', weight: 'bold', 
-            style: 'italic', size: '3.5vmin'};
+        this.inputFont = {family:'serif', weight: 'bold', style: 'italic', size: '3.5vmin'};
         this.inputFontColor = '#1581e7';
         this.answerFontColor = '#d20000';
         this.inputDisabledFontColor = '#6eb4f2';
@@ -56,18 +55,15 @@ Namespace.InputUi = class {
 
         // Create the text-input elements
         const wa = this.initialStringInput = UiUtils.CreateElement('input',
-            'initial-string-input', this.mainDiv, {left:'3%'},  
-            {type:'text'});
+            'initial-string-input', this.mainDiv, {left:'3%'}, {type:'text'});
         wa.onkeyup = this._onKeyup.bind(this);
 
         const wb = this.modifiedStringInput = UiUtils.CreateElement('input',
-            'modified-string-input', this.mainDiv, {left:'27%'},  
-            {type:'text'});
+            'modified-string-input', this.mainDiv, {left:'27%'}, {type:'text'});
         wb.onkeyup = this._onKeyup.bind(this);
 
         const wc = this.targetStringInput = UiUtils.CreateElement('input',
-            'target-string-input', this.mainDiv, {left:'55%'},  
-            {type:'text'});
+            'target-string-input', this.mainDiv, {left:'55%'}, {type:'text'});
         wc.onkeyup = this._onKeyup.bind(this);
 
         const wd = this.answerStringInput = UiUtils.CreateElement('input',
@@ -87,9 +83,9 @@ Namespace.InputUi = class {
             w.setAttribute('spellcheck', 'false');
         }
         const wksp = this.copycat.workspace;
-        this.initialStringInput.value = wksp.initialJString;
-        this.modifiedStringInput.value = wksp.modifiedJString;
-        this.targetStringInput.value = wksp.targetJString;
+        this.initialStringInput.value = wksp.initialWString.jstring;
+        this.modifiedStringInput.value = wksp.modifiedWString.jstring;
+        this.targetStringInput.value = wksp.targetWString.jstring;
         this.answerStringInput.value = '?';
 
         // Arrpws
@@ -139,9 +135,7 @@ Namespace.InputUi = class {
      */
     getInputStrings()
     {
-        const rawStrings = [this.initialStringInput.value, 
-            this.modifiedStringInput.value, this.targetStringInput.value];
-
+        const rawStrings = [this.initialStringInput.value, this.modifiedStringInput.value, this.targetStringInput.value];
         const normStrings = rawStrings.map(s => s.trim().toLowerCase());
 
         this.initialStringInput.value = normStrings[0];
@@ -189,7 +183,7 @@ Namespace.InputUi = class {
     {
         const copycat = this.copycat;
         const ans = copycat.workspace.finalAnswer;
-        this.answerStringInput.value = ans || '?';
+        this.answerStringInput.value = (copycat.batchMode) ? '?' : ans || '?';
         this._setInputsEnabled(copycat.state != 'running');
     } 
 
@@ -218,12 +212,9 @@ Namespace.InputUi = class {
         this.modifiedStringInput.disabled = !enabled;
         this.targetStringInput.disabled = !enabled;
 
-        this.initialStringInput.style.color = enabled ? 
-            this.inputFontColor : this.inputDisabledFontColor;
-        this.modifiedStringInput.style.color = enabled ? 
-            this.inputFontColor : this.inputDisabledFontColor;
-        this.targetStringInput.style.color = enabled ? 
-            this.inputFontColor : this.inputDisabledFontColor;
+        this.initialStringInput.style.color = enabled ? this.inputFontColor : this.inputDisabledFontColor;
+        this.modifiedStringInput.style.color = enabled ? this.inputFontColor : this.inputDisabledFontColor;
+        this.targetStringInput.style.color = enabled ? this.inputFontColor : this.inputDisabledFontColor;
     }
 };
 

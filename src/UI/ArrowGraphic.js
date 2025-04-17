@@ -29,9 +29,7 @@ Namespace.ArrowGraphic = class
     redraw(ctx)
     {
         // Update our drawing parameters if necessary
-        if (Namespace.UiUtils.NeedToRescale(this.drawParams, ctx)) {
-            this._updateDrawParams(ctx);
-        }
+        if (Namespace.UiUtils.NeedToRescale(this.drawParams, ctx)) { this._updateDrawParams(ctx);}
 
         const dp = this.drawParams;
         ctx.strokeStyle = this.wkspUi.letterColor;
@@ -60,24 +58,16 @@ Namespace.ArrowGraphic = class
         let sz = w/25;
         dp.lines = [];
 
-        dp.lines.push(
-            {xa: cx-0.5*sz, ya: cy-0.08*sz, xb: cx+0.34*sz, yb: cy-0.08*sz});
-        dp.lines.push(
-            {xa: cx-0.5*sz, ya: cy+0.08*sz, xb: cx+0.34*sz, yb: cy+0.08*sz});
-        dp.lines.push(
-            {xa: cx+0.1*sz, ya: cy-0.2*sz, xb: cx+0.5*sz, yb: cy});
-        dp.lines.push(
-            {xa: cx+0.1*sz, ya: cy+0.2*sz, xb: cx+0.5*sz, yb: cy});
+        dp.lines.push({xa: cx-0.5*sz, ya: cy-0.08*sz, xb: cx+0.34*sz, yb: cy-0.08*sz});
+        dp.lines.push({xa: cx-0.5*sz, ya: cy+0.08*sz, xb: cx+0.34*sz, yb: cy+0.08*sz});
+        dp.lines.push({xa: cx+0.1*sz, ya: cy-0.2*sz, xb: cx+0.5*sz, yb: cy});
+        dp.lines.push({xa: cx+0.1*sz, ya: cy+0.2*sz, xb: cx+0.5*sz, yb: cy});
 
         cy = 2*h/3 - h/80;
-        dp.lines.push(
-            {xa: cx-0.5*sz, ya: cy-0.08*sz, xb: cx+0.34*sz, yb: cy-0.08*sz});
-        dp.lines.push(
-            {xa: cx-0.5*sz, ya: cy+0.08*sz, xb: cx+0.34*sz, yb: cy+0.08*sz});
-        dp.lines.push(
-            {xa: cx+0.1*sz, ya: cy-0.2*sz, xb: cx+0.5*sz, yb: cy});
-        dp.lines.push(
-            {xa: cx+0.1*sz, ya: cy+0.2*sz, xb: cx+0.5*sz, yb: cy});
+        dp.lines.push({xa: cx-0.5*sz, ya: cy-0.08*sz, xb: cx+0.34*sz, yb: cy-0.08*sz});
+        dp.lines.push({xa: cx-0.5*sz, ya: cy+0.08*sz, xb: cx+0.34*sz, yb: cy+0.08*sz});
+        dp.lines.push({xa: cx+0.1*sz, ya: cy-0.2*sz, xb: cx+0.5*sz, yb: cy});
+        dp.lines.push({xa: cx+0.1*sz, ya: cy+0.2*sz, xb: cx+0.5*sz, yb: cy});
     }               
 };
 

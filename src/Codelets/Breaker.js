@@ -17,7 +17,7 @@
      * 
      * @param {Copycat} ctx - The Copycat instance.
      * @param {Number} urgency - The urgency of the codelet.
-     * @param {Array} args - Arguments to pass to the codelet.
+     * @param {Array} args - Arguments to pass to the codelet. (Empty for this codelet.)
      * @param {Number} birthdate - The birthdate of the codelet.
      */
     constructor(ctx, urgency, args, birthdate) 
@@ -39,18 +39,13 @@
         if (randGen.coinFlip(fizzleProb)) { return; }
 
         // Choose a Group or Bond or Correspondence at random
-        const structures = [];
-        for (let s of this.ctx.workspace.structures) {
-            if ((s instanceof Namespace.Group) || (s instanceof Namespace.Bond) || 
-                (s instanceof Namespace.Correspondence)) {
-                structures.push(s);
-            }
-        }
+        const structures = this.ctx.workspace.structures.filter(s => 
+            (s instanceof Namespace.Group) || (s instanceof Namespace.Bond) || (s instanceof Namespace.Correspondence));
         if (!structures.length) { return; }
 
         const structure = randGen.choice(structures);
         const breakObjects = [structure];
-        if (structure instanceof Namespace.Bond){
+        if (structure instanceof Namespace.Bond) {
             if (structure.source.group && (structure.source.group == structure.destination.group)) {
                 breakObjects.push(structure.source.group);
             }
@@ -61,8 +56,7 @@
             const breakProb = temperature.getAdjustedProb(structure.totalStrength/100);
             if (randGen.coinFlip(breakProb)) { return; }
         }
-        breakObjects.forEach( 
-            (structure) => structure.break() );
+        breakObjects.forEach( (structure) => structure.break() );
     }
 };
 

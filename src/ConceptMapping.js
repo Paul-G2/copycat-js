@@ -14,20 +14,15 @@
     /**
      * @constructor
      * 
-     * @param {SlipNode} initialDescType - The description type of the first 
-     *      concept. For example, "objectCategory" or "stringPositionCategory".
-     * @param {SlipNode} targetDescType - The description type of the 
-     *      slipped concept.
-     * @param {SlipNode} initialDescriptor - The descriptor of the first 
-     *      concept. For example, "letter" or "rightmost".
-     * @param {SlipNode} targetDescriptor - The descriptor of the 
-     *     slipped concept. For example, "group" or "leftmost".
+     * @param {SlipNode} initialDescType - The description type of the first concept. For example, "objectCategory" or "stringPositionCategory".
+     * @param {SlipNode} targetDescType - The description type of the slipped concept.
+     * @param {SlipNode} initialDescriptor - The descriptor of the first concept. For example, "letter" or "rightmost".
+     * @param {SlipNode} targetDescriptor - The descriptor of the slipped concept. For example, "group" or "leftmost".
      * @param {WorkspaceObject} initialObject - The initial object.
      * @param {WorkspaceObject} targetObject - The target object.
      * 
      */
-    constructor(initialDescType, targetDescType, 
-        initialDescriptor, targetDescriptor, initialObject, targetObject) 
+    constructor(initialDescType, targetDescType, initialDescriptor, targetDescriptor, initialObject, targetObject) 
     { 
         this.slipnet = initialDescType.slipnet;
         this.initialDescType = initialDescType;
@@ -48,9 +43,7 @@
     {
         const label = this.label ? this.label.name : 'Anonymous';
         
-        const s0 = `${label} from ${this.initialDescriptor.synopsis(0)} to ` + 
-            `${this.targetDescriptor.synopsis(0)}`;
-
+        const s0 = `${label} from ${this.initialDescriptor.synopsis(0)} to ` + `${this.targetDescriptor.synopsis(0)}`;
         const s1 = `<ConceptMapping: ${s0}>`;
 
         return !type ? s0 : s1;
@@ -68,8 +61,7 @@
             return 100;
         }
 
-        const depth = (this.initialDescriptor.depth + 
-            this.targetDescriptor.depth) / 200;
+        const depth = (this.initialDescriptor.depth + this.targetDescriptor.depth) / 200;
         return association * (1 - depth * depth);
     }
 
@@ -86,8 +78,7 @@
         if (association >= 100.0) {
             return 100;
         }
-        const depth = (this.initialDescriptor.depth +
-            this.targetDescriptor.depth) / 200;
+        const depth = (this.initialDescriptor.depth + this.targetDescriptor.depth) / 200;
         return association * (1 + depth * depth);
     }
 
@@ -120,8 +111,7 @@
      */
     canSlip()
     {
-        return ((this.label != this.slipnet.identity) && 
-            (this.label != this.slipnet.sameness));
+        return ((this.label != this.slipnet.identity) && (this.label != this.slipnet.sameness));
     }
     
     
@@ -131,8 +121,7 @@
      */
     isDistinguishing()
     {
-        if ( (this.initialDescriptor == this.slipnet.whole) &&
-            (this.targetDescriptor == this.slipnet.whole) ) {
+        if ( (this.initialDescriptor == this.slipnet.whole) && (this.targetDescriptor == this.slipnet.whole) ) {
                 return false;
         }
         else if (this.initialObject && this.targetObject) {
@@ -153,15 +142,12 @@
      */
     isContainedIn(mappings)
     {
-        for (let m of mappings) {
-            if ((m.initialDescType == this.initialDescType) &&
-                (m.targetDescType == this.targetDescType) &&
-                (m.initialDescriptor == this.initialDescriptor) &&
-                (m.targetDescriptor == this.targetDescriptor) ) {
-                return true;
-            }
-        }
-        return false;
+        return mappings.some(m => 
+            (m.initialDescType == this.initialDescType) &&
+            (m.targetDescType == this.targetDescType) &&
+            (m.initialDescriptor == this.initialDescriptor) &&
+            (m.targetDescriptor == this.targetDescriptor)
+        );
     }
 
 
@@ -173,14 +159,11 @@
      */
     isNearlyContainedIn(mappings)
     {
-        for (let m of mappings) {
-            if ((m.initialDescType == this.initialDescType) &&
-                (m.targetDescType == this.targetDescType) &&
-                (m.initialDescriptor == this.initialDescriptor) ) {
-                return true;
-            }
-        }
-        return false;
+        return mappings.some(m =>
+            (m.initialDescType == this.initialDescType) &&
+            (m.targetDescType == this.targetDescType) &&
+            (m.initialDescriptor == this.initialDescriptor)
+        );
     }
 
 
@@ -195,20 +178,13 @@
             return this;
         }
 
-        const bond = 
-            this.targetDescriptor.getBondCategory(this.initialDescriptor);
+        const bond = this.targetDescriptor.getBondCategory(this.initialDescriptor);
         if (bond != this.label) {
             return this;
         }
 
         return new Namespace.ConceptMapping(
-            this.targetDescType,
-            this.initialDescType,
-            this.targetDescriptor,
-            this.initialDescriptor,
-            this.initialObject,
-            this.targetObject
-        );
+            this.targetDescType, this.initialDescType, this.targetDescriptor, this.initialDescriptor, this.initialObject, this.targetObject);
     }
 
 
@@ -218,8 +194,7 @@
      */
     isRelevant()
     {
-        return ( this.initialDescType.isFullyActive() &&
-            this.targetDescType.isFullyActive() );
+        return ( this.initialDescType.isFullyActive() && this.targetDescType.isFullyActive() );
     }
 
 
@@ -245,8 +220,8 @@
     {
         // Concept-mappings (a -> b) and (c -> d) are incompatible if a is
         // related to c or if b is related to d, and the a -> b relationship is
-        // different from the c -> d relationship. E.g., rightmost -> leftmost
-        // is incompatible with right -> right.
+        // different from the c -> d relationship. 
+        // E.g., rightmost -> leftmost is incompatible with right -> right.
         if (!this.isRelatedTo(other)) {
             return false;
         }
@@ -266,10 +241,9 @@
     {
         // Concept-mappings (a -> b) and (c -> d) support each other if a is
         // related to c and if b is related to d and the a -> b relationship is
-        // the same as the c -> d relationship.  E.g., rightmost -> rightmost
-        // supports right -> right and leftmost -> leftmost.
-        if ((other.initialDescType == this.initialDescType) &&
-            (other.targetDescType == this.targetDescType) ) {
+        // the same as the c -> d relationship.  
+        // E.g., rightmost -> rightmost supports right -> right and leftmost -> leftmost.
+        if ((other.initialDescType == this.initialDescType) && (other.targetDescType == this.targetDescType) ) {
             return true;
         }
 
@@ -290,27 +264,19 @@
      * 
      * @param {WorkspaceObject} initialObject - The initial object.
      * @param {WorkspaceObject} targetObject - The target object.
-     * @param {Array<Description>} initialDescriptions - Descriptions of 
-     *      the initial object.
-     * @param {Array<Description>} targetDescriptions - Descriptions of 
-     *      the target object.
+     * @param {Array<Description>} initialDescriptions - Descriptions of the initial object.
+     * @param {Array<Description>} targetDescriptions - Descriptions of the target object.
      *
      */
-    static getMappings(initialObject, targetObject, 
-        initialDescriptions, targetDescriptions)
+    static getMappings(initialObject, targetObject, initialDescriptions, targetDescriptions)
     {
         const mappings = [];
-        for (let initial of initialDescriptions) {
-            for (let target of targetDescriptions) {
-                if (initial.descriptionType == target.descriptionType) {
-                    if ((initial.descriptor == target.descriptor) ||
-                      initial.descriptor.isSlipLinkedTo(target.descriptor)) {
-                        mappings.push(
-                            new Namespace.ConceptMapping(
-                                initial.descriptionType, target.descriptionType,
-                                initial.descriptor, target.descriptor,
-                                initialObject, targetObject)
-                        );
+        for (let ini of initialDescriptions) {
+            for (let targ of targetDescriptions) {
+                if (ini.descriptionType == targ.descriptionType) {
+                    if ((ini.descriptor == targ.descriptor) || ini.descriptor.isSlipLinkedTo(targ.descriptor)) {
+                        mappings.push( new Namespace.ConceptMapping(
+                            ini.descriptionType, targ.descriptionType, ini.descriptor, targ.descriptor, initialObject, targetObject) );
                     }
                 }
             }

@@ -24,14 +24,12 @@ Namespace.Slipnet = class {
         // Build the network
         this._createNodes();
         this._createLinks();
-        this._initiallyClampedNodes = [this.letterCategory, this.stringPositionCategory];
         this.reset();
 
-        // Freeze almost everything (because the slipnet structure is 
-        // static; only the node activations change over time).
+        // Freeze almost everything (because the slipnet structure is static; 
+        // only the node activations and link strengths change over time).
         this.nodes.forEach( node => node.freezeConstants() ); 
-        [this.nodes, this.links, this.letters, this.numbers, 
-            this._initiallyClampedNodes].forEach( arr => Object.freeze(arr) );
+        [this.nodes, this.links, this.letters, this.numbers].forEach( arr => Object.freeze(arr) );
         Object.freeze(this);
     }
 
@@ -45,8 +43,9 @@ Namespace.Slipnet = class {
         // Reset every node
         this.nodes.forEach( node => node.reset() );
 
-        // Some concepts are considered "very relevant" a priori
-        this._initiallyClampedNodes.forEach( node => node.clampHigh() );
+        // The following concepts are considered "very relevant" a priori:
+        this.letterCategory.clampHigh();
+        this.stringPositionCategory.clampHigh();
     }
 
 
@@ -60,7 +59,8 @@ Namespace.Slipnet = class {
     {
         // Unclamp the initially-clamped nodes, if requested. 
         if (unclamp) {
-            this._initiallyClampedNodes.forEach( node => node.unclamp() );
+            this.letterCategory.unclamp();
+            this.stringPositionCategory.unclamp();
         }
 
         // Note that we change only the buffer values, not the 
@@ -87,8 +87,7 @@ Namespace.Slipnet = class {
         // Letter nodes
         const atoz = 'abcdefghijklmnopqrstuvwxyz';
         for (let i=0; i<atoz.length; i++) {
-            this.letters.push( this._addNode(atoz.charAt(i), 
-                atoz.charAt(i).toUpperCase(), 10) );
+            this.letters.push( this._addNode(atoz.charAt(i), atoz.charAt(i).toUpperCase(), 10) );
         }
 
         // Number nodes
@@ -141,20 +140,6 @@ Namespace.Slipnet = class {
         this.length = this._addNode('length', 'len', 60);
         this.objectCategory = this._addNode('objectCategory', 'objCat', 90);
         this.bondFacet = this._addNode('bondFacet', 'bndFac', 90);
-
-        // Add codelets to selected nodes
-        this.left.codelets.push('top-down-bond-scout--direction');
-        this.left.codelets.push('top-down-group-scout--direction');
-        this.right.codelets.push('top-down-bond-scout--direction');
-        this.right.codelets.push('top-down-group-scout--direction');
-        this.predecessor.codelets.push('top-down-bond-scout--category');
-        this.successor.codelets.push('top-down-bond-scout--category');
-        this.sameness.codelets.push('top-down-bond-scout--category');
-        this.predecessorGroup.codelets.push('top-down-group-scout--category');
-        this.successorGroup.codelets.push('top-down-group-scout--category');
-        this.samenessGroup.codelets.push('top-down-group-scout--category');
-        this.stringPositionCategory.codelets.push('top-down-description-scout');
-        this.alphabeticPositionCategory.codelets.push('top-down-description-scout');
     }
 
 
@@ -177,20 +162,16 @@ Namespace.Slipnet = class {
         }
 
         // Letter-letterCategory links
-        this.letters.forEach( letter => 
-            this._addInstanceCategoryLinks(this.letterCategory, letter, 97) );
+        this.letters.forEach( letter => this._addCategoryInstanceLinks(this.letterCategory, letter, 97) );
 
-        this._addLink('category', this.samenessGroup, this.letterCategory, null, 50);
+        this._addLink('category', this.letterCategory, this.samenessGroup, null, 50); 
 
         // Length-number links
-        this.numbers.forEach( number => 
-            this._addInstanceCategoryLinks(this.length, number, 100) );
+        this.numbers.forEach( number => this._addCategoryInstanceLinks(this.length, number, 100) );
 
         // Groups
         const groups = [this.predecessorGroup, this.successorGroup, this.samenessGroup];
-        groups.forEach(
-            group => { this._addLink('lateralNonSlip', group, this.length, null, 95); }
-        );
+        groups.forEach( group => {this._addLink('lateralNonSlip', group, this.length, null, 95);} );
 
         // Opposites
         const opposites = [
@@ -200,9 +181,7 @@ Namespace.Slipnet = class {
             [this.successor, this.predecessor],
             [this.successorGroup, this.predecessorGroup],
         ];
-        opposites.forEach( opp => 
-            this._addSymmetricLinks('lateralSlip', opp[0], opp[1], this.opposite, 0)
-        );
+        opposites.forEach( opp => this._addSymmetricLinks('lateralSlip', opp[0], opp[1], this.opposite, 0) );
 
         // Properties
         this._addLink('property', this.letters[0], this.first, null, 75);
@@ -230,7 +209,7 @@ Namespace.Slipnet = class {
             [this.bondFacet, this.letterCategory],
             [this.bondFacet, this.length],
         ];
-        icPairs.forEach( pair => this._addInstanceCategoryLinks(pair[0], pair[1], 100) );
+        icPairs.forEach( pair => this._addCategoryInstanceLinks(pair[0], pair[1], 100) );
 
         // Link bonds to their groups
         this._addLink('lateralNonSlip', this.sameness, this.samenessGroup, this.groupCategory, 30);
@@ -305,7 +284,7 @@ Namespace.Slipnet = class {
      * 
      * @private
      */
-    _addInstanceCategoryLinks(category, instance, instanceLength) 
+    _addCategoryInstanceLinks(category, instance, instanceLength) 
     {
         const categoryLength = category.depth - instance.depth;
         this._addLink('instance', category, instance, null, instanceLength); 

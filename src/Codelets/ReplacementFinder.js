@@ -18,7 +18,7 @@
      * 
      * @param {Copycat} ctx - The Copycat instance.
      * @param {Number} urgency - The urgency of the codelet.
-     * @param {Array} args - Arguments to pass to the codelet.
+     * @param {Array} args - Arguments to pass to the codelet. (Empty for this codelet.)
      * @param {Number} birthdate - The birthdate of the codelet.
      */
     constructor(ctx, urgency, args, birthdate) 
@@ -46,15 +46,13 @@
 
         const position = letterOfInitialString.leftIndex;
         const modStringLength = wksp.modifiedWString.letters.length;
-        const letterOfModifiedString = (position > modStringLength) ? null :
-            wksp.modifiedWString.letters[position - 1];
+        const letterOfModifiedString = (position > modStringLength) ? null : wksp.modifiedWString.letters[position - 1];
         if (letterOfModifiedString == null) { return; }
 
-        const initialAscii = wksp.initialJString[position - 1].codePointAt(0);
-        const modifiedAscii = wksp.modifiedJString[position - 1].codePointAt(0);
+        const initialAscii = wksp.initialWString.jstring[position - 1].codePointAt(0);
+        const modifiedAscii = wksp.modifiedWString.jstring[position - 1].codePointAt(0);
         const diff = initialAscii - modifiedAscii;
-        const relation = (diff == -1) ? sn.successor : (diff === 0) ? sn.sameness : 
-            (diff == 1) ? sn.predecessor : null;
+        const relation = (diff == -1) ? sn.successor : (diff === 0) ? sn.sameness : (diff == 1) ? sn.predecessor : null;
 
         const repl = new Namespace.Replacement(letterOfInitialString, letterOfModifiedString, relation);
         letterOfInitialString.replacement = repl;

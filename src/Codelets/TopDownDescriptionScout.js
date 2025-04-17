@@ -64,21 +64,18 @@
         const descriptions = [];
         for (let link of descriptionType.instanceLinks) {
             const node = link.destination;
-            if (node == sn.first && obj.hasDescriptor(sn.letters[0])) {
+            if ((node == sn.first) && obj.hasDescriptor(sn.letters[0])) {
                 descriptions.push(node);
             }
-            if (node == sn.last && obj.hasDescriptor(sn.letters[sn.letters.length-1])) {
+            else if ((node == sn.last) && obj.hasDescriptor(sn.letters[sn.letters.length-1])) {
                 descriptions.push(node);
             }
-            if (node == sn.middle && obj.isMiddleObject()) {
+            else if ((node == sn.middle) && obj.isMiddleObject()) {
                 descriptions.push(node);
             }
             for (let i=1; i<=sn.numbers.length; i++) {
-                const number = sn.numbers[i-1];
-                if (node == number && (obj instanceof Namespace.Group)) {
-                    if (obj.objectList.length == i) {
-                        descriptions.push(node);
-                    }
+                if ((node == sn.numbers[i-1]) && (obj instanceof Namespace.Group)) {
+                    if (obj.objectList.length == i) { descriptions.push(node); }
                 }
             }
         }

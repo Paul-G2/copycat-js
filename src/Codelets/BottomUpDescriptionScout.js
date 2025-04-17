@@ -16,7 +16,7 @@
      * 
      * @param {Copycat} ctx - The Copycat instance.
      * @param {Number} urgency - The urgency of the codelet.
-     * @param {Array} args - Arguments to pass to the codelet.
+     * @param {Array} args - Arguments to pass to the codelet. (Empty for this codelet.)
      * @param {Number} birthdate - The birthdate of the codelet.
      */
     constructor(ctx, urgency, args, birthdate) 
@@ -39,8 +39,7 @@
 
         // Choose a relevant description by activation
         const descriptions = chosenObject.relevantDescriptions();
-        const dWeights = descriptions.map(d => d.activation);
-        const description = ctx.randGen.weightedChoice(descriptions, dWeights);
+        const description = ctx.randGen.weightedChoice(descriptions, descriptions.map(d => d.activation));
         if (!description) { return; }
 
         // Choose one of the description's property links
@@ -70,9 +69,7 @@
         {
             const association = propertyLink.degreeOfAssociation() / 100;
             const prob = ctx.temperature.getAdjustedProb(association);
-            if (ctx.randGen.coinFlip(prob)) {
-                result.push(propertyLink);
-            }
+            if (ctx.randGen.coinFlip(prob)) { result.push(propertyLink); }
         }
         return result;
     }   

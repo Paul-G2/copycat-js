@@ -36,9 +36,8 @@
         const bond = this.bond;
 
         // Provide UI feedback
-        if (ctx.ui) {
-            ctx.ui.workspaceUi.getStringGraphic(bond.string).bondsGraphic.
-                flashProposed(bond);
+        if (ctx.ui && !ctx.batchMode) {
+            ctx.ui.workspaceUi.getStringGraphic(bond.string).bondsGraphic.flashProposed(bond);
         }
 
         // Maybe fizzle, if the strength is too low

@@ -40,12 +40,10 @@
         if (!bondDest) { return; }
 
         // Provide UI feedback.
-        if (ctx.ui) {
+        if (ctx.ui && !ctx.batchMode) {
             const sn = ctx.slipnet;
-            const dummyBond = new Namespace.Bond(bondSource, bondDest, 
-                sn.sameness, sn.letterCategory, sn.letters[0], sn.letters[0]);
-            ctx.ui.workspaceUi.getStringGraphic(dummyBond.string).
-                bondsGraphic.flashGrope(dummyBond);
+            const dummyBond = new Namespace.Bond(bondSource, bondDest, sn.sameness, sn.letterCategory, sn.letters[0], sn.letters[0]);
+            ctx.ui.workspaceUi.getStringGraphic(dummyBond.string). bondsGraphic.flashGrope(dummyBond);
         }
 
         const bondFacet = CodeletUtils.chooseBondFacet(ctx, bondSource, bondDest);
@@ -57,13 +55,10 @@
         let category = sourceDescriptor.getBondCategory(destDescriptor);
         if (!category) { return; }
         
-        if (category == ctx.slipnet.identity) {
-            category = ctx.slipnet.sameness;
-        }
+        if (category == ctx.slipnet.identity) { category = ctx.slipnet.sameness; }
 
         // Propose the bond
-        ctx.coderack.proposeBond(bondSource, bondDest, category, bondFacet,
-            sourceDescriptor, destDescriptor);
+        ctx.coderack.proposeBond(bondSource, bondDest, category, bondFacet, sourceDescriptor, destDescriptor);
     }
 
 
@@ -78,12 +73,9 @@
         let objects = [];
 
         if (this.bondDirection == ctx.slipnet.left) {
-            objects = ctx.workspace.objects.filter(o =>
-                (o.string == source.string) && (source.leftIndex == o.rightIndex + 1));
-        }
-        else {
-            objects = ctx.workspace.objects.filter(o =>
-                (o.string == source.string) && (source.rightIndex == o.leftIndex - 1));
+            objects = ctx.workspace.objects.filter(o => (o.string == source.string) && (source.leftIndex == o.rightIndex + 1));
+        } else {
+            objects = ctx.workspace.objects.filter(o => (o.string == source.string) && (source.rightIndex == o.leftIndex - 1));
         }
 
         const weights = objects.map( o => ctx.temperature.getAdjustedValue(o.intraStringSalience) );

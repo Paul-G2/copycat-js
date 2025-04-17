@@ -13,12 +13,11 @@
     /**
      * @constructor
      * 
-     * @param {WorkspaceString} str - The string that the Letter 
-     *   or Group is in.
+     * @param {WorkspaceString} str - The string that the Letter or Group is in.
      */
     constructor(str) 
     { 
-        this.ctx = str.ctx;
+        this.wksp = str.wksp;
         this.string = str;
         this.changed = false;
         
@@ -61,11 +60,9 @@
         for (let toAdd of descriptionsToAdd) 
         {
             const alreadyHaveIt = this.descriptions.some(d => d.sameAs(toAdd));
-
             if (!alreadyHaveIt) {
-                const newDescr = new Namespace.Description(
-                    this, toAdd.descriptionType, toAdd.descriptor);
-                newDescr.build();
+                const newDescr = new Namespace.Description(this, toAdd.descriptionType, toAdd.descriptor);
+                newDescr.build(); // Adds newDescr to this.descriptions
             }
         }
     }
@@ -101,8 +98,7 @@
         for (let description of this.descriptions) {
             if (description.descriptionType.isFullyActive()) {
                 result += description.descriptor.activation;
-            }
-            else {
+            } else {
                 result += description.descriptor.activation / 20;
             }
         }
@@ -126,20 +122,15 @@
         const intraStringHappiness = this._calculateIntraStringHappiness();
         this.intraStringUnhappiness = 100 - intraStringHappiness;
 
-        let interStringHappiness = 
-            this.correspondence ? this.correspondence.totalStrength : 0;
+        let interStringHappiness = this.correspondence ? this.correspondence.totalStrength : 0;
         this.interStringUnhappiness = 100 - interStringHappiness;
 
-        const averageHappiness = 
-            (intraStringHappiness + interStringHappiness) / 2;
+        const averageHappiness = (intraStringHappiness + interStringHappiness) / 2;
         this.totalUnhappiness = 100 - averageHappiness;
 
-        this.intraStringSalience = 
-            0.2*this.relativeImportance + 0.8*this.intraStringUnhappiness;
-        this.interStringSalience = 
-            0.8*this.relativeImportance + 0.2*this.interStringUnhappiness;
-        this.totalSalience = 
-            (this.intraStringSalience + this.interStringSalience) / 2;
+        this.intraStringSalience = 0.2*this.relativeImportance + 0.8*this.intraStringUnhappiness;
+        this.interStringSalience = 0.8*this.relativeImportance + 0.2*this.interStringUnhappiness;
+        this.totalSalience = (this.intraStringSalience + this.interStringSalience) / 2;
     }
 
 
@@ -170,8 +161,7 @@
      */
     isWithin(other) 
     {
-        return (this.leftIndex >= other.leftIndex &&
-                this.rightIndex <= other.rightIndex);
+        return ((this.leftIndex >= other.leftIndex) && (this.rightIndex <= other.rightIndex));
     }
 
 
@@ -182,8 +172,7 @@
      */
     isOutsideOf(other) 
     {
-        return (this.leftIndex > other.rightIndex ||
-                this.rightIndex < other.leftIndex);
+        return (this.leftIndex > other.rightIndex || this.rightIndex < other.leftIndex);
     }
 
 
@@ -196,8 +185,7 @@
         if (this.string != other.string) {
             return false;
         }
-        return (this.leftIndex == other.rightIndex + 1) ||
-            (other.leftIndex == this.rightIndex + 1);
+        return (this.leftIndex == other.rightIndex + 1) || (other.leftIndex == this.rightIndex + 1);
     }
     
     
@@ -207,8 +195,7 @@
      */
     relevantDescriptions() 
     {
-        return this.descriptions.filter( 
-            x => x.descriptionType.isFullyActive() ) ;
+        return this.descriptions.filter( x => x.descriptionType.isFullyActive() ) ;
     }
 
 
@@ -218,9 +205,8 @@
      */
     relevantDistinguishingDescriptors( ) 
     {
-        return this.relevantDescriptions().filter( 
-            x => this.isDistinguishingDescriptor(x.descriptor) ).
-                map( x => x.descriptor );
+        return this.relevantDescriptions().
+            filter(x => this.isDistinguishingDescriptor(x.descriptor)).map(x => x.descriptor);
     }
     
     
@@ -243,9 +229,7 @@
      */
     getDescriptor(descriptionType) 
     {
-        const match = this.descriptions.find(
-            d => d.descriptionType == descriptionType);
-
+        const match = this.descriptions.find(d => d.descriptionType == descriptionType);
         return match ? match.descriptor : null;
     }
 
@@ -258,9 +242,7 @@
      */
     getDescriptionType(descriptor) 
     {
-        const match = this.descriptions.find(
-            d => d.descriptor == descriptor);
-
+        const match = this.descriptions.find(d => d.descriptor == descriptor);
         return match ? match.descriptionType : null;
     }    
 
@@ -293,8 +275,7 @@
      */
     getCommonGroups(other) 
     {
-        return this.string.objects.filter( obj => 
-            this.isWithin(obj) && other.isWithin(obj) );
+        return this.string.objects.filter( obj => this.isWithin(obj) && other.isWithin(obj) );
     }
 
 
@@ -307,8 +288,7 @@
     letterDistance(other) 
     {
         if (this.string != other.string) {
-            throw new Error("Cannot compare objects from different strings, " + 
-                "in WorkspaceObject.letterDistance");
+            throw new Error("Cannot compare objects from different strings, in WorkspaceObject.letterDistance");
         }
 
         if (other.leftIndex > this.rightIndex) {
@@ -387,9 +367,7 @@
     static chooseNeighbor(ctx, sourceObj)
     {
         const candidates = ctx.workspace.objects.filter(o => o.isBeside(sourceObj));
-        const weights = candidates.map( 
-            o => ctx.temperature.getAdjustedValue(o.intraStringSalience) );
-
+        const weights = candidates.map( o => ctx.temperature.getAdjustedValue(o.intraStringSalience) );
         return ctx.randGen.weightedChoice(candidates, weights);
     }
 
@@ -415,16 +393,13 @@
             const numNonSpanningObjects = nonSpanningObjs.length;
             let numMatches = 0;
             if (criterion == 'bondCategory') {
-                numMatches = nonSpanningObjs.filter(o => 
-                    o.rightBond && (o.rightBond.category == nodeToMatch)).length;
+                numMatches = nonSpanningObjs.filter(o => o.rightBond && (o.rightBond.category == nodeToMatch)).length;
             }
             else if (criterion == 'bondDirection') {
-                numMatches = nonSpanningObjs.filter(o => 
-                    o.rightBond && (o.rightBond.directionCategory == nodeToMatch)).length;
+                numMatches = nonSpanningObjs.filter(o => o.rightBond && (o.rightBond.directionCategory == nodeToMatch)).length;
             }
 
-            return (numNonSpanningObjects == 1) ? 100 * numMatches :
-                (100 * numMatches) / (numNonSpanningObjects - 1);            
+            return (numNonSpanningObjects == 1) ? 100 * numMatches : (100 * numMatches) / (numNonSpanningObjects - 1);            
         };
 
 
@@ -438,14 +413,12 @@
         const targets = targetRelevance + targetUnhappiness;
 
         // Choose a source object.
-        var result;
+        let result;
+        const Utils = Namespace.Codelets.CodeletUtils;
         if (ctx.randGen.weightedGreaterThan(targets, initials)) {
-            result = Namespace.Codelets.CodeletUtils.chooseUnmodifiedObject(
-                ctx, 'intraStringSalience',  wksp.targetWString.objects);
-        }
-        else {
-            result = Namespace.Codelets.CodeletUtils.chooseUnmodifiedObject(
-                ctx, 'intraStringSalience', wksp.initialWString.objects);
+            result = Utils.chooseUnmodifiedObject(ctx, 'intraStringSalience',  wksp.targetWString.objects);
+        }else {
+            result = Utils.chooseUnmodifiedObject(ctx, 'intraStringSalience', wksp.initialWString.objects);
         }
 
         return result;
@@ -463,17 +436,13 @@
      */
     static chooseBondFacet(ctx, sourceObj, destObj)
     {
-        let sn = ctx.slipnet;
-
         // The allowed bond facets:
-        const bondFacets = [sn.letterCategory, sn.length];
+        const bondFacets = [ctx.slipnet.letterCategory, ctx.slipnet.length];
 
         // Get the bond facets that are present in both source and destination.
-        const sourceFacets = sourceObj.descriptions.map(
-            d => d.descriptionType).filter(d => bondFacets.includes(d));
+        const sourceFacets = sourceObj.descriptions.map(d => d.descriptionType).filter(d => bondFacets.includes(d));
 
-        const candidateFacets = destObj.descriptions.map(
-            d => d.descriptionType).filter(d => sourceFacets.includes(d));
+        const candidateFacets = destObj.descriptions.map(d => d.descriptionType).filter(d => sourceFacets.includes(d));
 
         // For each such facet, compute a support value based on both the facet's activation
         // and the number of objects in the source's string that share the facet.
@@ -505,7 +474,7 @@
      */
     static structureVsStructure(structure1, weight1, structure2, weight2)
     {
-        const ctx = structure1.ctx;
+        const ctx = structure1.wksp.ctx;
         const temperature = ctx.temperature;
 
         structure1.updateStrength();
@@ -523,10 +492,8 @@
      * 
      * @param {WorkspaceStructure} structure - The structure to test.
      * @param {Number} structureWeight - The weight factor for the structure.
-     * @param {Array<WorkspaceStructure>} incompatibles - The list of 
-     *      incompatible structures.
-     * @param {Number} incompatiblesWeight - The weight factor for the
-     *     incompatible structures. 
+     * @param {Array<WorkspaceStructure>} incompatibles - The list of incompatible structures.
+     * @param {Number} incompatiblesWeight - The weight factor for the incompatible structures. 
      * 
      */
     static fightItOut(structure, structureWeight, incompatibles, incompatiblesWeight)
@@ -534,13 +501,10 @@
         if (!incompatibles || !incompatibles.length) {
             return true;
         }
-        for (let incomp of incompatibles) {
-            if (!Namespace.Codelets.CodeletUtils.structureVsStructure(
-                structure, structureWeight, incomp, incompatiblesWeight)) {
-                    return false;
-            }
-        }
-        return true;
+        
+        return incompatibles.every(incomp => 
+            Namespace.Codelets.CodeletUtils.structureVsStructure(structure, structureWeight, incomp, incompatiblesWeight)
+        );
     }
 
 };
@@ -584,8 +548,7 @@
      */
     synopsis(type)
     {
-        const s = this.name;
-        return !type ? s : '<Codelet: ' + s + '>';
+        return !type ? this.name : '<Codelet: ' + this.name + '>';
     }
 };
 
@@ -616,8 +579,7 @@ Namespace.Dialog = class
      * @param {Number} width - The dialog width, in percentage units
      * @param {Number} height - The dialog height, in percentage units.
      * @param {String} [title] - Text to be displayed on the dialog's title bar.
-     * @param {Boolean} [modal=false] - Whether the dialog is modal. (Currently 
-     *      only non-modal is supported.)
+     * @param {Boolean} [modal=false] - Whether the dialog is modal. (Currently only non-modal is supported.)
      * @param {String} [bkgndColor] - The dialog's background color.
      * @param {String} [titleBarColor] - The dialog's title bar color.
      */
@@ -638,8 +600,7 @@ Namespace.Dialog = class
         this.fontFamily    = 'verdana, arial, helvetica, sans-serif';
 
         // Create the user interface
-        this._initUi( (title || ""), (bkgndColor || 'white'), 
-            (titleBarColor || bkgndColor || 'white') );      
+        this._initUi( (title || ""), (bkgndColor || 'white'), (titleBarColor || bkgndColor || 'white') );      
     }
 
 
@@ -687,17 +648,13 @@ Namespace.Dialog = class
             backgroundColor:titleBarColor, fontSize:titleFontSize, fontFamily:this.fontFamily} 
         );
         this.closeDiv.className += ' noselect';
-        this.closeDiv.addEventListener( (UiUtils.isTouchDevice() ? 'touchstart' : 'click'), 
-            this._onTitleBarClose.bind(this) ); 
-        this.closeDiv.addEventListener( 
-            'mouseover', function() { this.closeDiv.style.fontWeight = 'bold'; }.bind(this) ); 
-        this.closeDiv.addEventListener( 
-            'mouseout',  function() { this.closeDiv.style.fontWeight = 'normal'; }.bind(this) ); 
+        this.closeDiv.addEventListener( (UiUtils.isTouchDevice() ? 'touchstart' : 'click'), this._onTitleBarClose.bind(this) ); 
+        this.closeDiv.addEventListener('mouseover', function() { this.closeDiv.style.fontWeight = 'bold'; }.bind(this) ); 
+        this.closeDiv.addEventListener('mouseout',  function() { this.closeDiv.style.fontWeight = 'normal'; }.bind(this) ); 
 
         // User content div
         this.userDiv = UiUtils.CreateElement('div', 'dialog_userdiv', this.mainDiv); 
-        UiUtils.StyleElement(this.userDiv, {bottom:'0px', left:'0px', 
-            width:'100%', height:'95%'} ); 
+        UiUtils.StyleElement(this.userDiv, {bottom:'0px', left:'0px', width:'100%', height:'95%'} ); 
     }
 
 
@@ -767,11 +724,8 @@ Namespace.Dialog = class
             this.startPos = {x:rect.left, y:rect.top};
             this.mouseDownLoc = mouseLoc;
 
-            document.addEventListener( 
-                (Namespace.UiUtils.isTouchDevice() ? 'touchmove' : 'mousemove'), this.dragMoveFunc );  
-
-            document.addEventListener( 
-                (Namespace.UiUtils.isTouchDevice() ? 'touchend touchcancel' : 'mouseup'), this.dragEndFunc );  
+            document.addEventListener( (Namespace.UiUtils.isTouchDevice() ? 'touchmove' : 'mousemove'), this.dragMoveFunc );  
+            document.addEventListener( (Namespace.UiUtils.isTouchDevice() ? 'touchend touchcancel' : 'mouseup'), this.dragEndFunc );  
         }
     }
 
@@ -810,11 +764,8 @@ Namespace.Dialog = class
     // eslint-disable-next-line no-unused-vars
     _onDragEnd(event)
     {
-        document.removeEventListener( 
-            (Namespace.UiUtils.isTouchDevice() ? 'touchmove' : 'mousemove'), this.dragMoveFunc );  
-
-        document.removeEventListener( 
-            (Namespace.UiUtils.isTouchDevice() ? 'touchend touchcancel' : 'mouseup'), this.dragEndFunc );  
+        document.removeEventListener( (Namespace.UiUtils.isTouchDevice() ? 'touchmove' : 'mousemove'), this.dragMoveFunc );  
+        document.removeEventListener( (Namespace.UiUtils.isTouchDevice() ? 'touchend touchcancel' : 'mouseup'), this.dragEndFunc );  
     }
 
 
@@ -839,7 +790,6 @@ Namespace.Dialog = class
                 }
             }
         }
-
         if ( (typeof(cx1) == 'undefined') || (typeof(cy1) == 'undefined') ) {
             cx1 = cy1 = null;
         }
@@ -867,8 +817,7 @@ Namespace.Dialog = class
 /**
  * @classdesc
  * A Bond is a relation between Letters and/or Groups in the same string. 
- * For example, a letter-successorship relation between 'a' and  
- * 'b' in the string 'abc.'
+ * For example, a letter-successorship relation between 'a' and 'b' in the string 'abc'.
  */
  Namespace.Bond = class {
 
@@ -877,19 +826,15 @@ Namespace.Dialog = class
      * 
      * @param {WorkspaceObject} from - The source object of the bond.
      * @param {WorkspaceObject} to - The destination object of the bond.
-     * @param {SlipNode} category - The bond category 
-     *   (successor, predecessor, or sameness).
-     * @param {SlipNode} facet - The facet of the bond category 
-     *   (letterCategory or length).
-     * @param {SlipNode} fromDescriptor - The facet's value for the 
-     *   source object, e.g. 'a'.
-     * @param {SlipNode} toDescriptor - The facet's value for the 
-     *   destination object, e.g. 'b'.
+     * @param {SlipNode} category - The bond category (successor, predecessor, or sameness).
+     * @param {SlipNode} facet - The facet of the bond category (letterCategory or length).
+     * @param {SlipNode} fromDescriptor - The facet's value for the source object, e.g. 'a'.
+     * @param {SlipNode} toDescriptor - The facet's value for the destination object, e.g. 'b'.
      */
     constructor(from, to, category, facet, fromDescriptor, toDescriptor) 
     { 
         // WorkspaceStructure members
-        this.ctx = from.ctx;
+        this.wksp = from.wksp;
         this.string = from.string;
         this.totalStrength = 0;
 
@@ -902,11 +847,11 @@ Namespace.Dialog = class
 
         this.leftObject = this.source;
         this.rightObject = this.destination;
-        this.directionCategory = this.ctx.slipnet.right;
+        this.directionCategory = this.wksp.ctx.slipnet.right;
         if (this.source.leftIndex > this.destination.rightIndex) {
             this.leftObject = this.destination;
             this.rightObject = this.source;
-            this.directionCategory = this.ctx.slipnet.left;
+            this.directionCategory = this.wksp.ctx.slipnet.left;
         }
         if (fromDescriptor == toDescriptor){
             this.directionCategory = null;
@@ -936,7 +881,7 @@ Namespace.Dialog = class
      */
     build()
     {
-        this.ctx.workspace.structures.push(this);
+        this.wksp.structures.push(this);
         this.string.bonds.push(this);
         this.leftObject.bonds.push(this);
         this.rightObject.bonds.push(this);  
@@ -957,8 +902,7 @@ Namespace.Dialog = class
      */
     break()
     {
-        const wksp = this.ctx.workspace;
-        wksp.structures = wksp.structures.filter(s => s !== this);
+        this.wksp.structures = this.wksp.structures.filter(s => s !== this);
         this.string.bonds = this.string.bonds.filter(s => s !== this);
         this.leftObject.bonds = this.leftObject.bonds.filter(s => s !== this);
         this.rightObject.bonds = this.rightObject.bonds.filter(s => s !== this);
@@ -975,7 +919,7 @@ Namespace.Dialog = class
     {
         return new Namespace.Bond(
             this.destination, this.source,
-            this.category.getRelatedNode(this.ctx.slipnet.opposite),
+            this.category.getRelatedNode(this.wksp.ctx.slipnet.opposite),
             this.facet, this.destDescriptor, this.sourceDescriptor
         );
     }
@@ -987,19 +931,12 @@ Namespace.Dialog = class
      */
     updateStrength()
     {
-        // Calculate the internal strength:
-        
-        // Bonds between objects of same type (ie. letter or group) are 
-        // stronger than bonds between different types
-        const memberCompatibility = (this.source instanceof Namespace.Letter) ==
-            (this.destination instanceof Namespace.Letter) ? 1.0 : 0.7;
-
-        // Letter category bonds are stronger
-        const facetFactor = 
-            (this.facet == this.ctx.slipnet.letterCategory) ? 1.0 : 0.7;
-
-        let internalStrength = Math.min(100, 
-            memberCompatibility * facetFactor * this.category.bondDegreeOfAssociation() );
+        // Calculate the internal strength.
+        // (Bonds between objects of same type (ie. letter or group) are stronger than 
+        // bonds between different types, and letter bonds are stronger than length bonds.)
+        const compat = (this.source instanceof Namespace.Letter) == (this.destination instanceof Namespace.Letter) ? 1.0 : 0.7;
+        const facetFactor = (this.facet == this.wksp.ctx.slipnet.letterCategory) ? 1.0 : 0.7;
+        let internalStrength = Math.min(100, compat * facetFactor * this.category.bondDegreeOfAssociation() );
 
         // External strength:
         let externalStrength = 0;
@@ -1008,6 +945,7 @@ Namespace.Dialog = class
             (this.rightObject.letterDistance(b.rightObject) !== 0) &&
             (this.category == b.category) &&
             (this.directionCategory == b.directionCategory) ? 1 : 0);
+
         const nsupporters = supports.reduce((a, b) => a + b, 0);
         if (nsupporters > 0) {
             const density = 100 * Math.sqrt(this._localDensity());
@@ -1024,7 +962,7 @@ Namespace.Dialog = class
 
 
     /**
-     * Returns a measure of the density in the parent string of
+     * Returns a measure of the density in the workspace strings of
      * bonds with the same bond-category and same direction-category 
      * as this bond.
      * 
@@ -1032,23 +970,16 @@ Namespace.Dialog = class
      */
     _localDensity()
     {
-        const wobjs = this.ctx.workspace.objects;
         let slotSum = 0;
         let supportSum = 0;
-        for (let obj1 of wobjs.filter(o => o.string == this.string)) {
-            for (let obj2 of wobjs) {
-                if (obj1.isBeside(obj2)) {
-                    slotSum += 1;
-                    for ( const b of this.string.bonds ) {
-                        if (b == this) { continue; }
-                        const sameCategories = (b.category == this.category) && 
-                            (b.directionCategory == this.directionCategory); 
-                        const sameEnds = ((this.source == obj1) && (this.destination == obj2)) || 
-                            ((this.source == obj2) && (this.destination == obj1));
-                        if ( sameCategories && sameEnds ) {
-                            supportSum += 1;
-                        }
-                    }
+        
+        for (let obj1 of this.wksp.objects.filter(o => o.string == this.string)) {
+            for (let obj2 of this.wksp.objects.filter(o2 => obj1.isBeside(o2)) ) {
+                slotSum += 1;
+                for (const b of this.string.bonds.filter(b => b != this)) {
+                    const sameCats = (b.category == this.category) && (b.directionCategory == this.directionCategory); 
+                    const sameEnds = ((this.source == obj1) && (this.destination == obj2)) || ((this.source == obj2) && (this.destination == obj1));
+                    if (sameCats && sameEnds) { supportSum += 1; }
                 }
             }
         }
@@ -1128,13 +1059,10 @@ Namespace.Dialog = class
         this.codelets.push(codelet);
         if (this.codelets.length > 100) 
         {
-            // Choose an old codelet to remove from the coderack, 
-            // preferring lower urgency ones.
-            const urgencies = this.codelets.map(c => 
-                (this.numCodeletsRun - c.birthdate) * (7.5 - c.urgency));
-            const oldCodelet = 
-                this.ctx.randGen.weightedChoice(this.codelets, urgencies);
-            this.codelets = this.codelets.filter(c => c != oldCodelet);
+            // Choose an old codelet to remove, preferring lower urgency ones.
+            const urgencies = this.codelets.map( c => (this.numCodeletsRun - c.birthdate) * (7.5 - c.urgency) );
+            const toRemove = this.ctx.randGen.weightedChoice(this.codelets, urgencies);
+            this.codelets = this.codelets.filter(c => c != toRemove);
         }
     }
 
@@ -1169,16 +1097,16 @@ Namespace.Dialog = class
         }
 
         // Choose a codelet to run
-        const chosen = this.ctx.randGen.weightedChoice(
-            this.codelets, this.getCodeletRunProbabilities());
+        const chosen = this.ctx.randGen.weightedChoice(this.codelets, this.getCodeletRunProbabilities());
         this.codelets = this.codelets.filter(c => c != chosen);
 
         // Run it
-        try{
-            this.numCodeletsRun += 1;
+        try {
             chosen.run();
+            this.numCodeletsRun += 1;
             this.lastRunCodelet = chosen;
-        } catch (e) {
+        } 
+        catch (e) {
             this.ctx.reporter.error(e);
         }
     }
@@ -1193,10 +1121,11 @@ Namespace.Dialog = class
     {
         const temperature = this.ctx.temperature.value();
         const scale = (100 - temperature + 10) / 15;
+
         let probs = this.codelets.map(c => Math.pow(c.urgency, scale));
         const totalProb = probs.reduce((a,b) => a+b, 0);
-        probs = probs.map(p => p/totalProb);
-        return probs;
+
+        return probs.map(p => p/totalProb);
     }
 
 
@@ -1207,24 +1136,35 @@ Namespace.Dialog = class
      */
     _postTopDownCodelets()
     {
+        const sn = this.ctx.slipnet;
+        const topDownCodelets = new Map();
+        topDownCodelets.set(sn.left, ['top-down-bond-scout--direction', 'top-down-group-scout--direction']);
+        topDownCodelets.set(sn.right, ['top-down-bond-scout--direction', 'top-down-group-scout--direction']);
+        topDownCodelets.set(sn.predecessor, ['top-down-bond-scout--category']);
+        topDownCodelets.set(sn.successor, ['top-down-bond-scout--category']);
+        topDownCodelets.set(sn.sameness, ['top-down-bond-scout--category']);
+        topDownCodelets.set(sn.predecessorGroup, ['top-down-group-scout--category']);
+        topDownCodelets.set(sn.successorGroup, ['top-down-group-scout--category']);
+        topDownCodelets.set(sn.samenessGroup, ['top-down-group-scout--category']);
+        topDownCodelets.set(sn.stringPositionCategory, ['top-down-description-scout']);
+        topDownCodelets.set(sn.alphabeticPositionCategory, ['top-down-description-scout']);
+
         const random = this.ctx.randGen;
-        for (let node of this.ctx.slipnet.nodes) {
+        topDownCodelets.forEach((codeletNames, node) => {
             if (node.activation >= 100) { 
-                for (let codeletName of node.codelets) {
+                for (let codeletName of codeletNames) {
                     const prob = this._probabilityOfPosting(codeletName);
                     const howMany = this._howManyToPost(codeletName);
                     for (let i=0; i<howMany; i++) {
                         if (random.coinFlip(prob)) {
-                            const urgency = CodeletUtils.getUrgencyBin(
-                                (node.activation * node.depth / 100));
-                            const codelet = this.factory.create(
-                                codeletName, urgency, [node]);
+                            const urgency = CodeletUtils.getUrgencyBin(node.activation * node.depth/100);
+                            const codelet = this.factory.create(codeletName, urgency, [node]);
                             this.post(codelet);
                         }
                     }
                 }
             }
-        }
+        });
     }
 
 
@@ -1253,15 +1193,13 @@ Namespace.Dialog = class
             const howMany = this._howManyToPost(codeletName);
 
             let urgency = (codeletName == 'breaker') ? 1 : 3;
-            if ((this.ctx.temperature.value() < 25) && 
-                codeletName.includes('translator')) { 
-                    urgency = 5; 
+            if ((this.ctx.temperature.value() < 25) && codeletName.includes('translator')) { 
+                urgency = 5; 
             }
 
             for (let i=0; i<howMany; i++) {
                 if (this.ctx.randGen.coinFlip(prob)){
-                    const codelet = 
-                        this.factory.create(codeletName, urgency, []);
+                    const codelet = this.factory.create(codeletName, urgency, []);
                     this.post(codelet);
                 }
             }
@@ -1281,10 +1219,7 @@ Namespace.Dialog = class
             return 1.0;
         }
         else if (codeletName.includes('replacement')) {
-            const unreplaced = wksp.objects.filter(o => 
-                (o.string == wksp.initialWString) &&
-                (o instanceof Namespace.Letter) && 
-                !o.replacement);
+            const unreplaced = wksp.objects.filter(o => (o.string == wksp.initialWString) && (o instanceof Namespace.Letter) && !o.replacement);
             return (unreplaced.length > 0) ? 1.0 : 0.0;
         }
         else if (codeletName.includes('rule')) {
@@ -1321,8 +1256,7 @@ Namespace.Dialog = class
             return 2;
         }
         else if (codeletName.includes('group') ) {
-            const numBonds = wksp.structures.filter(
-                o => o instanceof Namespace.Bond).length;
+            const numBonds = wksp.structures.filter(o => o instanceof Namespace.Bond).length;
             if (numBonds === 0) {
                 return 0;
             }
@@ -1345,22 +1279,17 @@ Namespace.Dialog = class
         if (codeletName.includes('group')) 
         {
             // Get the number of objects in the workspace that have no group.
-            const ungrouped = wksp.objects.filter(o => 
-                ((o.string == wksp.initialWString) || (o.string == wksp.targetWString)) &&
-                !o.spansString() && !o.group);
+            const ungrouped = wksp.objects.filter(o => ((o.string == wksp.initialWString) || (o.string == wksp.targetWString)) && !o.spansString() && !o.group);
             number = ungrouped.length;
         }
         if (codeletName.includes('replacement')) 
         {
-            const unreplaced = wksp.objects.filter(o => (o.string == wksp.initialWString) &&
-                (o instanceof Namespace.Letter) && !o.replacement);
+            const unreplaced = wksp.objects.filter(o => (o.string == wksp.initialWString) && (o instanceof Namespace.Letter) && !o.replacement);
             number = unreplaced.length;
         }
         if (codeletName.includes('correspondence')) 
         {
-            const uncorresp = wksp.objects.filter(o => 
-                ((o.string == wksp.initialWString) || (o.string == wksp.targetWString)) &&
-                !o.correspondence);
+            const uncorresp = wksp.objects.filter(o => ((o.string == wksp.initialWString) || (o.string == wksp.targetWString)) && !o.correspondence);
             number = uncorresp.length;
         }
 
@@ -1380,14 +1309,9 @@ Namespace.Dialog = class
         sourceDescriptor.activation = 100;
         destDescriptor.activation = 100;
         
-        const bond = new Namespace.Bond(source, destination, bondCategory,
-            bondFacet, sourceDescriptor, destDescriptor);
-        
-        const urgency = CodeletUtils.getUrgencyBin( 
-            bondCategory.bondDegreeOfAssociation() );
-
-        const codelet = this.factory.create(
-            'bond-strength-tester', urgency, [bond]);
+        const bond = new Namespace.Bond(source, destination, bondCategory, bondFacet, sourceDescriptor, destDescriptor);
+        const urgency = CodeletUtils.getUrgencyBin( bondCategory.bondDegreeOfAssociation() );
+        const codelet = this.factory.create('bond-strength-tester', urgency, [bond]);
         
         this.post(codelet);
         
@@ -1402,17 +1326,13 @@ Namespace.Dialog = class
      */    
     proposeDescription(obj, bondType, descriptor)
     {
-        const description = new Namespace.Description(
-            obj, bondType, descriptor);
-            
+        const description = new Namespace.Description(obj, bondType, descriptor);
         descriptor.activation = 100;
 
         const urgency = CodeletUtils.getUrgencyBin(bondType.activation);
+        const codelet = this.factory.create('description-strength-tester', urgency, [description]);
 
-        const newCodelet = this.factory.create(
-            'description-strength-tester', urgency, [description]);
-
-        this.post(newCodelet);
+        this.post(codelet);
         
         return description;
     }
@@ -1423,11 +1343,9 @@ Namespace.Dialog = class
      * the given attributes.
      *  
      */  
-    proposeCorrespondence(initialObject, targetObject, 
-        conceptMappings, flipTargetObject)
+    proposeCorrespondence(initialObject, targetObject, conceptMappings, flipTargetObject)
     {
-        const correspondence = new Namespace.Correspondence(initialObject, 
-            targetObject, conceptMappings, flipTargetObject);
+        const correspondence = new Namespace.Correspondence(initialObject, targetObject, conceptMappings, flipTargetObject);
 
         conceptMappings.forEach(m => {
             m.initialDescType.activation = 100;
@@ -1436,17 +1354,12 @@ Namespace.Dialog = class
             m.targetDescriptor.activation = 100;
         });
 
-        const mappings = correspondence.conceptMappings.filter(
-            m => m.isDistinguishing());
+        const mappings = correspondence.conceptMappings.filter(m => m.isDistinguishing());
         const numMappings = mappings.length;
+        const urgency = CodeletUtils.getUrgencyBin(mappings.reduce((a,b) => a + b.strength(), 0) / (numMappings || 1));
+        const codelet = this.factory.create('correspondence-strength-tester', urgency, [correspondence]);
 
-        const urgency = CodeletUtils.getUrgencyBin(
-             mappings.reduce((a,b) => a + b.strength(), 0) / (numMappings || 1));
-
-        const newCodelet = this.factory.create(
-            'correspondence-strength-tester', urgency, [correspondence]);
-
-        this.post(newCodelet);
+        this.post(codelet);
 
         return correspondence;
     }
@@ -1459,28 +1372,22 @@ Namespace.Dialog = class
      */ 
     proposeGroup(objects, bondList, groupCategory, directionCategory, bondFacet)
     {
-        const bondCategory = groupCategory.getRelatedNode(
-            this.ctx.slipnet.bondCategory);
+        const bondCategory = groupCategory.getRelatedNode(this.ctx.slipnet.bondCategory);
         bondCategory.activation = 100;
         if (directionCategory) { directionCategory.activation = 100; }
         
         const wstring = objects[0].string;
-        const group = new Namespace.Group(wstring, groupCategory, 
-            directionCategory, bondFacet, objects, bondList);
+        const group = new Namespace.Group(wstring, groupCategory, directionCategory, bondFacet, objects, bondList);
 
         // Provide UI feedback.
-        if (this.ctx.ui) {
-            this.ctx.ui.workspaceUi.getStringGraphic(wstring).
-                groupsGraphic.flashGrope(group);
+        if (this.ctx.ui && !this.ctx.batchMode) {
+            this.ctx.ui.workspaceUi.getStringGraphic(wstring).groupsGraphic.flashGrope(group);
         }
 
-        const urgency = CodeletUtils.getUrgencyBin( 
-            bondCategory.bondDegreeOfAssociation() );
+        const urgency = CodeletUtils.getUrgencyBin( bondCategory.bondDegreeOfAssociation() );
+        const codelet = this.factory.create('group-strength-tester', urgency, [group]);
 
-        const newCodelet = this.factory.create(
-            'group-strength-tester', urgency, [group]);
-
-        this.post(newCodelet);
+        this.post(codelet);
         
         return group;
     }
@@ -1493,8 +1400,7 @@ Namespace.Dialog = class
      */ 
     proposeRule(facet, description, category, relation)
     {
-        const rule = new Namespace.Rule(this.ctx, 
-            facet, description, category, relation);
+        const rule = new Namespace.Rule(this.ctx.workspace, facet, description, category, relation);
         rule.updateStrength();
 
         let depth = 0;
@@ -1503,11 +1409,9 @@ Namespace.Dialog = class
             depth = 100 * Math.sqrt(averageDepth / 100);
         }
         const urgency = CodeletUtils.getUrgencyBin(depth);
+        const codelet = this.factory.create('rule-strength-tester', urgency, [rule]);
 
-        const newCodelet = this.factory.create(
-            'rule-strength-tester', urgency, [rule]);
-
-        this.post(newCodelet);
+        this.post(codelet);
 
         return rule;
     }
@@ -1539,20 +1443,15 @@ Namespace.Dialog = class
     /**
      * @constructor
      * 
-     * @param {SlipNode} initialDescType - The description type of the first 
-     *      concept. For example, "objectCategory" or "stringPositionCategory".
-     * @param {SlipNode} targetDescType - The description type of the 
-     *      slipped concept.
-     * @param {SlipNode} initialDescriptor - The descriptor of the first 
-     *      concept. For example, "letter" or "rightmost".
-     * @param {SlipNode} targetDescriptor - The descriptor of the 
-     *     slipped concept. For example, "group" or "leftmost".
+     * @param {SlipNode} initialDescType - The description type of the first concept. For example, "objectCategory" or "stringPositionCategory".
+     * @param {SlipNode} targetDescType - The description type of the slipped concept.
+     * @param {SlipNode} initialDescriptor - The descriptor of the first concept. For example, "letter" or "rightmost".
+     * @param {SlipNode} targetDescriptor - The descriptor of the slipped concept. For example, "group" or "leftmost".
      * @param {WorkspaceObject} initialObject - The initial object.
      * @param {WorkspaceObject} targetObject - The target object.
      * 
      */
-    constructor(initialDescType, targetDescType, 
-        initialDescriptor, targetDescriptor, initialObject, targetObject) 
+    constructor(initialDescType, targetDescType, initialDescriptor, targetDescriptor, initialObject, targetObject) 
     { 
         this.slipnet = initialDescType.slipnet;
         this.initialDescType = initialDescType;
@@ -1573,9 +1472,7 @@ Namespace.Dialog = class
     {
         const label = this.label ? this.label.name : 'Anonymous';
         
-        const s0 = `${label} from ${this.initialDescriptor.synopsis(0)} to ` + 
-            `${this.targetDescriptor.synopsis(0)}`;
-
+        const s0 = `${label} from ${this.initialDescriptor.synopsis(0)} to ` + `${this.targetDescriptor.synopsis(0)}`;
         const s1 = `<ConceptMapping: ${s0}>`;
 
         return !type ? s0 : s1;
@@ -1593,8 +1490,7 @@ Namespace.Dialog = class
             return 100;
         }
 
-        const depth = (this.initialDescriptor.depth + 
-            this.targetDescriptor.depth) / 200;
+        const depth = (this.initialDescriptor.depth + this.targetDescriptor.depth) / 200;
         return association * (1 - depth * depth);
     }
 
@@ -1611,8 +1507,7 @@ Namespace.Dialog = class
         if (association >= 100.0) {
             return 100;
         }
-        const depth = (this.initialDescriptor.depth +
-            this.targetDescriptor.depth) / 200;
+        const depth = (this.initialDescriptor.depth + this.targetDescriptor.depth) / 200;
         return association * (1 + depth * depth);
     }
 
@@ -1645,8 +1540,7 @@ Namespace.Dialog = class
      */
     canSlip()
     {
-        return ((this.label != this.slipnet.identity) && 
-            (this.label != this.slipnet.sameness));
+        return ((this.label != this.slipnet.identity) && (this.label != this.slipnet.sameness));
     }
     
     
@@ -1656,8 +1550,7 @@ Namespace.Dialog = class
      */
     isDistinguishing()
     {
-        if ( (this.initialDescriptor == this.slipnet.whole) &&
-            (this.targetDescriptor == this.slipnet.whole) ) {
+        if ( (this.initialDescriptor == this.slipnet.whole) && (this.targetDescriptor == this.slipnet.whole) ) {
                 return false;
         }
         else if (this.initialObject && this.targetObject) {
@@ -1678,15 +1571,12 @@ Namespace.Dialog = class
      */
     isContainedIn(mappings)
     {
-        for (let m of mappings) {
-            if ((m.initialDescType == this.initialDescType) &&
-                (m.targetDescType == this.targetDescType) &&
-                (m.initialDescriptor == this.initialDescriptor) &&
-                (m.targetDescriptor == this.targetDescriptor) ) {
-                return true;
-            }
-        }
-        return false;
+        return mappings.some(m => 
+            (m.initialDescType == this.initialDescType) &&
+            (m.targetDescType == this.targetDescType) &&
+            (m.initialDescriptor == this.initialDescriptor) &&
+            (m.targetDescriptor == this.targetDescriptor)
+        );
     }
 
 
@@ -1698,14 +1588,11 @@ Namespace.Dialog = class
      */
     isNearlyContainedIn(mappings)
     {
-        for (let m of mappings) {
-            if ((m.initialDescType == this.initialDescType) &&
-                (m.targetDescType == this.targetDescType) &&
-                (m.initialDescriptor == this.initialDescriptor) ) {
-                return true;
-            }
-        }
-        return false;
+        return mappings.some(m =>
+            (m.initialDescType == this.initialDescType) &&
+            (m.targetDescType == this.targetDescType) &&
+            (m.initialDescriptor == this.initialDescriptor)
+        );
     }
 
 
@@ -1720,20 +1607,13 @@ Namespace.Dialog = class
             return this;
         }
 
-        const bond = 
-            this.targetDescriptor.getBondCategory(this.initialDescriptor);
+        const bond = this.targetDescriptor.getBondCategory(this.initialDescriptor);
         if (bond != this.label) {
             return this;
         }
 
         return new Namespace.ConceptMapping(
-            this.targetDescType,
-            this.initialDescType,
-            this.targetDescriptor,
-            this.initialDescriptor,
-            this.initialObject,
-            this.targetObject
-        );
+            this.targetDescType, this.initialDescType, this.targetDescriptor, this.initialDescriptor, this.initialObject, this.targetObject);
     }
 
 
@@ -1743,8 +1623,7 @@ Namespace.Dialog = class
      */
     isRelevant()
     {
-        return ( this.initialDescType.isFullyActive() &&
-            this.targetDescType.isFullyActive() );
+        return ( this.initialDescType.isFullyActive() && this.targetDescType.isFullyActive() );
     }
 
 
@@ -1770,8 +1649,8 @@ Namespace.Dialog = class
     {
         // Concept-mappings (a -> b) and (c -> d) are incompatible if a is
         // related to c or if b is related to d, and the a -> b relationship is
-        // different from the c -> d relationship. E.g., rightmost -> leftmost
-        // is incompatible with right -> right.
+        // different from the c -> d relationship. 
+        // E.g., rightmost -> leftmost is incompatible with right -> right.
         if (!this.isRelatedTo(other)) {
             return false;
         }
@@ -1791,10 +1670,9 @@ Namespace.Dialog = class
     {
         // Concept-mappings (a -> b) and (c -> d) support each other if a is
         // related to c and if b is related to d and the a -> b relationship is
-        // the same as the c -> d relationship.  E.g., rightmost -> rightmost
-        // supports right -> right and leftmost -> leftmost.
-        if ((other.initialDescType == this.initialDescType) &&
-            (other.targetDescType == this.targetDescType) ) {
+        // the same as the c -> d relationship.  
+        // E.g., rightmost -> rightmost supports right -> right and leftmost -> leftmost.
+        if ((other.initialDescType == this.initialDescType) && (other.targetDescType == this.targetDescType) ) {
             return true;
         }
 
@@ -1815,27 +1693,19 @@ Namespace.Dialog = class
      * 
      * @param {WorkspaceObject} initialObject - The initial object.
      * @param {WorkspaceObject} targetObject - The target object.
-     * @param {Array<Description>} initialDescriptions - Descriptions of 
-     *      the initial object.
-     * @param {Array<Description>} targetDescriptions - Descriptions of 
-     *      the target object.
+     * @param {Array<Description>} initialDescriptions - Descriptions of the initial object.
+     * @param {Array<Description>} targetDescriptions - Descriptions of the target object.
      *
      */
-    static getMappings(initialObject, targetObject, 
-        initialDescriptions, targetDescriptions)
+    static getMappings(initialObject, targetObject, initialDescriptions, targetDescriptions)
     {
         const mappings = [];
-        for (let initial of initialDescriptions) {
-            for (let target of targetDescriptions) {
-                if (initial.descriptionType == target.descriptionType) {
-                    if ((initial.descriptor == target.descriptor) ||
-                      initial.descriptor.isSlipLinkedTo(target.descriptor)) {
-                        mappings.push(
-                            new Namespace.ConceptMapping(
-                                initial.descriptionType, target.descriptionType,
-                                initial.descriptor, target.descriptor,
-                                initialObject, targetObject)
-                        );
+        for (let ini of initialDescriptions) {
+            for (let targ of targetDescriptions) {
+                if (ini.descriptionType == targ.descriptionType) {
+                    if ((ini.descriptor == targ.descriptor) || ini.descriptor.isSlipLinkedTo(targ.descriptor)) {
+                        mappings.push( new Namespace.ConceptMapping(
+                            ini.descriptionType, targ.descriptionType, ini.descriptor, targ.descriptor, initialObject, targetObject) );
                     }
                 }
             }
@@ -1917,8 +1787,7 @@ Namespace.Dialog = class
 /**
  * @classdesc
  * This is the main class for the Copycat algorithm. 
- * It contains the Slipnet, Workspace, and Coderack obects, and 
- * the main program loop. 
+ * It contains the Slipnet, Workspace, and Coderack obects, and the main program loop. 
  * 
  */
  Namespace.Copycat = class {
@@ -1926,25 +1795,24 @@ Namespace.Dialog = class
     /**
      * @constructor
      * 
-     * @param {Boolean} useGui - Whether to use a graphical user interface.
-     * @param {Number|String} randSeed - A seed value for the random
-     *   number generator.
+     * @param {Number|String} randSeed - A seed value for the random number generator.
      */
-    constructor(
-        {useGui=true, randSeed=42}) 
+    constructor(args = {randSeed:42, omitGui:false}) 
     { 
-        this.randGen = new Namespace.RandGen(randSeed);
+        this.randGen     = new Namespace.RandGen(args.randSeed);
         this.temperature = new Namespace.Temperature();
-        this.slipnet = new Namespace.Slipnet();
-        this.coderack = new Namespace.Coderack(this);
-        this.workspace = new Namespace.Workspace(this);
-        this.workspace.reset('abc', 'abd', 'pqr');
-        this.reporter = new Namespace.ConsoleReporter();
-        this.ui = useGui ? new Namespace.CopycatUi(this) : null;
-        
+        this.slipnet     = new Namespace.Slipnet();
+        this.coderack    = new Namespace.Coderack(this);
+        this.workspace   = new Namespace.Workspace(this);
+        this.reporter    = new Namespace.ConsoleReporter();
+        this.ui          = args.omitGui ? null : new Namespace.CopycatUi(this); // omitGui is used by unit tests
+        this.batchMode   = false;
+        this.batchSize   = 1000;
+        this.batchCount  = 0;
+        this.batchId     = 0;
         this.stepTimerId = null;
-        this.stepDelay = 50;
-        this.runCompletionCallback = null;
+        this.stepDelay   = 50;
+
         this._setState('ready');
     }
     
@@ -1959,13 +1827,11 @@ Namespace.Dialog = class
     setStrings(initial, modified, target)
     {
         if (this.state == 'running') { 
-            this.reporter.warn(`setStrings request ignored - ` +
-              `Copycat is in ${this.state} state`);
+            this.reporter.warn(`setStrings request ignored - Copycat is in ${this.state} state`);
             return; 
         }
         if (![initial, modified, target].every(this.checkInputString)) {
-            this.reporter.warn(`setStrings request ignored - ` +
-              `input strings must contain only letters`);
+            this.reporter.warn(`setStrings request ignored - input strings must contain only letters`);
             return;
         }
         this.workspace.reset(initial, modified, target);
@@ -1982,7 +1848,22 @@ Namespace.Dialog = class
      */
     checkInputString(string)
     {
-        return  string.length && !/[^a-z]/i.test(string);
+        return string.length && !/[^a-z]/i.test(string);
+    }
+
+
+    /**
+     * Toggles us in or out of batch mode.
+     * 
+     * @param {Boolean} value - The batchmode flag
+     * 
+     */
+    toggleBatchMode(value)
+    {
+        this.ui.batchmodeUi.clearTable();
+        this.reset();
+        this.batchMode = value;
+        this.ui._onBatchModeToggled();
     }
 
 
@@ -2011,20 +1892,22 @@ Namespace.Dialog = class
     /**
      * Starts running the copycat algorithm with the current strings.
      * 
-     * @param {Function} [completionCallback] - A function to call when
-     *   the run is completed.
      */
-    start(completionCallback=null)
+    start()
     {
         if ((this.state != 'ready') && (this.state != 'done')) { 
-            this.reporter.warn(`start request ignored - ` +
-              `Copycat is in ${this.state} state`);
+            this.reporter.warn(`start request ignored - Copycat is in ${this.state} state`);
         }
         else {
-            this.runCompletionCallback = completionCallback;
             this.reset();
             this._setState('running');
-            this._runNextCodelet();
+
+            if (this.batchMode) {
+                this.batchCount = 0;
+                this.batchRun(); 
+            } else {
+                this._runNextCodelet();
+            }
         } 
     }
 
@@ -2036,8 +1919,7 @@ Namespace.Dialog = class
     pause()
     {
         if (this.state != 'running') {
-            this.reporter.warn(`pause request ignored - ` +
-              `Copycat is in ${this.state} state`);
+            this.reporter.warn(`pause request ignored - Copycat is in ${this.state} state`);
         }
         else {
             window.clearTimeout(this.stepTimerId);
@@ -2054,12 +1936,11 @@ Namespace.Dialog = class
     resume()
     {
         if (this.state != 'paused') {
-            this.reporter.warn(`resume request ignored -  ` +
-             `Copycat is in ${this.state} state`);
+            this.reporter.warn(`resume request ignored - Copycat is in ${this.state} state`);
         }
         else {
             this._setState('running');
-            this._runNextCodelet();
+            if (!this.batchMode) { this._runNextCodelet(); }
         }
     }
 
@@ -2071,13 +1952,11 @@ Namespace.Dialog = class
     singleStep()
     {
         if ((this.state != 'ready') && (this.state != 'paused')) {
-            this.reporter.warn(`singleStep request ignored -  ` +
-              `Copycat is in ${this.state} state`);
+            this.reporter.warn(`singleStep request ignored - Copycat is in ${this.state} state`);
         }
         else {
-            if (this.state != 'paused') { 
-                this._setState('paused'); }
-            this._runNextCodelet();
+            if (this.state != 'paused') { this._setState('paused'); }
+            if (!this.batchMode) { this._runNextCodelet(); }
         }
     }
 
@@ -2108,16 +1987,17 @@ Namespace.Dialog = class
      */
     _runNextCodelet() 
     {
+        if (this.batchMode) { return; }
+
         if (this.ui && !this.ui.workspaceUi.flasher.isIdle()) {
-            this.stepTimerId = window.setTimeout(
-                () => this._runNextCodelet(), 2*this.stepDelay);
+            this.stepTimerId = window.setTimeout( () => this._runNextCodelet(), 2*this.stepDelay );
             return;
         }
 
         const currentTime = this.coderack.numCodeletsRun;
         this.temperature.tryUnclamp(currentTime);
 
-        // After every few codelets, we update everything, 
+        // After every 5 codelets, we update everything, 
         if ((currentTime % 5) === 0) 
         {
             this.workspace.updateEverything();
@@ -2137,16 +2017,11 @@ Namespace.Dialog = class
         if (!this.workspace.finalAnswer) 
         {
             if (this.state == 'running') {
-                this.stepTimerId = window.setTimeout(
-                    this._runNextCodelet.bind(this), this.stepDelay); 
+                this.stepTimerId = window.setTimeout( this._runNextCodelet.bind(this), this.stepDelay ); 
             }   
         }
         else {
             this._setState('done');
-            if (this.runCompletionCallback) { 
-                this.runCompletionCallback(); 
-                this.runCompletionCallback = null;
-            }
         }
     }
 
@@ -2179,69 +2054,85 @@ Namespace.Dialog = class
      * Runs the Copycat algorithm multiple times on a given input, 
      * and returns the resulting stats.
      *
-     * @param {String} initial - The initial string.
-     * @param {String} modified - The modified string.
-     * @param {String} target - The target string.
-     * @param {Number} numIterations - The number of times to run the algorithm.
+     * @param {Number} maxIterations - The maximum number of times to run the solver.
      */
-    batchRun(initial, modified, target, numIterations)
+    async batchRun()
     {
-        // Disable the gui while we run
-        const ui = this.ui;
-        this.ui = null;
+        this.batchId++;
+        const batchId = this.batchId;
+        await new Promise(r => setTimeout(r, 250)); // Process ui events
+        if (!this.batchMode || (batchId != this.batchId)) { return; }
 
-        const answerDict = {};
-        for (let iter=0; iter<numIterations; iter++)
+        const resultsDict = {};
+        let batchChunkSize = 5;
+
+        // eslint-disable-next-line no-constant-condition
+        while (this.batchCount < this.batchSize)
         {
-            // Initialize everything
-            this.coderack.reset();
-            this.slipnet.reset();
-            this.temperature.reset(); 
-            this.workspace.reset(initial, modified, target);
-
-            // Run codelets until an answer is obtained
-            while (!this.workspace.finalAnswer)
+            // Solve the problem batchCunkSize times
+            for (let i = 0; i < batchChunkSize; i++)   
             {
-                const currentTime = this.coderack.numCodeletsRun;
-                this.temperature.tryUnclamp(currentTime);
-        
-                // Update evrything, after every few codelets
-                if ((currentTime % 5) === 0) 
+                // Initialize everything
+                this.coderack.reset();
+                this.slipnet.reset();
+                this.temperature.reset(); 
+                this.workspace.reset();
+
+                // Run codelets until an answer is obtained
+                while (!this.workspace.finalAnswer)
                 {
-                    this.workspace.updateEverything();
-                    this.coderack.updateCodelets();
-                    this.slipnet.update(this.randGen, (currentTime == 245));
-                    this.temperature.set(this.workspace.calcTemperature());
+                    const currentTime = this.coderack.numCodeletsRun;
+                    this.temperature.tryUnclamp(currentTime);
+            
+                    // Update evrything, after every 5 codelets
+                    if ((currentTime % 5) === 0) 
+                    {
+                        this.workspace.updateEverything();
+                        this.coderack.updateCodelets();
+                        this.slipnet.update(this.randGen, (currentTime == 245));
+                        this.temperature.set(this.workspace.calcTemperature());
+                    }
+            
+                    // Run a codelet
+                    this.coderack.chooseAndRunCodelet();
                 }
-        
-                // Run a codelet
-                this.coderack.chooseAndRunCodelet();
+
+                // Add the answer to our dictionary
+                const answer = this.workspace.finalAnswer;
+                const temp = this.temperature.lastUnclampedValue;
+                const time = this.coderack.numCodeletsRun;
+                const key = answer + ':' + this.workspace.rule?.synopsis(0) || '';           
+                if ( !(key in resultsDict) ) {
+                    resultsDict[key] = {'answer': answer, 'count': 0, 'sumtemp': 0, 'sumtime': 0, 'rule': this.workspace.rule?.synopsis(0) || ''}; 
+                }
+                resultsDict[key].count += 1;
+                resultsDict[key].sumtemp += temp;
+                resultsDict[key].sumtime += time;
+
+                this.batchCount += 1;
             }
 
-            // Add the answer to our dictionary
-            const answer = this.workspace.finalAnswer;
-            const temp = this.temperature.lastUnclampedValue;
-            const time = this.coderack.numCodeletsRun;            
-            if ( !(answer in answerDict) ) {
-                answerDict[answer] = {'count': 0, 'sumtemp': 0, 'sumtime': 0}; 
+            // Display progress
+            if (this.ui) { this.ui.batchmodeUi._onBatchResultsUpdated(resultsDict); }
+            await new Promise(r => setTimeout(r, 250)); 
+            if (!this.batchMode || (batchId != this.batchId)) { return; }
+
+            // Are we done?
+            if (this.batchCount < this.batchSize) 
+            {
+                while (this.state == 'paused') { 
+                    await new Promise(r => setTimeout(r, 500)); 
+                }
+                if (!this.batchMode || (batchId != this.batchId)) { 
+                    return; 
+                }
+                if ((this.state == 'ready') || (this.state == 'done')) {
+                    break;
+                } 
             }
-            answerDict[answer].count += 1;
-            answerDict[answer].sumtemp += temp;
-            answerDict[answer].sumtime += time;
         }
 
-        // Compute overall stats
-        for (const key of Object.keys(answerDict)) {
-            const ans = answerDict[key];
-            ans.avgtemp = ans.sumtemp / ans.count;
-            ans.avgtime = ans.sumtime / ans.count;
-        }
-        this.reporter.info(answerDict);
-
-        // Re-enable the gui
-        this.ui = ui;
-        
-        return answerDict;
+        this._setState('ready');
     }
 
 };
@@ -2271,20 +2162,16 @@ Namespace.Dialog = class
 
     /**
      * @constructor
-     * @param {WorkspaceObject} objFromInitial - An object fron the initial 
-     *      string.  
-     * @param {WorkspaceObject} objFromTarget - The corresponding object 
-     *      in the target string.
-     * @param {Array<ConceptMapping>} conceptMappings - The list of concept 
-     *      mappings underlying the correspondence.
-     * @param {Boolean} flipTargetObject - Whether the target object 
-     *      should be flipped.
+     * @param {WorkspaceObject} objFromInitial - An object from the initial string.  
+     * @param {WorkspaceObject} objFromTarget - The corresponding object in the target string.
+     * @param {Array<ConceptMapping>} conceptMappings - The list of concept mappings underlying the correspondence.
+     * @param {Boolean} flipTargetObject - Whether the target object should be flipped.
      */
     constructor(objFromInitial, objFromTarget, 
         conceptMappings, flipTargetObject) 
     { 
         // WorkspaceStructure members
-        this.ctx = objFromInitial.ctx;
+        this.wksp = objFromInitial.wksp;
         this.string = null;
         this.totalStrength = 0;
 
@@ -2305,11 +2192,8 @@ Namespace.Dialog = class
      */
     synopsis(type)
     {
-        let s = this.objFromInitial.synopsis() +' <--> ' + 
-            this.objFromTarget.synopsis() + ' (';
-        for (let cm of this.conceptMappings) {
-            s += cm.synopsis(0) + ', ';
-        }
+        let s = this.objFromInitial.synopsis() +' <--> ' + this.objFromTarget.synopsis() + ' (';
+        this.conceptMappings.forEach(cm => s += cm.synopsis(0) + ', ');
         s = s.substring(0, s.length-2) + ')';
 
         return !type ? s : '<Correspondence: ' + s + '>';
@@ -2324,8 +2208,7 @@ Namespace.Dialog = class
      */
     build()
     {
-        const wksp = this.ctx.workspace;
-        wksp.structures.push(this);
+        this.wksp.structures.push(this);
 
         if (this.objFromInitial.correspondence) {
             this.objFromInitial.correspondence.break();
@@ -2336,40 +2219,30 @@ Namespace.Dialog = class
         this.objFromInitial.correspondence = this;
         this.objFromTarget.correspondence = this;
         
-        // Add mappings to accessory-concept-mapping list, as follows:  
+        // Add mappings to the accessory-concept-mapping list, as follows:  
         // Add any bond-concept-mappings.  Also add the symmetric slippages 
         // of the bond-concept-mappings (if they are slippages) and of 
         // other relevant, distinguishing slippages.
-        const relevantMappings = this.conceptMappings.filter(
-            m => m.isDistinguishing() && m.isRelevant());
+        const relevantMappings = this.conceptMappings.filter(m => m.isDistinguishing() && m.isRelevant());
         for (let mapping of relevantMappings) {
             if (mapping.canSlip()) {
                 this.accessoryConceptMappings.push(mapping.symmetricVersion());
             }
         }
-        if ( (this.objFromInitial instanceof Namespace.Group) && 
-                (this.objFromTarget instanceof Namespace.Group) ) {
+        if ( (this.objFromInitial instanceof Namespace.Group) && (this.objFromTarget instanceof Namespace.Group) ) {
             const bondMappings = Namespace.ConceptMapping.getMappings(
-                this.objFromInitial,
-                this.objFromTarget,
-                this.objFromInitial.bondDescriptions,
-                this.objFromTarget.bondDescriptions
-            );
+                this.objFromInitial, this.objFromTarget, this.objFromInitial.bondDescriptions, this.objFromTarget.bondDescriptions);
+                
             for (let mapping of bondMappings) {
                 this.accessoryConceptMappings.push(mapping);
                 if (mapping.canSlip()) {
-                    this.accessoryConceptMappings.push(
-                        mapping.symmetricVersion());
+                    this.accessoryConceptMappings.push(mapping.symmetricVersion());
                 }
             }
         }
 
         // Activate the correspondence labels.
-        for (let mapping of this.conceptMappings) {
-            if (mapping.label) {
-                mapping.label.activation = 100;
-            }
-        }
+        this.conceptMappings.filter(m => m.label).forEach(m => m.label.activation = 100);
     }  
 
 
@@ -2379,8 +2252,7 @@ Namespace.Dialog = class
      */
     break()
     {
-        const wksp = this.ctx.workspace;
-        wksp.structures = wksp.structures.filter(s => s !== this);
+        this.wksp.structures = this.wksp.structures.filter(s => s !== this);
         this.objFromInitial.correspondence = null;
         this.objFromTarget.correspondence = null;
     }
@@ -2394,36 +2266,28 @@ Namespace.Dialog = class
     {
         // Internal strength is A function of the number of concept mappings,
         // as well as their strength and how well they cohere.
-        var internalStrength, externalStrength;
-        const distinguishingMappings = this.conceptMappings.filter(
-            m => m.isDistinguishing() && m.isRelevant());
+        let internalStrength, externalStrength;
+        const distinguishingMappings = this.conceptMappings.filter(m => m.isDistinguishing() && m.isRelevant());
         const numConceptMappings = distinguishingMappings.length;
         if (numConceptMappings < 1) {
             internalStrength = 0;
         }
         else {
-            const avgStrength = distinguishingMappings.reduce(
-                (a,b) => a + b.strength(), 0) / numConceptMappings;
-            const numConceptMappingsFctr = (numConceptMappings == 1) ? 0.8 : 
-                (numConceptMappings == 2) ? 1.2 : 1.6;
-            const internalCoherenceFctr = 
-                this._isInternallyCoherent() ? 2.5 : 1.0;
-            internalStrength = Math.min(100, 
-                avgStrength*internalCoherenceFctr*numConceptMappingsFctr);        
+            const avgStrength = distinguishingMappings.reduce((a,b) => a + b.strength(), 0) / numConceptMappings;
+            const numConceptMappingsFctr = (numConceptMappings == 1) ? 0.8 : (numConceptMappings == 2) ? 1.2 : 1.6;
+            const internalCoherenceFctr = this._isInternallyCoherent() ? 2.5 : 1.0;
+            internalStrength = Math.min(100, avgStrength*internalCoherenceFctr*numConceptMappingsFctr);        
         }
 
         // External strength:
-        if ((this.objFromInitial instanceof Namespace.Letter) && 
-            this.objFromInitial.spansString()) {
-                externalStrength = 100;
+        if ((this.objFromInitial instanceof Namespace.Letter) && this.objFromInitial.spansString()) {
+            externalStrength = 100;
         }
-        else if ((this.objFromTarget instanceof Namespace.Letter) && 
-            this.objFromTarget.spansString()) {
-                externalStrength = 100;
+        else if ((this.objFromTarget instanceof Namespace.Letter) && this.objFromTarget.spansString()) {
+            externalStrength = 100;
         }
         else {
-            const wc = this.ctx.workspace.structures.filter(s => 
-                (s instanceof Namespace.Correspondence) && this._supports(s));
+            const wc = this.wksp.structures.filter(s => (s instanceof Namespace.Correspondence) && this._supports(s));
             const total = wc.reduce((a,b) => a + b.totalStrength, 0);
             externalStrength = Math.min(total, 100);
         }
@@ -2437,7 +2301,7 @@ Namespace.Dialog = class
 
     /**
      * Indicates whether the Correspondence has the same assigned initial or
-     * target object as the gievn one, or has any concept mappings that are  
+     * target object as the given one, or has any concept mappings that are  
      * incompatible with those of the given one.
      * 
      * @param {Correspondence} other - The Correspondence to compare with.
@@ -2447,9 +2311,8 @@ Namespace.Dialog = class
         if (!other) {
             return false;
         }
-        if ((this.objFromInitial == other.objFromInitial) || 
-              (this.objFromTarget == other.objFromTarget)) {
-                 return true;
+        if ((this.objFromInitial == other.objFromInitial) || (this.objFromTarget == other.objFromTarget)) {
+            return true;
         }
 
         for (let mapping of this.conceptMappings) {
@@ -2471,10 +2334,7 @@ Namespace.Dialog = class
     getSlippableMappings() 
     {
         const mappings = this.conceptMappings.filter(m => m.canSlip());
-
-        mappings.push(
-            ...this.accessoryConceptMappings.filter(m => m.canSlip()));
-            
+        mappings.push(...this.accessoryConceptMappings.filter(m => m.canSlip()));
         return mappings;
     }
 
@@ -2487,17 +2347,13 @@ Namespace.Dialog = class
      */
     _supports(other)
     {
-        if ( (this == other) || 
-            (this.objFromInitial == other.objFromInitial) ||
-            (this.objFromTarget == other.objFromTarget) || 
-            this.isIncompatibleWith(other) ) {
+        if ( (this == other) || (this.objFromInitial == other.objFromInitial) ||
+             (this.objFromTarget == other.objFromTarget) || this.isIncompatibleWith(other) ) {
                 return false;
         }
 
-        const thisDcMappings = this.conceptMappings.filter(
-            m => m.isDistinguishing());
-        const otherDcMappings = other.conceptMappings.filter(
-            m => m.isDistinguishing());
+        const thisDcMappings = this.conceptMappings.filter(m => m.isDistinguishing());
+        const otherDcMappings = other.conceptMappings.filter(m => m.isDistinguishing());
         for (let mapping of thisDcMappings) {
             for (let otherMapping of otherDcMappings) {
                 if (mapping.supports(otherMapping)) {
@@ -2517,8 +2373,7 @@ Namespace.Dialog = class
      */
     _isInternallyCoherent()
     {
-        const mappings = this.conceptMappings.filter(
-            m => m.isDistinguishing() && m.isRelevant());
+        const mappings = this.conceptMappings.filter(m => m.isDistinguishing() && m.isRelevant());
         for (let i=0; i<mappings.length; i++) {
             for (let j=0; j<mappings.length; j++) {
                 if (i !== j) {
@@ -2551,8 +2406,7 @@ Namespace.Dialog = class
  * @classdesc
  * This class encapsulates a description of a Letter or Group.
  * 
- * A description consists of a (descriptionType, descriptor) pair. Some 
- * examples are: 
+ * A description consists of a (descriptionType, descriptor) pair. Some examples are: 
  * <ul style="list-style: none;">
  *   <li> (objectCategory, letter) </li>
  *   <li> (letterCategory, a) </li>
@@ -2567,14 +2421,13 @@ Namespace.Dialog = class
      * @constructor
      * 
      * @param {WorkspaceObject} obj - The object being described.
-     * @param {SlipNode} descriptionType - The aspect being described, 
-     * e.g., objectCategory.
+     * @param {SlipNode} descriptionType - The aspect being described, e.g., objectCategory.
      * @param {SlipNode} descriptor - The value of the aspect, e.g., letter.
      */
     constructor(obj, descriptionType, descriptor) 
     { 
         // WorkspaceStructure members
-        this.ctx = obj.ctx;
+        this.wksp = obj.wksp;
         this.string = obj.string;
         this.totalStrength = 0;
 
@@ -2590,7 +2443,7 @@ Namespace.Dialog = class
      */
     synopsis(type)
     {
-        const wksp = this.ctx.workspace;
+        const wksp = this.wksp;
         let s = this.object.synopsis(1);
 
         if (this.object.string == wksp.initialWString) {
@@ -2619,8 +2472,7 @@ Namespace.Dialog = class
      */
     sameAs(other) 
     {
-        return ((other.descriptionType == this.descriptionType) && 
-            (other.descriptor == this.descriptor));
+        return ((other.descriptionType == this.descriptionType) && (other.descriptor == this.descriptor));
     }
 
 
@@ -2649,11 +2501,7 @@ Namespace.Dialog = class
         let numDescribedLikeThis = 0;
         for (let other of this.string.objects.filter(o => o != this.object)) {
             if ( !this.object.isWithin(other) && !other.isWithin(this.object) ) {
-                for (let od of other.descriptions) {
-                    if (od.descriptionType == this.descriptionType) {
-                        numDescribedLikeThis += 1;
-                    }
-                }
+                numDescribedLikeThis += other.descriptions.filter(od => od.descriptionType == this.descriptionType).length;
             }
         }
         const supportVals = [0, 20, 60, 90, 100]; 
@@ -2679,10 +2527,8 @@ Namespace.Dialog = class
         if (!this.object.hasDescriptor(this.descriptor)) {
             this.object.descriptions.push(this);
         }
-
-        const wksp = this.ctx.workspace;
-        if (!wksp.structures.includes(this)) {
-            wksp.structures.push(this);   
+        if (!this.wksp.structures.includes(this)) {
+            this.wksp.structures.push(this);   
         }
     }
 
@@ -2693,11 +2539,8 @@ Namespace.Dialog = class
      */
     break()
     {
-        this.ctx.workspace.structures = 
-            this.ctx.workspace.structures.filter(s => s !== this);
-        
-        this.object.descriptions = 
-            this.object.descriptions.filter(s => s !== this);
+        this.wksp.structures = this.wksp.structures.filter(s => s !== this);
+        this.object.descriptions = this.object.descriptions.filter(s => s !== this);
     }
        
  };
@@ -2726,14 +2569,10 @@ Namespace.Dialog = class
     /**
      * @constructor
      * 
-     * @param {WorkspaceString} str - The string containing the 
-     *     grouped objects.
-     * @param {SlipNode} groupCategory - The group category (successor or 
-     *     predecessor or sameness).
-     * @param {SlipNode} dirCategory - The direction category (left or 
-     *      right or null).
-     * @param {SlipNode} facet - The description type of the 
-     *      bonds in the Group. 
+     * @param {WorkspaceString} str - The string containing the grouped objects.
+     * @param {SlipNode} groupCategory - The group category (successor or predecessor or sameness).
+     * @param {SlipNode} dirCategory - The direction category (left or right or null).
+     * @param {SlipNode} facet - The description type of the bonds in the Group. 
      * @param {Array<WorkspaceObject>} objectList - The objects in the Group. 
      * @param {Array<Bond>} bondList - The bonds in the Group.
      * 
@@ -2750,8 +2589,7 @@ Namespace.Dialog = class
         this.facet = facet;
         this.objectList = objectList;
         this.bondList = bondList;
-        this.bondCategory = this.groupCategory.getRelatedNode(
-            this.ctx.slipnet.bondCategory);
+        this.bondCategory = this.groupCategory.getRelatedNode(this.wksp.ctx.slipnet.bondCategory);
 
         const leftObject = objectList[0];
         const rightObject = objectList[objectList.length-1];
@@ -2775,19 +2613,14 @@ Namespace.Dialog = class
     _addDescriptions()
     {
         const addDescription = function(group, descriptionType, descriptor) {
-            group.descriptions.push( 
-                new Namespace.Description(group, descriptionType, descriptor)
-            );
+            group.descriptions.push( new Namespace.Description(group, descriptionType, descriptor) );
         };
 
-        const sn = this.ctx.slipnet;
+        const sn = this.wksp.ctx.slipnet;
         if (this.bondList && this.bondList.length) {
-            this.bondDescriptions.push( 
-                new Namespace.Description(
-                    this, sn.bondFacet, this.bondList[0].facet));
+            this.bondDescriptions.push( new Namespace.Description(this, sn.bondFacet, this.bondList[0].facet) );
         }
-        this.bondDescriptions.push(
-            new Namespace.Description(this, sn.bondCategory, this.bondCategory));
+        this.bondDescriptions.push( new Namespace.Description(this, sn.bondCategory, this.bondCategory) );
 
         addDescription(this, sn.objectCategory, sn.group);
         addDescription(this, sn.groupCategory, this.groupCategory);
@@ -2813,13 +2646,13 @@ Namespace.Dialog = class
         }
         
         // Maybe add a length description
+        const ctx = this.wksp.ctx;
         const nobjs = this.objectList.length;
         if (nobjs < 6) {
-            const exp = Math.pow(nobjs,3) * 
-                (100 - this.ctx.slipnet.length.activation) / 100;
-            const val = this.ctx.temperature.getAdjustedProb( Math.pow(0.5, exp) );
+            const exp = Math.pow(nobjs,3) * (100 - ctx.slipnet.length.activation) / 100;
+            const val = ctx.temperature.getAdjustedProb( Math.pow(0.5, exp) );
             const prob = (val < 0.06) ? 0 : val;
-            if (this.ctx.randGen.coinFlip(prob)) {
+            if (ctx.randGen.coinFlip(prob)) {
                 addDescription(this, sn.length, sn.numbers[nobjs - 1]);
             }
         }
@@ -2848,9 +2681,8 @@ Namespace.Dialog = class
      */
     build()
     {
-        const wksp = this.ctx.workspace;
-        wksp.objects.push(this);
-        wksp.structures.push(this);
+        this.wksp.objects.push(this);
+        this.wksp.structures.push(this);
         this.string.objects.push(this);
         this.objectList.forEach( obj => obj.group = this );
         this.descriptions.forEach( descr => descr.build() );
@@ -2880,9 +2712,8 @@ Namespace.Dialog = class
         this.descriptions.slice().forEach( descr => descr.break() );
         this.objectList.forEach( obj => obj.group = null );
 
-        const wksp = this.ctx.workspace;
-        wksp.structures = wksp.structures.filter(s => s !== this);
-        wksp.objects = wksp.objects.filter(s => s !== this);
+        this.wksp.structures = this.wksp.structures.filter(s => s !== this);
+        this.wksp.objects = this.wksp.objects.filter(s => s !== this);
         this.string.objects = this.string.objects.filter(s => s !== this);
     }
 
@@ -2920,13 +2751,11 @@ Namespace.Dialog = class
      */
     flippedVersion()
     {
-        const sn = this.ctx.slipnet;
+        const sn = this.wksp.ctx.slipnet;
         const flippedBonds = this.bondList.map( b => b.flippedVersion() );
         const flippedGroupCat = this.groupCategory.getRelatedNode(sn.opposite);
-        const flippedDirectionCat = 
-            this.directionCategory.getRelatedNode(sn.opposite);
-        return new Namespace.Group(this.string, flippedGroupCat, 
-            flippedDirectionCat, this.facet, this.objectList, flippedBonds);
+        const flippedDirectionCat = this.directionCategory.getRelatedNode(sn.opposite);
+        return new Namespace.Group(this.string, flippedGroupCat, flippedDirectionCat, this.facet, this.objectList, flippedBonds);
     }
 
     
@@ -2938,19 +2767,14 @@ Namespace.Dialog = class
      */
     isDistinguishingDescriptor(descriptor) 
     {
-        let sn = this.ctx.slipnet;
-        if ((descriptor == sn.letter) || (descriptor == sn.group) || 
-            sn.numbers.includes(descriptor)) {
-                return false;
+        let sn = this.wksp.ctx.slipnet;
+        if ((descriptor == sn.letter) || (descriptor == sn.group) || sn.numbers.includes(descriptor)) {
+            return false;
         }
 
-        for (let obj of this.string.objects) {
-            if ((obj instanceof Namespace.Group) && (obj != this)) {
-                for (let descr of obj.descriptions) {
-                    if (descr.descriptor == descriptor) {
-                        return false;
-                    }
-                }
+        for (let obj of this.string.objects.filter(obj => (obj instanceof Namespace.Group) && (obj != this))) {
+            if (obj.descriptions.some(d => d.descriptor == descriptor)) {
+                return false;
             }
         }
         return true;
@@ -2964,18 +2788,15 @@ Namespace.Dialog = class
     updateStrength()
     {
         // Internal strength
-        const sn = this.ctx.slipnet;
-        const relatedBondAssociation = this.groupCategory.getRelatedNode(
-            sn.bondCategory).degreeOfAssociation();
+        const sn = this.wksp.ctx.slipnet;
+        const relatedBondAssociation = this.groupCategory.getRelatedNode(sn.bondCategory).degreeOfAssociation();
 
         const bondWeight = Math.pow(relatedBondAssociation, 0.98);
         const nobjs = this.objectList.length;
-        const lengthFactor = (nobjs == 1) ? 5 : (nobjs == 2) ? 
-            20 : (nobjs == 3) ? 60 : 90;
+        const lengthFactor = (nobjs == 1) ? 5 : (nobjs == 2) ? 20 : (nobjs == 3) ? 60 : 90;
 
         const lengthWeight = 100 - bondWeight;
-        let internalStrength = (relatedBondAssociation*bondWeight + 
-            lengthFactor*lengthWeight)/100;
+        let internalStrength = (relatedBondAssociation*bondWeight + lengthFactor*lengthWeight)/100;
 
         // External strength
         let externalStrength = this.spansString() ? 100 : this._localSupport();
@@ -2998,8 +2819,7 @@ Namespace.Dialog = class
         const numSupporters = this._numberOfLocalSupportingGroups();
         if (numSupporters === 0) { return 0; }
 
-        const supportFactor = Math.min(1, 
-            Math.pow(0.6, 1/Math.pow(numSupporters,3)) );
+        const supportFactor = Math.min(1, Math.pow(0.6, 1/Math.pow(numSupporters,3)) );
         const localDensity = numSupporters/(0.5*this.string.length);
         const densityFactor = 100 * Math.sqrt(localDensity);
         return densityFactor * supportFactor;
@@ -3014,16 +2834,9 @@ Namespace.Dialog = class
      */
     _numberOfLocalSupportingGroups()
     {
-        let numSupporters = 0;
-        for (let obj of this.string.objects) {
-            if ((obj instanceof Namespace.Group) && this.isOutsideOf(obj)) {
-                if (obj.groupCategory == this.groupCategory && 
-                    obj.directionCategory == this.directionCategory) {
-                        numSupporters += 1;
-                }
-            }
-        }
-        return numSupporters;
+        return this.string.objects.filter(obj => 
+            (obj.groupCategory == this.groupCategory) && (obj.directionCategory == this.directionCategory) &&
+            (obj instanceof Namespace.Group) && this.isOutsideOf(obj)).length;
     }
 
 };
@@ -3055,18 +2868,17 @@ Namespace.Dialog = class
      * @constructor
      * 
      * @param {WorkspaceString} str - The string that the letter is in.
-     * @param {Number} position - The position of the letter within the 
-     *   string. (Note: The position is 1-based)
+     * @param {Number} position - The (1-based) position of the letter within the string.
      */
     constructor(str, position) 
     { 
         super(str);
-        this.char = str.jstring.charAt(position-1);
-        this.position = position;
-        this.leftIndex = position;
+        this.char       = str.jstring.charAt(position-1);
+        this.position   = position;
+        this.leftIndex  = position;
         this.rightIndex = position;
-        this.leftmost = (position == 1);
-        this.rightmost = (position == str.length);
+        this.leftmost   = (position == 1);
+        this.rightmost  = (position == str.length);
 
         // Create and cache my descriptions
         this._addDescriptions();
@@ -3079,32 +2891,23 @@ Namespace.Dialog = class
      */
     _addDescriptions()
     {
-        const sn = this.ctx.slipnet;
-        this.descriptions.push(
-            new Namespace.Description(this, sn.objectCategory, sn.letter));
+        const sn = this.wksp.ctx.slipnet;
+        this.descriptions.push(new Namespace.Description(this, sn.objectCategory, sn.letter));
 
-        const us = this.string.jstring.toUpperCase();
-        const charCodeA = 'A'.charCodeAt(0);
-        this.descriptions.push(
-            new Namespace.Description(this, sn.letterCategory, 
-                sn.letters[us.charCodeAt(this.position-1) - charCodeA]));
+        const letterNode = sn.letters[this.string.jstring.toUpperCase().charCodeAt(this.position-1) - 'A'.charCodeAt(0)];
+        this.descriptions.push(new Namespace.Description(this, sn.letterCategory, letterNode));
 
-        const length = this.string.length;
-        if (length == 1) {
-            this.descriptions.push( new Namespace.Description(
-                this, sn.stringPositionCategory, sn.single));
+        if (this.string.length == 1) {
+            this.descriptions.push( new Namespace.Description(this, sn.stringPositionCategory, sn.single) );
         }
         if (this.leftmost) {
-            this.descriptions.push( new Namespace.Description(
-                this, sn.stringPositionCategory, sn.leftmost));
+            this.descriptions.push( new Namespace.Description(this, sn.stringPositionCategory, sn.leftmost) );
         }
         if (this.rightmost) {
-            this.descriptions.push( new Namespace.Description(
-                this, sn.stringPositionCategory, sn.rightmost));
+            this.descriptions.push( new Namespace.Description(this, sn.stringPositionCategory, sn.rightmost) );
         }
-        if (this.position * 2 == length + 1) {
-            this.descriptions.push( new Namespace.Description(
-                this, sn.stringPositionCategory, sn.middle));
+        if (2*this.position == this.string.length + 1) {
+            this.descriptions.push( new Namespace.Description(this, sn.stringPositionCategory, sn.middle) );
         }
     }
 
@@ -3120,28 +2923,22 @@ Namespace.Dialog = class
 
 
     /**
-     * Indicates whether no other Letter in this Letter's string 
-     * has the same descriptor.
+     * Indicates whether no other Letter in this Letter's string has a descriptor matching the given one.
      * 
-     * @param {SlipNode} descriptor - The descriptor to check.
+     * @param {SlipNode} descriptor - The descriptor to match.
      */
     isDistinguishingDescriptor(descriptor) 
     {
-        let sn = this.ctx.slipnet;
-        if ((descriptor == sn.letter) || (descriptor == sn.group) || 
-          sn.numbers.includes(descriptor)) {
+        let sn = this.wksp.ctx.slipnet;
+        if ((descriptor == sn.letter) || (descriptor == sn.group) || sn.numbers.includes(descriptor)) {
             return false;
         }
         
-        for (let obj of this.string.objects) {
-            if ((obj instanceof Namespace.Letter) && (obj != this)) {
-                for (let descr of obj.descriptions) {
-                    if (descr.descriptor == descriptor) {
-                        return false;
-                    }
-                }
-            }
+        if (this.string.objects.some(obj => (obj instanceof Namespace.Letter) && (obj != this) && 
+            obj.descriptions.some(d => d.descriptor == descriptor))) {
+            return false;
         }
+
         return true;
     }
 
@@ -3233,19 +3030,16 @@ Namespace.Dialog = class
     weightedChoice(seq, weights)
     {
         if (!seq || !seq.length) {
-            // Apparently, many callers rely on this behavior.
-            return null;
+            return null; // (Apparently, many callers rely on this behavior)
         }
 
         const N = seq.length;
         if ( N !== weights.length ){
-            throw new Error("Incompatible array lengths, " + 
-                "in RandGen.weightedChoice");
+            throw new Error("Incompatible array lengths, in RandGen.weightedChoice");
         }
 
         let csum = 0;
         const cumWeights = weights.map((csum = 0, n => csum += n));
-
         const r = this.rng() * cumWeights[N-1];
         let idx = N-1;
         for (let i=0; i<N; i++){
@@ -3344,7 +3138,7 @@ Namespace.Dialog = class
     static _sfc32(a, b, c, d) {
         return function() {
           a >>>= 0; b >>>= 0; c >>>= 0; d >>>= 0; 
-          var t = (a + b) | 0;
+          let t = (a + b) | 0;
           a = b ^ b >>> 9;
           b = c + (c << 3) | 0;
           c = (c << 21 | c >>> 11);
@@ -3389,7 +3183,7 @@ Namespace.Dialog = class
     constructor(objFromInitial, objFromModified, relation) 
     { 
         // WorkspaceStructure members
-        this.ctx = objFromInitial.ctx;
+        this.wksp = objFromInitial.wksp;
         this.string = objFromInitial.string;
         this.totalStrength = 0;
 
@@ -3439,20 +3233,16 @@ Namespace.Dialog = class
     /**
      * @constructor
      * 
-     * @param {Copycat} ctx - The Copycat instance.
-     * @param {SlipNode} facet - The descriptionType of the facet to be 
-     *      replaced. (e.g., letterCategory) 
-     * @param {SlipNode} descriptor - The descriptor of the facet to be 
-     *      replaced. (e.g., rightmost)
-     * @param {SlipNode} category - The category of the facet to be 
-     *      replaced. (e.g., letter)
-     * @param {SlipNode} relation - The relation to be applied. 
-     *      (e.g., successor)
+     * @param {Workspace} wksp - The Wokspace that will contain the Rule.
+     * @param {SlipNode} facet - The descriptionType of the facet to be replaced. (e.g., letterCategory) 
+     * @param {SlipNode} descriptor - The descriptor of the facet to be replaced. (e.g., rightmost)
+     * @param {SlipNode} category - The category of the facet to be replaced. (e.g., letter)
+     * @param {SlipNode} relation - The relation to be applied. (e.g., successor)
      */
-    constructor(ctx, facet, descriptor, category, relation) 
+    constructor(wksp, facet, descriptor, category, relation) 
     { 
         // WorkspaceStructure members
-        this.ctx = ctx;
+        this.wksp = wksp;
         this.string = null;        
         this.totalStrength = 0;
 
@@ -3483,10 +3273,8 @@ Namespace.Dialog = class
      */
     build()
     {
-        const wksp = this.ctx.workspace;
-        if (wksp.rule) {
-            wksp.structures = wksp.structures.filter(s => s !== wksp.rule);
-        }
+        const wksp = this.wksp;
+        if (wksp.rule) { wksp.structures = wksp.structures.filter(s => s !== wksp.rule); }
         wksp.rule = this;
         wksp.structures.push(this);
         this.activate();
@@ -3499,7 +3287,7 @@ Namespace.Dialog = class
      */
     break()
     {
-        const wksp = this.ctx.workspace;
+        const wksp = this.wksp;
         if (wksp.rule) {
             wksp.structures = wksp.structures.filter(s => s !== wksp.rule);
             wksp.rule = null;
@@ -3539,10 +3327,8 @@ Namespace.Dialog = class
             return false;
         }
         return ( 
-            (this.relation == other.relation) && 
-            (this.facet == other.facet) && 
-            (this.category == other.category) && 
-            (this.descriptor == other.descriptor) 
+            (this.relation == other.relation) && (this.facet == other.facet) && 
+            (this.category == other.category) && (this.descriptor == other.descriptor)
         );
     }
     
@@ -3564,28 +3350,23 @@ Namespace.Dialog = class
     updateStrength()
     {
         // Internal strength
-        const wksp = this.ctx.workspace;
         let internalStrength = 0;
         if (!this.descriptor || !this.relation) {
             internalStrength = 50;
         }
         else
         {
-            let avgDepth = (this.descriptor.depth + this.relation.depth) / 2;
-            avgDepth = Math.pow(avgDepth, 1.1);
+            let avgDepth = Math.pow((this.descriptor.depth + this.relation.depth)/2, 1.1);
 
             let carryOn = true;
             let sharedDescriptorTerm = 0;
-            const changedObjects = wksp.initialWString.objects.filter(
-                o => o.changed);            
+            const changedObjects = this.wksp.initialWString.objects.filter(o => o.changed);            
             if (changedObjects.length > 0) {
-                const changed = changedObjects[0];
-                if (changed && changed.correspondence) {
+                const changedObj = changedObjects[0];
+                if (changedObj && changedObj.correspondence) {
                     sharedDescriptorTerm = 100;
-                    const targetObject = changed.correspondence.objFromTarget;
-                    const slippages = wksp.getSlippableMappings();
-                    const slipnode = this.descriptor.applySlippages(slippages);
-                    if (!targetObject.hasDescriptor(slipnode)) {
+                    const slipnode = this.descriptor.applySlippages( this.wksp.getSlippableMappings() );
+                    if (!changedObj.correspondence.objFromTarget.hasDescriptor(slipnode)) {
                         internalStrength = 0;
                         carryOn = false;
                     }
@@ -3595,22 +3376,15 @@ Namespace.Dialog = class
             {
                 const conceptualHeight = (100 - this.descriptor.depth) / 10;
                 const sharedDescriptorWeight = Math.pow(conceptualHeight, 1.4); 
-                const depthDifference = 100 - Math.abs(
-                    this.descriptor.depth - this.relation.depth);
+                const depthDifference = 100 - Math.abs(this.descriptor.depth - this.relation.depth);
                 const wtSum = 12 + 18 + sharedDescriptorWeight;
-                internalStrength = (12*depthDifference + 18*avgDepth + 
-                    sharedDescriptorWeight*sharedDescriptorTerm)/wtSum;
+                internalStrength = (12*depthDifference + 18*avgDepth + sharedDescriptorWeight*sharedDescriptorTerm)/wtSum;
                 internalStrength = Math.min(100, internalStrength);
             }
         }
 
-        // External strength
-        const externalStrength = internalStrength;
-
-        // Total strength
-        const wti = internalStrength / 100;
-        const wte = 1 - wti;
-        this.totalStrength = wti*internalStrength + wte*externalStrength;
+        // Total strength 
+        this.totalStrength = internalStrength;  // (External strength for a Rule is zero)
     }
 
 
@@ -3620,9 +3394,9 @@ Namespace.Dialog = class
      */
     applyRuleToTarget()
     {
-        const wksp = this.ctx.workspace;
+        const wksp = this.wksp;
         if (!this.descriptor || !this.relation) {
-            return wksp.targetJString;
+            return wksp.targetWString.jstring;
         }
 
         const slippages = wksp.getSlippableMappings();
@@ -3632,26 +3406,23 @@ Namespace.Dialog = class
         this.relation = this.relation.applySlippages(slippages);
         
         // Generate the final string
-        const changeds = wksp.targetWString.objects.filter(o => 
-            o.hasDescriptor(this.descriptor) && o.hasDescriptor(this.category));
+        const changeds = wksp.targetWString.objects.filter(o => o.hasDescriptor(this.descriptor) && o.hasDescriptor(this.category));
         if (changeds.length === 0) {
-            return wksp.targetJString;
+            return wksp.targetWString.jstring;
         }
         else if (changeds.length > 1) {
-            this.ctx.reporter.warn("Rule: More than one letter changed. " + 
-            "Sorry, Copycat can't solve problems like this right now.");
+            this.wksp.ctx.reporter.warn("Rule: More than one letter changed. Copycat can't solve problems like this right now.");
             return null;
         }
         else {
             const changed = changeds[0];
             const left = changed.leftIndex - 1;
             const right = changed.rightIndex;
-            const ts = wksp.targetJString;
+            const ts = wksp.targetWString.jstring;
             const changedMiddle = this._changeSubString(ts.substring(left,right));
             if (changedMiddle === null) {
                 return null;
-            }
-            else {
+            } else {
                 return ts.substring(0,left) + changedMiddle + ts.substring(right);
             }
         }
@@ -3666,7 +3437,7 @@ Namespace.Dialog = class
      */
     _changeSubString(jString)
     {
-        const sn = this.ctx.slipnet;
+        const sn = this.wksp.ctx.slipnet;
         
         if (this.facet == sn.length) {
             if (this.relation == sn.predecessor) {
@@ -3685,9 +3456,7 @@ Namespace.Dialog = class
                 return null;
             }
             else {
-                const chars = jString.split(''); 
-                const newChars = chars.map(
-                    c => String.fromCharCode(c.charCodeAt(0) - 1)); 
+                const newChars = jString.split('').map( c => String.fromCharCode(c.charCodeAt(0) - 1) ); 
                 return newChars.join('');
             }
         }
@@ -3696,9 +3465,7 @@ Namespace.Dialog = class
                 return null;
             }
             else {
-                const chars = jString.split(''); 
-                const newChars = chars.map(
-                    c => String.fromCharCode(c.charCodeAt(0) + 1)); 
+                const newChars = jString.split('').map( c => String.fromCharCode(c.charCodeAt(0) + 1) ); 
                 return newChars.join('');
             }
         }
@@ -3733,14 +3500,12 @@ Namespace.Dialog = class
     /**
      * @constructor
      * 
-     * @param {String} type - The link type ('category', 'property', '
-     *  instance', 'lateralSlip', or 'lateralNonSlip').
+     * @param {String} type - The link type ('category', 'property', 'instance', 'lateralSlip', or 'lateralNonSlip').
      * @param {SlipNode} source - The source node.
      * @param {SlipNode} destination - The destination node.
      * @param {SlipNode} [label=null] - A SlipNode that labels the link.
-     * @param {Number} [length=0] - The "conceptual distance" between the 
-     *   source and destination nodes. Slippage occurs more easily when 
-     *   this distance is smaller.
+     * @param {Number} [length=0] - The "conceptual distance" between the source and destination nodes. Slippage 
+     *   occurs more easily when this distance is smaller.
      */
     constructor(type, source, destination, label=null, length=0) 
     { 
@@ -3844,14 +3609,12 @@ Namespace.Slipnet = class {
         // Build the network
         this._createNodes();
         this._createLinks();
-        this._initiallyClampedNodes = [this.letterCategory, this.stringPositionCategory];
         this.reset();
 
-        // Freeze almost everything (because the slipnet structure is 
-        // static; only the node activations change over time).
+        // Freeze almost everything (because the slipnet structure is static; 
+        // only the node activations and link strengths change over time).
         this.nodes.forEach( node => node.freezeConstants() ); 
-        [this.nodes, this.links, this.letters, this.numbers, 
-            this._initiallyClampedNodes].forEach( arr => Object.freeze(arr) );
+        [this.nodes, this.links, this.letters, this.numbers].forEach( arr => Object.freeze(arr) );
         Object.freeze(this);
     }
 
@@ -3865,8 +3628,9 @@ Namespace.Slipnet = class {
         // Reset every node
         this.nodes.forEach( node => node.reset() );
 
-        // Some concepts are considered "very relevant" a priori
-        this._initiallyClampedNodes.forEach( node => node.clampHigh() );
+        // The following concepts are considered "very relevant" a priori:
+        this.letterCategory.clampHigh();
+        this.stringPositionCategory.clampHigh();
     }
 
 
@@ -3880,7 +3644,8 @@ Namespace.Slipnet = class {
     {
         // Unclamp the initially-clamped nodes, if requested. 
         if (unclamp) {
-            this._initiallyClampedNodes.forEach( node => node.unclamp() );
+            this.letterCategory.unclamp();
+            this.stringPositionCategory.unclamp();
         }
 
         // Note that we change only the buffer values, not the 
@@ -3907,8 +3672,7 @@ Namespace.Slipnet = class {
         // Letter nodes
         const atoz = 'abcdefghijklmnopqrstuvwxyz';
         for (let i=0; i<atoz.length; i++) {
-            this.letters.push( this._addNode(atoz.charAt(i), 
-                atoz.charAt(i).toUpperCase(), 10) );
+            this.letters.push( this._addNode(atoz.charAt(i), atoz.charAt(i).toUpperCase(), 10) );
         }
 
         // Number nodes
@@ -3961,20 +3725,6 @@ Namespace.Slipnet = class {
         this.length = this._addNode('length', 'len', 60);
         this.objectCategory = this._addNode('objectCategory', 'objCat', 90);
         this.bondFacet = this._addNode('bondFacet', 'bndFac', 90);
-
-        // Add codelets to selected nodes
-        this.left.codelets.push('top-down-bond-scout--direction');
-        this.left.codelets.push('top-down-group-scout--direction');
-        this.right.codelets.push('top-down-bond-scout--direction');
-        this.right.codelets.push('top-down-group-scout--direction');
-        this.predecessor.codelets.push('top-down-bond-scout--category');
-        this.successor.codelets.push('top-down-bond-scout--category');
-        this.sameness.codelets.push('top-down-bond-scout--category');
-        this.predecessorGroup.codelets.push('top-down-group-scout--category');
-        this.successorGroup.codelets.push('top-down-group-scout--category');
-        this.samenessGroup.codelets.push('top-down-group-scout--category');
-        this.stringPositionCategory.codelets.push('top-down-description-scout');
-        this.alphabeticPositionCategory.codelets.push('top-down-description-scout');
     }
 
 
@@ -3997,20 +3747,16 @@ Namespace.Slipnet = class {
         }
 
         // Letter-letterCategory links
-        this.letters.forEach( letter => 
-            this._addInstanceCategoryLinks(this.letterCategory, letter, 97) );
+        this.letters.forEach( letter => this._addCategoryInstanceLinks(this.letterCategory, letter, 97) );
 
-        this._addLink('category', this.samenessGroup, this.letterCategory, null, 50);
+        this._addLink('category', this.letterCategory, this.samenessGroup, null, 50); 
 
         // Length-number links
-        this.numbers.forEach( number => 
-            this._addInstanceCategoryLinks(this.length, number, 100) );
+        this.numbers.forEach( number => this._addCategoryInstanceLinks(this.length, number, 100) );
 
         // Groups
         const groups = [this.predecessorGroup, this.successorGroup, this.samenessGroup];
-        groups.forEach(
-            group => { this._addLink('lateralNonSlip', group, this.length, null, 95); }
-        );
+        groups.forEach( group => {this._addLink('lateralNonSlip', group, this.length, null, 95);} );
 
         // Opposites
         const opposites = [
@@ -4020,9 +3766,7 @@ Namespace.Slipnet = class {
             [this.successor, this.predecessor],
             [this.successorGroup, this.predecessorGroup],
         ];
-        opposites.forEach( opp => 
-            this._addSymmetricLinks('lateralSlip', opp[0], opp[1], this.opposite, 0)
-        );
+        opposites.forEach( opp => this._addSymmetricLinks('lateralSlip', opp[0], opp[1], this.opposite, 0) );
 
         // Properties
         this._addLink('property', this.letters[0], this.first, null, 75);
@@ -4050,7 +3794,7 @@ Namespace.Slipnet = class {
             [this.bondFacet, this.letterCategory],
             [this.bondFacet, this.length],
         ];
-        icPairs.forEach( pair => this._addInstanceCategoryLinks(pair[0], pair[1], 100) );
+        icPairs.forEach( pair => this._addCategoryInstanceLinks(pair[0], pair[1], 100) );
 
         // Link bonds to their groups
         this._addLink('lateralNonSlip', this.sameness, this.samenessGroup, this.groupCategory, 30);
@@ -4125,7 +3869,7 @@ Namespace.Slipnet = class {
      * 
      * @private
      */
-    _addInstanceCategoryLinks(category, instance, instanceLength) 
+    _addCategoryInstanceLinks(category, instance, instanceLength) 
     {
         const categoryLength = category.depth - instance.depth;
         this._addLink('instance', category, instance, null, instanceLength); 
@@ -4179,14 +3923,9 @@ Namespace.SlipNode = class {
         this.shrunkLinkLength = intrinsicLinkLength * 0.4;
         this.incomingLinks = [];
         this.outgoingLinks = [];
-        this.codelets = [];
 
         // Once the Slipnet is constructed, only the following are mutable:
-        this._mutables = {
-            activation: 0,
-            activationBuffer: 0,
-            clampedHigh: false
-        };
+        this._mutables = {activation: 0, activationBuffer: 0, clampedHigh: false};
 
         Object.freeze(this);
     }
@@ -4198,8 +3937,7 @@ Namespace.SlipNode = class {
      */
     freezeConstants()
     {
-        [this.incomingLinks, this.outgoingLinks, this.codelets].forEach(
-            x => Object.freeze(x) );
+        [this.incomingLinks, this.outgoingLinks, this.codelets].forEach( x => Object.freeze(x) );
     }
 
 
@@ -4229,8 +3967,7 @@ Namespace.SlipNode = class {
      */
     get categoryLinks() 
     { 
-        return this.outgoingLinks.filter(
-            link => link.type == 'category'); 
+        return this.outgoingLinks.filter(link => link.type == 'category'); 
     }
 
 
@@ -4239,8 +3976,7 @@ Namespace.SlipNode = class {
      */
     get instanceLinks() 
     { 
-        return this.outgoingLinks.filter(
-            link => link.type == 'instance'); 
+        return this.outgoingLinks.filter(link => link.type == 'instance'); 
     }
 
 
@@ -4249,8 +3985,7 @@ Namespace.SlipNode = class {
      */
     get propertyLinks() 
     { 
-        return this.outgoingLinks.filter(
-            link => link.type == 'property'); 
+        return this.outgoingLinks.filter(link => link.type == 'property'); 
     }
 
 
@@ -4259,8 +3994,7 @@ Namespace.SlipNode = class {
      */
     get lateralSlipLinks() 
     { 
-        return this.outgoingLinks.filter(
-            link => link.type == 'lateralSlip'); 
+        return this.outgoingLinks.filter(link => link.type == 'lateralSlip'); 
     }
 
 
@@ -4269,8 +4003,7 @@ Namespace.SlipNode = class {
      */
     get lateralNonSlipLinks() 
     { 
-        return this.outgoingLinks.filter(
-            link => link.type == 'lateralNonSlip'); 
+        return this.outgoingLinks.filter(link => link.type == 'lateralNonSlip'); 
     }
 
 
@@ -4341,8 +4074,7 @@ Namespace.SlipNode = class {
      */
     decayActivation()
     {
-        this._mutables.activationBuffer -= 
-            this._mutables.activation * (1 - this.depth/100);
+        this._mutables.activationBuffer -= this._mutables.activation * (1 - this.depth/100);
     }
 
     
@@ -4354,9 +4086,8 @@ Namespace.SlipNode = class {
     spreadActivation()
     {
         if (this.isFullyActive()) {
-            this.outgoingLinks.forEach(link => 
-                link.destination._mutables.activationBuffer += 
-                    link.intrinsicDegreeOfAssociation() );
+            this.outgoingLinks.forEach( link => 
+                link.destination._mutables.activationBuffer += link.intrinsicDegreeOfAssociation() );
         }
     }
 
@@ -4372,16 +4103,12 @@ Namespace.SlipNode = class {
         {
             // Add the buffer value to the current activation, and 
             // clamp to [0,100] range.
-            this._mutables.activation = Math.min(100, Math.max(0, 
-                this._mutables.activation + this._mutables.activationBuffer));
+            this._mutables.activation = Math.min(100, Math.max(0, this._mutables.activation + this._mutables.activationBuffer));
 
             // Maybe jump to full activation.
-            if ((this._mutables.activation > 55) && 
-                (this._mutables.activation != 100)) {
-                    const jumpProb = Math.pow(this._mutables.activation/100, 3);
-                    if ( randGen.coinFlip(jumpProb) ) {
-                        this._mutables.activation = 100;
-                    }
+            if ((this._mutables.activation > 55) && (this._mutables.activation != 100)) {
+                const jumpProb = Math.pow(this._mutables.activation/100, 3);
+                if ( randGen.coinFlip(jumpProb) ) { this._mutables.activation = 100; }
             }
         }
         else {
@@ -4400,8 +4127,7 @@ Namespace.SlipNode = class {
      */
     category()
     {
-        return (this.categoryLinks.length > 0) ? 
-            this.categoryLinks[0].destination : null;
+        return (this.categoryLinks.length > 0) ? this.categoryLinks[0].destination : null;
     }
 
 
@@ -4412,8 +4138,7 @@ Namespace.SlipNode = class {
      */
     degreeOfAssociation()
     {
-        const linkLength = this.isFullyActive() ? 
-            this.shrunkLinkLength : this.intrinsicLinkLength;
+        const linkLength = this.isFullyActive() ? this.shrunkLinkLength : this.intrinsicLinkLength;
         return 100 - linkLength;
     }
 
@@ -4425,8 +4150,7 @@ Namespace.SlipNode = class {
      */
     bondDegreeOfAssociation()
     {
-        const result = Math.min(100, 
-                11.0 * Math.sqrt(this.degreeOfAssociation()) );
+        const result = Math.min(100, 11.0 * Math.sqrt(this.degreeOfAssociation()) );
         
         return result;
     }
@@ -4462,8 +4186,7 @@ Namespace.SlipNode = class {
      */
     isRelatedTo(other)
     {
-        return (this == other) || 
-            this.outgoingLinks.some(link => link.destination == other);
+        return (this == other) || this.outgoingLinks.some(link => link.destination == other);
     }
 
 
@@ -4682,27 +4405,24 @@ Namespace.SlipNode = class {
      * @constructor
      * 
      * @param {Copycat} ctx - The Copycat instance.
+     * @param {String} [initialString] - The 'A' in A:B -> C:D
+     * @param {String} [modifiedString] - The 'B' in A:B -> C:D
+     * @param {String} [targetString] - The 'C' in A:B -> C:D
      */
-    constructor(ctx) 
+    constructor(ctx, initialString='abc', modifiedString='abd', targetString='pqr') 
     { 
         this.ctx = ctx;
-
-        this.initialJString = '';
-        this.modifiedJString = '';
-        this.targetJString = '';
-
-        this.initialWString = null;
-        this.modifiedWString = null;
-        this.targetWString = null;
-        
+        this.objects = [];
+        this.structures = [];
+        this.changedObject = null;
+        this.rule = null;
         this.intraStringUnhappiness = 0;
         this.interStringUnhappiness = 0;
 
-        this.finalAnswer = null;
-        this.changedObject = null;
-        this.rule = null;
-        this.objects = [];
-        this.structures = [];
+        this.initialWString  = new Namespace.WorkspaceString(this, initialString?.toLowerCase() || '');
+        this.modifiedWString = new Namespace.WorkspaceString(this, modifiedString?.toLowerCase() || '');
+        this.targetWString   = new Namespace.WorkspaceString(this, targetString?.toLowerCase() || '');
+        this.finalAnswer     = null; // A javascript string
     }
 
 
@@ -4711,8 +4431,8 @@ Namespace.SlipNode = class {
      */
     synopsis()
     {
-        return '<Workspace: ' + this.initialJString + ':' + 
-            this.modifiedJString + ' :: ' + this.targetJString  + ':?>';
+        return '<Workspace: ' + this.initialWString.jstring + ':' + 
+            this.modifiedWString.jstring + ' :: ' + this.targetWString.jstring  + ':?>';
     }
 
 
@@ -4720,9 +4440,9 @@ Namespace.SlipNode = class {
      * Resets the workspace to its initial state, optionally modifying the 
      * input strings.
      * 
-     * @param {String} [initialString] - The 'a' in a:b -> c:d
-     * @param {String} [modifiedString] - The 'b' in a:b -> c:d
-     * @param {String} [targetString] - The 'd' in a:b -> c:d
+     * @param {String} [initialString] - The 'A' in A:B -> C:D
+     * @param {String} [modifiedString] - The 'B' in A:B -> C:D
+     * @param {String} [targetString] - The 'C' in A:B -> C:D
      * 
      */
     reset(initialString=null, modifiedString=null, targetString=null)
@@ -4735,22 +4455,11 @@ Namespace.SlipNode = class {
         this.rule = null;
         this.intraStringUnhappiness = 0;
         this.interStringUnhappiness = 0;
-
-        // Cache the problem-specification strings, or use the existing ones
-        this.initialJString = 
-            initialString ? initialString.toLowerCase() : this.initialJString;
-        this.modifiedJString = 
-            modifiedString ? modifiedString.toLowerCase() : this.modifiedJString;
-        this.targetJString = 
-            targetString ? targetString.toLowerCase() : this.targetJString;
         
-        // Create (or re-create) the WorkspaceStrings
-        this.initialWString = 
-            new Namespace.WorkspaceString(this.ctx, this.initialJString);
-        this.modifiedWString = 
-            new Namespace.WorkspaceString(this.ctx, this.modifiedJString);
-        this.targetWString = 
-            new Namespace.WorkspaceString(this.ctx, this.targetJString);
+        // Create or reset the WorkspaceStrings
+        this.initialWString  = new Namespace.WorkspaceString(this, initialString?.toLowerCase() || this.initialWString.jstring);
+        this.modifiedWString = new Namespace.WorkspaceString(this, modifiedString?.toLowerCase() || this.modifiedWString.jstring);
+        this.targetWString   = new Namespace.WorkspaceString(this, targetString?.toLowerCase() || this.targetWString.jstring);
     }
 
 
@@ -4787,17 +4496,14 @@ Namespace.SlipNode = class {
     calcTemperature()
     {
         // First, update my happiness values
-        this.intraStringUnhappiness = Math.min(100, 0.5 * this.objects.map(
-            o => o.relativeImportance * o.intraStringUnhappiness).
-                reduce((a,b) => a+b, 0));
+        this.intraStringUnhappiness = 
+            Math.min(100, 0.5 * this.objects.map(o => o.relativeImportance * o.intraStringUnhappiness).reduce((a,b) => a+b, 0));
             
-        this.interStringUnhappiness = Math.min(100, 0.5 * this.objects.map(
-            o => o.relativeImportance * o.interStringUnhappiness).
-                reduce((a,b) => a+b, 0));
+        this.interStringUnhappiness = 
+            Math.min(100, 0.5 * this.objects.map(o => o.relativeImportance * o.interStringUnhappiness).reduce((a,b) => a+b, 0));
                 
-        const totalUnhappiness = Math.min(100, 0.5 * this.objects.map(
-            o => o.relativeImportance * o.totalUnhappiness).
-                reduce((a,b) => a+b, 0));
+        const totalUnhappiness = 
+            Math.min(100, 0.5 * this.objects.map(o => o.relativeImportance * o.totalUnhappiness).reduce((a,b) => a+b, 0));
 
         // Now, calculate the temperature
         let ruleWeakness = 100;
@@ -4821,11 +4527,9 @@ Namespace.SlipNode = class {
             result.push(...this.changedObject.correspondence.conceptMappings);
         }
 
-        const corresps = this.initialWString.objects.filter(
-            o => o.correspondence).map(o => o.correspondence);
-        corresps.forEach(corresp => 
-            result.push(...corresp.getSlippableMappings().filter(
-                m => !m.isNearlyContainedIn(result)))
+        const corresps = this.initialWString.objects.filter(o => o.correspondence).map(o => o.correspondence);
+        corresps.forEach( 
+            corresp => result.push(...corresp.getSlippableMappings().filter(m => !m.isNearlyContainedIn(result))) 
         );
 
         return result;
@@ -4857,18 +4561,17 @@ Namespace.SlipNode = class {
     /**
      * @constructor
      * 
-     * @param {Copycat} ctx - The Copycat instance that will own the string.
+     * @param {Workspace} wksp - The Workspace instance that will own the string.
      * @param {String} jstring - A javascript string to be wrapped.
      */
-    constructor(ctx, jstring) 
+    constructor(wksp, jstring) 
     { 
-        this.ctx = ctx;
+        this.wksp    = wksp;
         this.jstring = jstring || "";
-        this.intraStringUnhappiness = 0;
-
         this.letters = [];
         this.objects = []; // Letters and Groups
-        this.bonds = [];
+        this.bonds   = [];
+        this.intraStringUnhappiness = 0;
 
         // Create a Letter object for each character in the string
         for (let i=0; i<jstring.length; i++) 
@@ -4879,7 +4582,7 @@ Namespace.SlipNode = class {
             // Append the Letter to my lists and to the Workspace
             this.objects.push(letter);
             this.letters.push(letter);
-            ctx.workspace.objects.push(letter);
+            wksp.objects.push(letter);
             letter.descriptions.forEach(descr => descr.build());
         }
     }
@@ -4921,18 +4624,13 @@ Namespace.SlipNode = class {
      */
     updateRelativeImportances() 
     {
-        const total = this.objects.reduce(
-            function(a,b){return a + b.rawImportance;}, 0); 
+        const total = this.objects.reduce( function(a,b){return a + b.rawImportance;}, 0 ); 
 
         if (total === 0) {
-            for (let obj of this.objects) {
-                obj.relativeImportance = 0;
-            }
+            for (let obj of this.objects) { obj.relativeImportance = 0; }
         }
         else {
-            for (let obj of this.objects) {
-                obj.relativeImportance = obj.rawImportance / total;
-            }
+            for (let obj of this.objects) { obj.relativeImportance = obj.rawImportance / total; }
         }
     }
 
@@ -4948,8 +4646,7 @@ Namespace.SlipNode = class {
             this.intraStringUnhappiness = 0;
         }
         else {
-            const total = this.objects.reduce(
-                function(a,b){return a + b.intraStringUnhappiness;}, 0); 
+            const total = this.objects.reduce( function(a,b){return a + b.intraStringUnhappiness;}, 0 ); 
             this.intraStringUnhappiness = total / this.objects.length;
         }
     }
@@ -5022,20 +4719,15 @@ Namespace.SlipNode = class {
         }
 
         // Fizzle if the bond already exists
-        for (let stringBond of bond.string.bonds) {
-            if (this._sameNeighbors(bond, stringBond) && this._sameCategories(bond, stringBond)) {
-                bond.category.activation = 100;
-                if (bond.directionCategory) {
-                    bond.directionCategory.activation = 100;
-                }
-                return;
-            }
+        if (bond.string.bonds.some(sbond => this._sameNeighbors(bond, sbond) && this._sameCategories(bond, sbond))) {
+            bond.category.activation = 100;
+            if (bond.directionCategory) { bond.directionCategory.activation = 100; }
+            return;
         }
 
         // Provide UI feedback
-        if (ctx.ui) {
-            ctx.ui.workspaceUi.getStringGraphic(bond.string).bondsGraphic.
-                flashProposed(bond);
+        if (ctx.ui && !ctx.batchMode) {
+            ctx.ui.workspaceUi.getStringGraphic(bond.string).bondsGraphic.flashProposed(bond);
         }
 
         // Fight it out with any incompatible bonds
@@ -5064,7 +4756,7 @@ Namespace.SlipNode = class {
             }
         }
 
-        // We won! Destroy the incompatibles ann build our bond.
+        // We won! Destroy the incompatibles and build our bond.
         incompatibleBonds.forEach(x => x.break());
         incompatibleGroups.forEach(x => x.break());
         incompatibleCorrespondences.forEach(x => x.break());
@@ -5080,8 +4772,7 @@ Namespace.SlipNode = class {
      */
     _sameNeighbors(bond1, bond2) 
     {
-        return (bond1.leftObject == bond2.leftObject) &&
-            (bond1.rightObject == bond2.rightObject);
+        return (bond1.leftObject == bond2.leftObject) && (bond1.rightObject == bond2.rightObject);
     }
 
 
@@ -5092,8 +4783,7 @@ Namespace.SlipNode = class {
      */
     _sameCategories(bond1, bond2) 
     {
-        return (bond1.category == bond2.category) &&
-            (bond1.directionCategory == bond2.directionCategory);
+        return (bond1.category == bond2.category) && (bond1.directionCategory == bond2.directionCategory);
     }
 
 
@@ -5106,20 +4796,22 @@ Namespace.SlipNode = class {
         const incompatibles = [];
         if (bond.leftObject.leftmost && bond.leftObject.correspondence) 
         {
-            const obj = (bond.string == bond.ctx.workspace.initial) ?
+            const obj = (bond.string == bond.wksp.initialWString) ?
                 bond.leftObject.correspondence.objFromTarget : bond.leftObject.correspondence.objFromInitial;
-            if (obj.leftmost && obj.rightBond) {
-                if (obj.rightBond.directionCategory && (obj.rightBond.directionCategory != bond.directionCategory)) {
+
+            if (obj.leftmost && obj.rightBond && obj.rightBond.directionCategory) {
+                if (obj.rightBond.directionCategory != bond.directionCategory) {
                     incompatibles.push(bond.leftObject.correspondence);
                 }
             }
         }
         if (bond.rightObject.rightmost && bond.rightObject.correspondence)
         {
-            const obj = (bond.string == bond.ctx.workspace.initial) ?
+            const obj = (bond.string == bond.wksp.initialWString) ?
                 bond.rightObject.correspondence.objFromTarget : bond.rightObject.correspondence.objFromInitial;
-            if (obj.rightmost && obj.leftBond) {
-                if (obj.leftBond.directionCategory && (obj.leftBond.directionCategory != bond.directionCategory)) {
+                
+            if (obj.rightmost && obj.leftBond && obj.leftBond.directionCategory) {
+                if (obj.leftBond.directionCategory != bond.directionCategory) {
                     incompatibles.push(bond.rightObject.correspondence);
                 }
             }
@@ -5176,9 +4868,8 @@ Namespace.SlipNode = class {
         const bond = this.bond;
 
         // Provide UI feedback
-        if (ctx.ui) {
-            ctx.ui.workspaceUi.getStringGraphic(bond.string).bondsGraphic.
-                flashProposed(bond);
+        if (ctx.ui && !ctx.batchMode) {
+            ctx.ui.workspaceUi.getStringGraphic(bond.string).bondsGraphic.flashProposed(bond);
         }
 
         // Maybe fizzle, if the strength is too low
@@ -5227,7 +4918,7 @@ Namespace.SlipNode = class {
      * 
      * @param {Copycat} ctx - The Copycat instance.
      * @param {Number} urgency - The urgency of the codelet.
-     * @param {Array} args - Arguments to pass to the codelet.
+     * @param {Array} args - Arguments to pass to the codelet. (Empty for this codelet.)
      * @param {Number} birthdate - The birthdate of the codelet.
      */
     constructor(ctx, urgency, args, birthdate) 
@@ -5243,22 +4934,19 @@ Namespace.SlipNode = class {
     {
         const ctx = this.ctx;
         const sn = ctx.slipnet;
-        const Utils = Namespace.Codelets.CodeletUtils;
 
         // Choose a workspace object at random, based on intra-string salience.
-        const bondSource = Utils.chooseUnmodifiedObject(ctx, 'intraStringSalience', ctx.workspace.objects);
+        const bondSource = CodeletUtils.chooseUnmodifiedObject(ctx, 'intraStringSalience', ctx.workspace.objects);
         if (!bondSource) { return; }
 
         // Choose a neighboring object
-        const bondDest = Utils.chooseNeighbor(ctx, bondSource);
+        const bondDest = CodeletUtils.chooseNeighbor(ctx, bondSource);
         if (!bondDest) { return; }
 
         // Provide UI feedback.
-        if (ctx.ui) {
-            const dummyBond = new Namespace.Bond(bondSource, bondDest, 
-                sn.sameness, sn.letterCategory, sn.letters[0], sn.letters[0]);
-            ctx.ui.workspaceUi.getStringGraphic(dummyBond.string).
-                bondsGraphic.flashGrope(dummyBond);
+        if (ctx.ui && !ctx.batchMode) {
+            const dummyBond = new Namespace.Bond(bondSource, bondDest, sn.sameness, sn.letterCategory, sn.letters[0], sn.letters[0]);
+            ctx.ui.workspaceUi.getStringGraphic(dummyBond.string).bondsGraphic.flashGrope(dummyBond);
         }
 
         // Choose a bond facet
@@ -5277,8 +4965,7 @@ Namespace.SlipNode = class {
         }
 
         // Propose the bond
-        ctx.coderack.proposeBond(bondSource, bondDest, bondCategory, bondFacet,
-            sourceDescriptor, destDescriptor);
+        ctx.coderack.proposeBond(bondSource, bondDest, bondCategory, bondFacet, sourceDescriptor, destDescriptor);
     }
 
 };
@@ -5309,7 +4996,7 @@ Namespace.SlipNode = class {
      * 
      * @param {Copycat} ctx - The Copycat instance.
      * @param {Number} urgency - The urgency of the codelet.
-     * @param {Array} args - Arguments to pass to the codelet.
+     * @param {Array} args - Arguments to pass to the codelet. (Empty for this codelet.)
      * @param {Number} birthdate - The birthdate of the codelet.
      */
     constructor(ctx, urgency, args, birthdate) 
@@ -5340,10 +5027,9 @@ Namespace.SlipNode = class {
         if (objFromInitial.spansString() != objFromTarget.spansString()) { return; }
 
         // Provide UI feedback.
-        if (this.ctx.ui) {
-            const dummyCorresp = new Namespace.Correspondence(
-                objFromInitial, objFromTarget, [], false);
-            this.ctx.ui.workspaceUi.corrsGraphic.flashGrope(dummyCorresp);
+        if (ctx.ui && !ctx.batchMode) {
+            const dummyCorresp = new Namespace.Correspondence(objFromInitial, objFromTarget, [], false);
+            ctx.ui.workspaceUi.corrsGraphic.flashGrope(dummyCorresp);
         }
 
         // Get concept mappings between the two objects.
@@ -5365,9 +5051,8 @@ Namespace.SlipNode = class {
         if (objFromInitial.spansString() && objFromTarget.spansString() && (sn.opposite.activation != 100)) 
         {
             const opposites = distinguishingMappings.filter(m => 
-                m.initialDescType == sn.stringPositionCategory &&
-                m.initialDescType != sn.bondFacet
-            );
+                (m.initialDescType == sn.stringPositionCategory) && (m.initialDescType != sn.bondFacet));
+
             if (opposites.every(m => m.label == sn.opposite)) {
                 const initialDescTypes = opposites.map(m => m.initialDescType);
                 if (initialDescTypes.includes(sn.directionCategory)) {
@@ -5380,8 +5065,7 @@ Namespace.SlipNode = class {
         }
         
         // Propose a correspondence.
-        ctx.coderack.proposeCorrespondence(objFromInitial, objFromTarget, 
-            conceptMappings, flipTargetObject);
+        ctx.coderack.proposeCorrespondence(objFromInitial, objFromTarget, conceptMappings, flipTargetObject);
     }
 
 
@@ -5413,7 +5097,7 @@ Namespace.SlipNode = class {
      * 
      * @param {Copycat} ctx - The Copycat instance.
      * @param {Number} urgency - The urgency of the codelet.
-     * @param {Array} args - Arguments to pass to the codelet.
+     * @param {Array} args - Arguments to pass to the codelet. (Empty for this codelet.)
      * @param {Number} birthdate - The birthdate of the codelet.
      */
     constructor(ctx, urgency, args, birthdate) 
@@ -5436,8 +5120,7 @@ Namespace.SlipNode = class {
 
         // Choose a relevant description by activation
         const descriptions = chosenObject.relevantDescriptions();
-        const dWeights = descriptions.map(d => d.activation);
-        const description = ctx.randGen.weightedChoice(descriptions, dWeights);
+        const description = ctx.randGen.weightedChoice(descriptions, descriptions.map(d => d.activation));
         if (!description) { return; }
 
         // Choose one of the description's property links
@@ -5467,9 +5150,7 @@ Namespace.SlipNode = class {
         {
             const association = propertyLink.degreeOfAssociation() / 100;
             const prob = ctx.temperature.getAdjustedProb(association);
-            if (ctx.randGen.coinFlip(prob)) {
-                result.push(propertyLink);
-            }
+            if (ctx.randGen.coinFlip(prob)) { result.push(propertyLink); }
         }
         return result;
     }   
@@ -5503,7 +5184,7 @@ Namespace.SlipNode = class {
      * 
      * @param {Copycat} ctx - The Copycat instance.
      * @param {Number} urgency - The urgency of the codelet.
-     * @param {Array} args - Arguments to pass to the codelet.
+     * @param {Array} args - Arguments to pass to the codelet. (Empty for this codelet.)
      * @param {Number} birthdate - The birthdate of the codelet.
      */
     constructor(ctx, urgency, args, birthdate) 
@@ -5525,18 +5206,13 @@ Namespace.SlipNode = class {
         if (randGen.coinFlip(fizzleProb)) { return; }
 
         // Choose a Group or Bond or Correspondence at random
-        const structures = [];
-        for (let s of this.ctx.workspace.structures) {
-            if ((s instanceof Namespace.Group) || (s instanceof Namespace.Bond) || 
-                (s instanceof Namespace.Correspondence)) {
-                structures.push(s);
-            }
-        }
+        const structures = this.ctx.workspace.structures.filter(s => 
+            (s instanceof Namespace.Group) || (s instanceof Namespace.Bond) || (s instanceof Namespace.Correspondence));
         if (!structures.length) { return; }
 
         const structure = randGen.choice(structures);
         const breakObjects = [structure];
-        if (structure instanceof Namespace.Bond){
+        if (structure instanceof Namespace.Bond) {
             if (structure.source.group && (structure.source.group == structure.destination.group)) {
                 breakObjects.push(structure.source.group);
             }
@@ -5547,8 +5223,7 @@ Namespace.SlipNode = class {
             const breakProb = temperature.getAdjustedProb(structure.totalStrength/100);
             if (randGen.coinFlip(breakProb)) { return; }
         }
-        breakObjects.forEach( 
-            (structure) => structure.break() );
+        breakObjects.forEach( (structure) => structure.break() );
     }
 };
 
@@ -5585,8 +5260,7 @@ Namespace.SlipNode = class {
 
 
     /**
-     * Creates a codelet given its name, passing
-     * the given arguments to the codelet constructor.
+     * Creates a codelet given its name and constructor arguments.
      * 
      * @param {string} name - The name of the codelet.
      * @param {Number} urgency - The urgency of the codelet.
@@ -5759,8 +5433,7 @@ Namespace.SlipNode = class {
         const objFromInitial = corresp.objFromInitial;
         const objFromTarget = corresp.objFromTarget;
 
-        // If either of the two objects (or possibly a flipped version) no longer 
-        // exists, then fizzle.
+        // If either of the two objects (or possibly a flipped version) no longer exists, then fizzle.
         const wantFlip = corresp.flipTargetObject;
         const flippedTargetObj = wantFlip ? objFromTarget.flippedVersion() : null;
         const objsExist = wksp.objects.includes(objFromInitial) && (wksp.objects.includes(objFromTarget) ||
@@ -5785,14 +5458,11 @@ Namespace.SlipNode = class {
     
         // Fight incompatibles.
         // The weights for the fight depend on the letter-span of the objects.
-        // This is one of the reasons the program prefers correspondences to groups 
-        // rather than to letters.  Another reason is that groups are more salient
-        // than letters, so they are more likely to be chosen by correspondence scouts.
+        // This is one of the reasons the program prefers correspondences to groups rather than to letters.  
+        // Another reason is that groups are more salient than letters, so they are more likely to be chosen by correspondence scouts.
         const incompatibles = wksp.initialWString.objects.filter(o =>
-            o.correspondence && corresp.isIncompatibleWith(o.correspondence)).
-            map(o => o.correspondence);
-        if (incompatibles && incompatibles.length) 
-        {
+            o.correspondence && corresp.isIncompatibleWith(o.correspondence)).map(o => o.correspondence);
+        if (incompatibles.length) {
             const correspSpan = corresp.objFromInitial.letterSpan() + corresp.objFromTarget.letterSpan();
             for (let incompat of incompatibles) {
                 const incompatSpan = incompat.objFromInitial.letterSpan() + incompat.objFromTarget.letterSpan();
@@ -5802,12 +5472,10 @@ Namespace.SlipNode = class {
             }
         }
 
-        // If there is an incompatible bond, then fight against it, and its
-        // group, if any. 
-        var incompatibleBond;
-        var incompatibleGroup;
-        if ((objFromInitial.leftmost || objFromInitial.rightmost) &&
-                (objFromTarget.leftmost || objFromTarget.rightmost)) 
+        // If there is an incompatible bond, then fight against it, and its group, if any. 
+        let incompatibleBond;
+        let incompatibleGroup;
+        if ((objFromInitial.leftmost || objFromInitial.rightmost) && (objFromTarget.leftmost || objFromTarget.rightmost)) 
         {
             incompatibleBond = this._getIncompatibleBond(corresp);
             if (incompatibleBond) {
@@ -5824,7 +5492,7 @@ Namespace.SlipNode = class {
         }
 
         // If there is an incompatible rule, fight against it
-        var incompatibleRule;
+        let incompatibleRule;
         if (wksp.rule && this._incompatibleRuleCorrespondence(wksp.rule, corresp)) {
             incompatibleRule = wksp.rule;
             if (!SvS(corresp, 1, incompatibleRule, 1)) {
@@ -5895,14 +5563,10 @@ Namespace.SlipNode = class {
         }
 
         if (initialBond.directionCategory && targetBond.directionCategory) {
-            const mapping = new Namespace.ConceptMapping(
-                sn.directionCategory, sn.directionCategory,
-                initialBond.directionCategory, targetBond.directionCategory,
-                null, null);
-            for (let cm of corresp.conceptMappings) {
-                if (cm.isIncompatibleWith(mapping)) {
-                    return targetBond;
-                }
+            const mapping = new Namespace.ConceptMapping(sn.directionCategory, sn.directionCategory,
+                initialBond.directionCategory, targetBond.directionCategory, null, null);
+            if (corresp.conceptMappings.some(m => m.isIncompatibleWith(mapping))) {
+                return targetBond;
             }
         }
         return null;
@@ -5917,8 +5581,7 @@ Namespace.SlipNode = class {
     _isReflexive(corresp)
     {
         const initial = corresp.objFromInitial;
-        return initial.correspondence && 
-            (initial.correspondence.objFromTarget == corresp.objFromTarget);
+        return initial.correspondence && (initial.correspondence.objFromTarget == corresp.objFromTarget);
     }
 
 };
@@ -5981,8 +5644,8 @@ Namespace.SlipNode = class {
         if (!objsExist) { return; }
 
         // Provide UI feedback
-        if (this.ctx.ui) {
-            this.ctx.ui.workspaceUi.corrsGraphic.flashProposed(corresp);
+        if (ctx.ui && !ctx.batchMode) {
+            ctx.ui.workspaceUi.corrsGraphic.flashProposed(corresp);
         }
 
         corresp.updateStrength();
@@ -6177,14 +5840,13 @@ Namespace.SlipNode = class {
         }
 
         // Check to see if all objects are still there
-        for (let o of group.objectList) {
-            if (!wksp.objects.includes(o)) { return; }
+        if (group.objectList.some(o => !wksp.objects.includes(o))) {
+            return;
         }
 
         // Provide UI feedback
-        if (ctx.ui) {
-            ctx.ui.workspaceUi.getStringGraphic(group.string).
-                groupsGraphic.flashProposed(group);
+        if (ctx.ui && !ctx.batchMode) {
+            ctx.ui.workspaceUi.getStringGraphic(group.string).groupsGraphic.flashProposed(group);
         }
 
         // Check to see if bonds have the same direction
@@ -6207,7 +5869,7 @@ Namespace.SlipNode = class {
 
             const n = group.objectList.length;
             let next = group.objectList[n-1];
-            for (let i=n-2; i>=0; i--) { // Don't use reverse(); it changes the array
+            for (let i=n-2; i>=0; i--) { // Don't use reverse(), as it changes the array
                 const obj = group.objectList[i];
                 const rightBond = obj.rightBond;
                 if (rightBond) {
@@ -6239,18 +5901,16 @@ Namespace.SlipNode = class {
         incompatibleBonds.forEach(b => b.break());
 
         // Create new bonds
-        var source, destination;
+        let source, dest;
         group.bondList = [];
         for (let i=1; i<group.objectList.length; i++) {
             const object1 = group.objectList[i - 1];
             const object2 = group.objectList[i];
             if (!object1.rightBond) {
-                [source, destination] = 
-                    (group.directionCategory == sn.right) ? [object1, object2] : [object2, object1];
+                [source, dest] = (group.directionCategory == sn.right) ? [object1, object2] : [object2, object1];
                 const category = group.groupCategory.getRelatedNode(sn.bondCategory);
                 const facet = group.facet;
-                const newBond = new Namespace.Bond(source, destination, category, facet,
-                    source.getDescriptor(facet), destination.getDescriptor(facet));
+                const newBond = new Namespace.Bond(source, dest, category, facet, source.getDescriptor(facet), dest.getDescriptor(facet));
                 newBond.build();
             }
             group.bondList.push(object1.rightBond);
@@ -6346,8 +6006,7 @@ Namespace.SlipNode = class {
                     lmGroup.groupCategory, lmGroup.directionCategory, lmGroup.facet);
             }
             else {
-                ctx.coderack.proposeGroup([leftmost], [], sn.samenessGroup, null,
-                    sn.letterCategory);
+                ctx.coderack.proposeGroup([leftmost], [], sn.samenessGroup, null, sn.letterCategory);
             }
             return;
         }
@@ -6367,8 +6026,7 @@ Namespace.SlipNode = class {
         if (!bonds.length) { return; }
 
         const groupCategory = chosenBond.category.getRelatedNode(sn.groupCategory);
-        ctx.coderack.proposeGroup(
-            objects, bonds, groupCategory, chosenBond.directionCategory, chosenBond.facet);
+        ctx.coderack.proposeGroup(objects, bonds, groupCategory, chosenBond.directionCategory, chosenBond.facet);
     }
 
 
@@ -6396,9 +6054,8 @@ Namespace.SlipNode = class {
                 if ([chosenBond.category, bond.category].includes(this.ctx.slipnet.sameness)) {
                     return [];
                 }
-                const newBond = new Namespace.Bond(bond.destination, bond.source, 
-                    chosenBond.category, chosenBond.facet, bond.destDescriptor, 
-                    bond.sourceDescriptor);
+                const newBond = new Namespace.Bond(bond.destination, bond.source, chosenBond.category, 
+                    chosenBond.facet, bond.destDescriptor, bond.sourceDescriptor);
                 result.push(newBond);
             }
         }
@@ -6454,9 +6111,8 @@ Namespace.SlipNode = class {
         const group = this.group;
 
         // Provide UI feedback
-        if (ctx.ui) {
-            ctx.ui.workspaceUi.getStringGraphic(group.string).
-                groupsGraphic.flashProposed(group);
+        if (ctx.ui && !ctx.batchMode) {
+            ctx.ui.workspaceUi.getStringGraphic(group.string).groupsGraphic.flashProposed(group);
         }
 
         // Maybe fizzle, if the strength is too low
@@ -6467,9 +6123,7 @@ Namespace.SlipNode = class {
 
         // Post a GroupBuilder codelet
         group.groupCategory.getRelatedNode(ctx.slipnet.bondCategory).activation = 100;
-        if (group.directionCategory) {
-            group.directionCategory.activation = 100;
-        }
+        if (group.directionCategory) { group.directionCategory.activation = 100; }
         const urgency = Namespace.Codelets.CodeletUtils.getUrgencyBin(strength);
         const newCodelet = ctx.coderack.factory.create('group-builder', urgency, [group]);
         coderack.post(newCodelet);
@@ -6528,8 +6182,7 @@ Namespace.SlipNode = class {
         const Utils = Namespace.Codelets.CodeletUtils;
 
         // Choose an object from the initial string, based on salience.
-        const objFromInitial = Utils.chooseUnmodifiedObject(ctx, 'relativeImportance', 
-            wksp.initialWString.objects);
+        const objFromInitial = Utils.chooseUnmodifiedObject(ctx, 'relativeImportance', wksp.initialWString.objects);
         if (!objFromInitial) { return; }
 
         const descriptors = objFromInitial.relevantDistinguishingDescriptors();
@@ -6541,26 +6194,21 @@ Namespace.SlipNode = class {
         for (let m of wksp.getSlippableMappings()) {
             if (m.initialDescriptor == descriptor) {
                 initialDescriptor = m.targetDescriptor;
+                break;
             }
         }
-        const targetCandidates = [];
-        for (let obj of wksp.targetWString.objects) {
-            for (let descr of obj.relevantDescriptions()) {
-                if (descr.descriptor == initialDescriptor) {
-                    targetCandidates.push(obj);
-                }
-            }
-        }
+        const targetCandidates = wksp.targetWString.objects.filter(
+            o => o.relevantDescriptions().some(d => d.descriptor == initialDescriptor));
         if (!targetCandidates.length) { return; }
 
         let objFromTarget = Utils.chooseUnmodifiedObject(ctx, 'interStringSalience', targetCandidates);
         if (objFromInitial.spansString() != objFromTarget.spansString()) { return; }
 
         // Provide UI feedback
-        if (this.ctx.ui) {
+        if (ctx.ui && !ctx.batchMode) {
             const dummyCorresp = new Namespace.Correspondence(
                 objFromInitial, objFromTarget, [], false);
-            this.ctx.ui.workspaceUi.corrsGraphic.flashGrope(dummyCorresp);
+            ctx.ui.workspaceUi.corrsGraphic.flashGrope(dummyCorresp);
         }
 
         // Get the posible concept mappings
@@ -6581,23 +6229,18 @@ Namespace.SlipNode = class {
         // If both objects span the strings, check to see if the
         // string description needs to be flipped
         const opposites = distinguishingMappings.filter(m =>
-            (m.initialDescType == sn.stringPositionCategory) &&
-                m.initialDescType != sn.bondFacet);
+            (m.initialDescType == sn.stringPositionCategory) && (m.initialDescType != sn.bondFacet));
         const initialDescriptionTypes = opposites.map(m => m.initialDescType);
         let flipTargetObject = false;
-        if (objFromInitial.spansString() && objFromTarget.spansString() &&
-            initialDescriptionTypes.includes(sn.directionCategory) &&
-              opposites.every(m => m.label == sn.opposite) && (sn.opposite.activation != 100)) {
+        if (objFromInitial.spansString() && objFromTarget.spansString() && (sn.opposite.activation != 100) &&
+            initialDescriptionTypes.includes(sn.directionCategory) && opposites.every(m => m.label == sn.opposite) ) {
                 objFromTarget = objFromTarget.flippedVersion();
-                conceptMappings = Namespace.ConceptMapping.getMappings(
-                    objFromInitial, objFromTarget, objFromInitial.relevantDescriptions(),
-                    objFromTarget.relevantDescriptions()
-                );
+                conceptMappings = Namespace.ConceptMapping.getMappings( objFromInitial, objFromTarget, 
+                    objFromInitial.relevantDescriptions(), objFromTarget.relevantDescriptions() );
                 flipTargetObject = true;
         }
 
-        ctx.coderack.proposeCorrespondence(
-            objFromInitial, objFromTarget, conceptMappings, flipTargetObject);
+        ctx.coderack.proposeCorrespondence(objFromInitial, objFromTarget, conceptMappings, flipTargetObject);
     }
 
 
@@ -6631,7 +6274,7 @@ Namespace.SlipNode = class {
      * 
      * @param {Copycat} ctx - The Copycat instance.
      * @param {Number} urgency - The urgency of the codelet.
-     * @param {Array} args - Arguments to pass to the codelet.
+     * @param {Array} args - Arguments to pass to the codelet. (Empty for this codelet.)
      * @param {Number} birthdate - The birthdate of the codelet.
      */
     constructor(ctx, urgency, args, birthdate) 
@@ -6659,15 +6302,13 @@ Namespace.SlipNode = class {
 
         const position = letterOfInitialString.leftIndex;
         const modStringLength = wksp.modifiedWString.letters.length;
-        const letterOfModifiedString = (position > modStringLength) ? null :
-            wksp.modifiedWString.letters[position - 1];
+        const letterOfModifiedString = (position > modStringLength) ? null : wksp.modifiedWString.letters[position - 1];
         if (letterOfModifiedString == null) { return; }
 
-        const initialAscii = wksp.initialJString[position - 1].codePointAt(0);
-        const modifiedAscii = wksp.modifiedJString[position - 1].codePointAt(0);
+        const initialAscii = wksp.initialWString.jstring[position - 1].codePointAt(0);
+        const modifiedAscii = wksp.modifiedWString.jstring[position - 1].codePointAt(0);
         const diff = initialAscii - modifiedAscii;
-        const relation = (diff == -1) ? sn.successor : (diff === 0) ? sn.sameness : 
-            (diff == 1) ? sn.predecessor : null;
+        const relation = (diff == -1) ? sn.successor : (diff === 0) ? sn.sameness : (diff == 1) ? sn.predecessor : null;
 
         const repl = new Namespace.Replacement(letterOfInitialString, letterOfModifiedString, relation);
         letterOfInitialString.replacement = repl;
@@ -6735,14 +6376,9 @@ Namespace.SlipNode = class {
         if (rule.totalStrength === 0) { return; }
 
         // If a different rule already exists, then fight.
-        if (wksp.rule) {
-            if (!Utils.structureVsStructure(rule, 1.0, wksp.rule, 1.0)) {
-                return;
-            }
-        }
-
-        // Build the rule
-        rule.build();
+        if ( !wksp.rule || Utils.structureVsStructure(rule, 1.0, wksp.rule, 1.0)) {
+            rule.build();
+        }       
     }
 
     
@@ -6775,7 +6411,7 @@ Namespace.SlipNode = class {
      * 
      * @param {Copycat} ctx - The Copycat instance.
      * @param {Number} urgency - The urgency of the codelet.
-     * @param {Array} args - Arguments to pass to the codelet.
+     * @param {Array} args - Arguments to pass to the codelet. (Empty for this codelet.)
      * @param {Number} birthdate - The birthdate of the codelet.
      */
     constructor(ctx, urgency, args, birthdate) 
@@ -6795,8 +6431,8 @@ Namespace.SlipNode = class {
         const coderack = ctx.coderack;
 
         // If not all replacements have been found, then fizzle.
-        const numUnreplaced = wksp.objects.filter(o => (o.string == wksp.initialWString) &&
-            (o instanceof Namespace.Letter) && !o.replacement).length;
+        const numUnreplaced = wksp.objects.filter(o => 
+            (o.string == wksp.initialWString) && (o instanceof Namespace.Letter) && !o.replacement).length;
         if (numUnreplaced !== 0) { return; }
 
         const changedObjects = wksp.initialWString.objects.filter(o => o.changed);
@@ -6808,16 +6444,15 @@ Namespace.SlipNode = class {
         }
     
         // Generate a list of distinguishing descriptions for the first object
-        const changed = changedObjects[changedObjects.length-1];
         let objectList = [];
+        const changed = changedObjects[changedObjects.length-1];
         const position = changed.getDescriptor(sn.stringPositionCategory);
         if (position) {
             objectList.push(position);
         }
 
         const letter = changed.getDescriptor(sn.letterCategory);
-        const otherObjectsOfSameLetter = wksp.initialWString.objects.filter(o =>
-            (o != changed) && o.getDescriptionType(letter));
+        const otherObjectsOfSameLetter = wksp.initialWString.objects.filter(o => (o != changed) && o.getDescriptionType(letter));
         if (!otherObjectsOfSameLetter.length) {
             objectList.push(letter);
         }
@@ -6828,10 +6463,8 @@ Namespace.SlipNode = class {
             const slippages = wksp.getSlippableMappings();
             for (let node of objectList) {
                 node = node.applySlippages(slippages);
-                if (targetObject.hasDescriptor(node)) {
-                    if (targetObject.isDistinguishingDescriptor(node)) {
-                        newList.push(node);
-                    }
+                if (targetObject.hasDescriptor(node) && targetObject.isDistinguishingDescriptor(node)) {
+                    newList.push(node);
                 }
             }
             objectList = newList; 
@@ -6841,10 +6474,9 @@ Namespace.SlipNode = class {
         // Choose the relation 
         let weights = objectList.map(o => ctx.temperature.getAdjustedValue(o.depth));
         const descriptor = ctx.randGen.weightedChoice(objectList, weights);
+        
         objectList = [];
-        if (changed.replacement.relation) {
-            objectList.push(changed.replacement.relation);
-        }
+        if (changed.replacement.relation) { objectList.push(changed.replacement.relation); }
         objectList.push(changed.replacement.objFromModified.getDescriptor(sn.letterCategory));
         weights = objectList.map(o => ctx.temperature.getAdjustedValue(o.depth));
         const relation = ctx.randGen.weightedChoice(objectList, weights);
@@ -6940,7 +6572,7 @@ Namespace.SlipNode = class {
      * 
      * @param {Copycat} ctx - The Copycat instance.
      * @param {Number} urgency - The urgency of the codelet.
-     * @param {Array} args - Arguments to pass to the codelet.
+     * @param {Array} args - Arguments to pass to the codelet. (Empty for this codelet.)
      * @param {Number} birthdate - The birthdate of the codelet.
      */
     constructor(ctx, urgency, args, birthdate) 
@@ -6956,10 +6588,9 @@ Namespace.SlipNode = class {
     {
         const ctx = this.ctx;
         const wksp = ctx.workspace;
-        const rule = wksp.rule;
 
         // If we don't have a rule, then fizzle. 
-        if (!rule) { return; }
+        if (!wksp.rule) { return; }
 
         let bondDensity = 1.0;
         const totalLength = wksp.initialWString.length + wksp.targetWString.length;
@@ -6981,14 +6612,12 @@ Namespace.SlipNode = class {
             const result = wksp.rule.applyRuleToTarget();
             if (result) {
                 wksp.finalAnswer = result;
-            }
-            else {
+            } else {
                 ctx.temperature.clampUntil(ctx.coderack.numCodeletsRun + 100);
             }
         }
     }
 
-    
 };
 
 })( window.CopycatJS = window.CopycatJS || {} );
@@ -7043,11 +6672,9 @@ Namespace.SlipNode = class {
         if (!bondDest) { return; }
 
         // Provide UI feedback.
-        if (ctx.ui) {
-            const dummyBond = new Namespace.Bond(bondSource, bondDest, 
-                sn.sameness, sn.letterCategory, sn.letters[0], sn.letters[0]);
-            ctx.ui.workspaceUi.getStringGraphic(dummyBond.string).
-                bondsGraphic.flashGrope(dummyBond);
+        if (ctx.ui && !ctx.batchMode) {
+            const dummyBond = new Namespace.Bond(bondSource, bondDest, sn.sameness, sn.letterCategory, sn.letters[0], sn.letters[0]);
+            ctx.ui.workspaceUi.getStringGraphic(dummyBond.string). bondsGraphic.flashGrope(dummyBond);
         }
 
         const bondFacet = CodeletUtils.chooseBondFacet(ctx, bondSource, bondDest);
@@ -7061,18 +6688,15 @@ Namespace.SlipNode = class {
         if (forwardBond == sn.identity) {
             forwardBond = sn.sameness;
             backwardBond = sn.sameness;
-        }
-        else {
+        } else {
             backwardBond = destDescriptor.getBondCategory(sourceDescriptor);
         }
 
         if (cat == forwardBond) {
-            ctx.coderack.proposeBond(bondSource, bondDest, cat,
-                bondFacet, sourceDescriptor, destDescriptor);
+            ctx.coderack.proposeBond(bondSource, bondDest, cat, bondFacet, sourceDescriptor, destDescriptor);
         }
         else if (cat == backwardBond) {
-            ctx.coderack.proposeBond(bondDest, bondSource, cat,
-                bondFacet, destDescriptor, sourceDescriptor);
+            ctx.coderack.proposeBond(bondDest, bondSource, cat, bondFacet, destDescriptor, sourceDescriptor);
         }
     }
 
@@ -7128,12 +6752,10 @@ Namespace.SlipNode = class {
         if (!bondDest) { return; }
 
         // Provide UI feedback.
-        if (ctx.ui) {
+        if (ctx.ui && !ctx.batchMode) {
             const sn = ctx.slipnet;
-            const dummyBond = new Namespace.Bond(bondSource, bondDest, 
-                sn.sameness, sn.letterCategory, sn.letters[0], sn.letters[0]);
-            ctx.ui.workspaceUi.getStringGraphic(dummyBond.string).
-                bondsGraphic.flashGrope(dummyBond);
+            const dummyBond = new Namespace.Bond(bondSource, bondDest, sn.sameness, sn.letterCategory, sn.letters[0], sn.letters[0]);
+            ctx.ui.workspaceUi.getStringGraphic(dummyBond.string). bondsGraphic.flashGrope(dummyBond);
         }
 
         const bondFacet = CodeletUtils.chooseBondFacet(ctx, bondSource, bondDest);
@@ -7145,13 +6767,10 @@ Namespace.SlipNode = class {
         let category = sourceDescriptor.getBondCategory(destDescriptor);
         if (!category) { return; }
         
-        if (category == ctx.slipnet.identity) {
-            category = ctx.slipnet.sameness;
-        }
+        if (category == ctx.slipnet.identity) { category = ctx.slipnet.sameness; }
 
         // Propose the bond
-        ctx.coderack.proposeBond(bondSource, bondDest, category, bondFacet,
-            sourceDescriptor, destDescriptor);
+        ctx.coderack.proposeBond(bondSource, bondDest, category, bondFacet, sourceDescriptor, destDescriptor);
     }
 
 
@@ -7166,12 +6785,9 @@ Namespace.SlipNode = class {
         let objects = [];
 
         if (this.bondDirection == ctx.slipnet.left) {
-            objects = ctx.workspace.objects.filter(o =>
-                (o.string == source.string) && (source.leftIndex == o.rightIndex + 1));
-        }
-        else {
-            objects = ctx.workspace.objects.filter(o =>
-                (o.string == source.string) && (source.rightIndex == o.leftIndex - 1));
+            objects = ctx.workspace.objects.filter(o => (o.string == source.string) && (source.leftIndex == o.rightIndex + 1));
+        } else {
+            objects = ctx.workspace.objects.filter(o => (o.string == source.string) && (source.rightIndex == o.leftIndex - 1));
         }
 
         const weights = objects.map( o => ctx.temperature.getAdjustedValue(o.intraStringSalience) );
@@ -7254,21 +6870,18 @@ Namespace.SlipNode = class {
         const descriptions = [];
         for (let link of descriptionType.instanceLinks) {
             const node = link.destination;
-            if (node == sn.first && obj.hasDescriptor(sn.letters[0])) {
+            if ((node == sn.first) && obj.hasDescriptor(sn.letters[0])) {
                 descriptions.push(node);
             }
-            if (node == sn.last && obj.hasDescriptor(sn.letters[sn.letters.length-1])) {
+            else if ((node == sn.last) && obj.hasDescriptor(sn.letters[sn.letters.length-1])) {
                 descriptions.push(node);
             }
-            if (node == sn.middle && obj.isMiddleObject()) {
+            else if ((node == sn.middle) && obj.isMiddleObject()) {
                 descriptions.push(node);
             }
             for (let i=1; i<=sn.numbers.length; i++) {
-                const number = sn.numbers[i-1];
-                if (node == number && (obj instanceof Namespace.Group)) {
-                    if (obj.objectList.length == i) {
-                        descriptions.push(node);
-                    }
+                if ((node == sn.numbers[i-1]) && (obj instanceof Namespace.Group)) {
+                    if (obj.objectList.length == i) { descriptions.push(node); }
                 }
             }
         }
@@ -7416,8 +7029,7 @@ Namespace.SlipNode = class {
     _singleLetterGroupProbability(letter)
     {
         const sn = this.ctx.slipnet;
-        const group = new Namespace.Group(letter.string, sn.samenessGroup,
-            null, sn.letterCategory, [letter], []);
+        const group = new Namespace.Group(letter.string, sn.samenessGroup, null, sn.letterCategory, [letter], []);
 
         const numSupporters = group._numberOfLocalSupportingGroups();
         if (numSupporters === 0) {
@@ -7600,9 +7212,7 @@ Namespace.ArrowGraphic = class
     redraw(ctx)
     {
         // Update our drawing parameters if necessary
-        if (Namespace.UiUtils.NeedToRescale(this.drawParams, ctx)) {
-            this._updateDrawParams(ctx);
-        }
+        if (Namespace.UiUtils.NeedToRescale(this.drawParams, ctx)) { this._updateDrawParams(ctx);}
 
         const dp = this.drawParams;
         ctx.strokeStyle = this.wkspUi.letterColor;
@@ -7631,24 +7241,16 @@ Namespace.ArrowGraphic = class
         let sz = w/25;
         dp.lines = [];
 
-        dp.lines.push(
-            {xa: cx-0.5*sz, ya: cy-0.08*sz, xb: cx+0.34*sz, yb: cy-0.08*sz});
-        dp.lines.push(
-            {xa: cx-0.5*sz, ya: cy+0.08*sz, xb: cx+0.34*sz, yb: cy+0.08*sz});
-        dp.lines.push(
-            {xa: cx+0.1*sz, ya: cy-0.2*sz, xb: cx+0.5*sz, yb: cy});
-        dp.lines.push(
-            {xa: cx+0.1*sz, ya: cy+0.2*sz, xb: cx+0.5*sz, yb: cy});
+        dp.lines.push({xa: cx-0.5*sz, ya: cy-0.08*sz, xb: cx+0.34*sz, yb: cy-0.08*sz});
+        dp.lines.push({xa: cx-0.5*sz, ya: cy+0.08*sz, xb: cx+0.34*sz, yb: cy+0.08*sz});
+        dp.lines.push({xa: cx+0.1*sz, ya: cy-0.2*sz, xb: cx+0.5*sz, yb: cy});
+        dp.lines.push({xa: cx+0.1*sz, ya: cy+0.2*sz, xb: cx+0.5*sz, yb: cy});
 
         cy = 2*h/3 - h/80;
-        dp.lines.push(
-            {xa: cx-0.5*sz, ya: cy-0.08*sz, xb: cx+0.34*sz, yb: cy-0.08*sz});
-        dp.lines.push(
-            {xa: cx-0.5*sz, ya: cy+0.08*sz, xb: cx+0.34*sz, yb: cy+0.08*sz});
-        dp.lines.push(
-            {xa: cx+0.1*sz, ya: cy-0.2*sz, xb: cx+0.5*sz, yb: cy});
-        dp.lines.push(
-            {xa: cx+0.1*sz, ya: cy+0.2*sz, xb: cx+0.5*sz, yb: cy});
+        dp.lines.push({xa: cx-0.5*sz, ya: cy-0.08*sz, xb: cx+0.34*sz, yb: cy-0.08*sz});
+        dp.lines.push({xa: cx-0.5*sz, ya: cy+0.08*sz, xb: cx+0.34*sz, yb: cy+0.08*sz});
+        dp.lines.push({xa: cx+0.1*sz, ya: cy-0.2*sz, xb: cx+0.5*sz, yb: cy});
+        dp.lines.push({xa: cx+0.1*sz, ya: cy+0.2*sz, xb: cx+0.5*sz, yb: cy});
     }               
 };
 
@@ -7657,6 +7259,304 @@ Namespace.ArrowGraphic = class
 
 
 })( window.CopycatJS = window.CopycatJS || {} );
+
+
+
+
+
+
+
+// eslint-disable-next-line no-shadow-restricted-names, no-unused-vars, no-extra-semi
+;(function(Namespace, undefined) {
+    "use strict";
+    
+    
+/**
+ * @classdesc
+ * This class is responsible for displaying the batch-mode user interface.
+ * 
+ */
+Namespace.BatchmodeUi = class 
+{
+    /**
+     * @constructor
+     * 
+     * @param {CopycatUi} copycatUi - The parent Ui.
+     * @param {HTMLElement} parentDiv - The html div that hosts this ui.
+     */
+    constructor(copycatUi, parentDiv) 
+    { 
+        this.copycatUi = copycatUi;
+        this.parentDiv = parentDiv;      
+
+        this.bkgndColor = '#fafafa';
+        this.fontColor = '#606060';
+
+        this._buildUi();
+
+    }
+
+
+/**
+     * Creates the ui elements.
+     * @private
+     * 
+     */
+    _buildUi()
+    {
+        const UiUtils = Namespace.UiUtils;
+
+        this.parentDiv.style.background = this.bkgndColor;
+        this.parentDiv.style.borderTop = '1px solid';
+
+        this.ctrlsDiv = UiUtils.CreateElement('div', 
+            'batchmode-ctrls-div', this.parentDiv, {position:'absolute', 
+            top:'0%', left:'0%', right:'82%', height:(6/0.85.toString())+'%', background:this.bkgndColor}
+        );
+
+        this.goBtn = UiUtils.CreateElement('button', 'go_btn', 
+            this.ctrlsDiv, {width:'15%', height:'80%', top:'24%', left:'31%', border:0, background:this.bkgndColor});
+        this.goBtn.innerHTML = '<img class="button-img" src="./btn_play.png" border="0" width="100% height="auto">';
+        this.goBtn.onclick = this._onGoBtnClick.bind(this);
+        this.goBtn.className += " noselect";
+
+        this.pauseBtn = UiUtils.CreateElement('button', 'pause_btn', 
+            this.ctrlsDiv, {width:'15%', height:'80%', top:'24%', left:'54%', border:0, background:this.bkgndColor});
+        this.pauseBtn.innerHTML = '<img class="button-img" src="./btn_pause.png" border="0" width="100% height="auto">';
+        this.pauseBtn.onclick = this._onPauseBtnClick.bind(this);
+        this.pauseBtn.className += " noselect";
+
+        this.resetBtn = UiUtils.CreateElement('button', 'reset_btn', 
+            this.ctrlsDiv, {width:'15%', height:'80%', top:'24%', left:'77%', border:0, background:this.bkgndColor});
+        this.resetBtn.innerHTML = '<img class="button-img" src="./btn_reset.png" border="0" width="100% height="auto">';
+        this.resetBtn.onclick = this._onResetBtnClick.bind(this);
+        this.resetBtn.className += " noselect";
+
+        this.progressDiv = UiUtils.CreateElement('div', 
+            'batchmode-progress-div', this.parentDiv, {position:'absolute', top:'0%', right:'10%', width:'18%', 
+            height:(6/0.85.toString())+'%', background:this.bkgndColor, display:'flex', alignItems:'center', justifyContent:'right',
+            color:'#404040', fontFamily:'Arial', fontWeight:'normal', fontSize: '2vh'}
+        );
+
+        this.tableDiv = UiUtils.CreateElement('div', 'batchmode-table-div', this.parentDiv, {position:'absolute', 
+            top:'15%', left:'10%', width:'80%', height:'70%', background:this.bkgndColor, borderBottom:'1px solid black',
+            overflowX:'auto', overflowY:'scroll'});
+        this._createTable(this.tableDiv, 15, 5);
+    }    
+    
+    
+    /**
+     * Handler for state-change events
+     * @private
+     * 
+     */
+    _onCopycatStateChange()
+    {
+        this._updateEnabledState();
+    }
+
+
+    /**
+     * Handler for resize events.
+     * @private
+     *
+     */
+    _onResize()
+    {   
+        // Nothing to do here
+    }
+
+
+    /**
+     * Handler for go button clicks.
+     * @private
+     * 
+     */
+    _onGoBtnClick()
+    {
+        const copycat = this.copycatUi.copycat;
+
+        if (this.copycatUi.checkInputStrings()) {
+            if (copycat.state == 'ready' || copycat.state == 'done') {
+                copycat.start();
+            }
+            else if (copycat.state == 'paused') {
+                copycat.resume();
+            }
+        }        
+    }
+
+
+    /**
+     * Handler for pause button clicks.
+     * @private
+     * 
+     */
+    _onPauseBtnClick()
+    {
+        this.copycatUi.copycat.pause();
+    }
+
+
+    /**
+     * Handler for reset button clicks.
+     * @private
+     * 
+     */
+    _onResetBtnClick()
+    {
+        const copycat = this.copycatUi.copycat;
+        if ( (copycat.state != 'running') && this.copycatUi.checkInputStrings()) {
+            this.clearTable();
+            copycat.reset();
+        }
+    }
+    
+    
+    /**
+     * Updates the enabled/disabled state of the control buttons,
+     * based on the current copycat state.
+     * @private
+     * 
+     */
+    _updateEnabledState()
+    {
+        const setEnabled = function(ctrl, enabled) { 
+            ctrl.disabled = !enabled; 
+            ctrl.style.opacity = enabled ? '1.0' : '0.4';
+        };
+
+        [this.goBtn, this.pauseBtn, this.resetBtn].forEach( ctrl => setEnabled(ctrl, true) );
+
+        switch (this.copycatUi.copycat.state) 
+        {
+            case 'ready':
+                setEnabled(this.pauseBtn, false);
+                break;
+            case 'paused':
+                setEnabled(this.pauseBtn, false);
+                break;
+            case 'running':
+                setEnabled(this.goBtn, false);
+                setEnabled(this.resetBtn, false);
+                break;
+            case 'done':
+                setEnabled(this.pauseBtn, false);
+                break;
+            default:
+                break;
+        }
+    }
+
+    /**
+     * Handler for batchmode-toggle events
+     * @private
+     * 
+     */    
+    _onBatchResultsUpdated(resultsDict)
+    {
+        const ctx = this.copycatUi.copycat;
+        if ( ctx.batchMode ) 
+        {
+            this.clearTable();
+        
+            let r = 1;
+            const sortedResults = Object.values(resultsDict).sort((a,b) => b.count - a.count);
+            
+            const tbl = this.resultsTable;
+            for (const result of sortedResults) {
+                if (r >= tbl.rows.length) {  this._addTableRow(); }
+                tbl.rows[r].cells[0].innerHTML = '&nbsp;' + result.count;
+                tbl.rows[r].cells[1].innerHTML = '&nbsp;' + result.answer;
+                tbl.rows[r].cells[2].innerHTML = '&nbsp;' + result.rule;
+                tbl.rows[r].cells[3].innerHTML = '&nbsp;' + (result.sumtemp/result.count).toFixed(0);
+                tbl.rows[r].cells[4].innerHTML = '&nbsp;' + (result.sumtime/result.count).toFixed(0);
+                r += 1;
+            }
+
+            this.progressDiv.innerHTML = 'Run:&nbsp;&nbsp;' + ctx.batchCount + ' / ' + ctx.batchSize;
+        }
+    }
+    
+
+    _createTable(parentDiv, nRows, nCols) 
+    {
+        this.resultsTable = Namespace.UiUtils.CreateElement('table', 'batchmode_results_tbl', 
+            parentDiv, {width:'100%', height:'100%', background:'#fffbcc',
+                border: '1px solid blue', borderCollapse: 'collapse'
+            });
+
+        const colWidths = ['8%', '20%', '56%', '8%', '8%'];
+        const colLabels = ['Freq.', 'Answer', 'Rule', 'Avg. Temp.', 'Avg. # Codelets'];
+
+        const header = this.resultsTable.createTHead();
+        const headerRow = header.insertRow();
+        headerRow.style.height = '5vh';
+        headerRow.style.fontFamily = 'Arial';
+        headerRow.style.fontWeight = 'bold'; 
+        headerRow.style.background = '#ffe5e0';
+        for (let c = 0; c < nCols; c++) {
+            const cell = headerRow.insertCell();
+            cell.innerHTML = '&nbsp;' + colLabels[c];  
+            cell.style.border = '1px solid blue';
+            cell.style.borderCollapse = 'collapse';
+            cell.style.width = colWidths[c];
+            if ((c==3) || (c ==4)) { cell.style.textAlign = 'center'; }         
+        }
+
+        for (let r = 0; r < nRows; r++) { this._addTableRow(); }
+    }
+
+
+    /** 
+     * Adds a new row to the results table.
+     * 
+     */
+    _addTableRow()
+    {
+        const tbl = this.resultsTable;
+        const nCols = tbl.rows[0].cells.length;
+        const firstRow = tbl.rows[0];
+
+        const tr = tbl.insertRow();
+        tr.style.height = '4vh';
+        tr.style.fontFamily = 'Arial';
+        for (let c = 0; c < nCols; c++) {
+            const td = tr.insertCell();
+            td.style.border = '1px solid blue';
+            td.style.borderCollapse = 'collapse';
+            td.style.width = firstRow.cells[c].style.width;
+            td.innerHTML = '&nbsp;';
+            if (firstRow.cells[c].innerHTML.toLowerCase().includes('answer')) {
+                td.style.fontFamily = 'serif';
+                td.style.fontStyle = 'italic';
+                td.style.fontSize = 'larger';
+            }        
+        }        
+    }
+
+
+    /**
+     * Clears the results table.
+     *  
+     */
+    clearTable() 
+    {
+        const nTableRows = this.resultsTable.rows.length;
+        for (let r = 1; r < nTableRows; r++) {
+            const nTableCols = this.resultsTable.rows[r].cells.length;
+            for (let c = 0; c < nTableCols; c++) {
+                this.resultsTable.rows[r].cells[c].innerHTML = '';
+            }
+        }
+
+        this.progressDiv.innerHTML = '';
+    }
+};
+
+
+})( window.CopycatJS = window.CopycatJS || {} );
+
 
 
 
@@ -7700,8 +7600,7 @@ Namespace.BondsGraphic = class
      * @private 
      */
     _sameReferents(b1, b2) {
-        return (b1.source === b2.source) &&
-            (b1.destination === b2.destination);
+        return (b1.source === b2.source) && (b1.destination === b2.destination);
     }
 
     /**
@@ -7716,16 +7615,13 @@ Namespace.BondsGraphic = class
         const wksp = this.wkspUi.workspace;
         const coderack = this.wkspUi.copycat.coderack;
 
-        let builtBonds = wksp.structures.filter(s => 
-            (s instanceof Namespace.Bond) && (s.source.string == this.wstring));
+        let builtBonds = wksp.structures.filter(s => (s instanceof Namespace.Bond) && (s.source.string == this.wstring));
 
         let evaluatedBonds = coderack.codelets.filter(c =>
-            (c instanceof Namespace.Codelets.BondStrengthTester) && 
-            (c.bond.source.string == this.wstring)).map(c => c.bond);
+            (c instanceof Namespace.Codelets.BondStrengthTester) && (c.bond.source.string == this.wstring)).map(c => c.bond);
 
         let proposedBonds = coderack.codelets.filter(c =>
-            (c instanceof Namespace.Codelets.BondBuilder) && 
-            (c.bond.source.string == this.wstring)).map(c => c.bond);
+            (c instanceof Namespace.Codelets.BondBuilder) && (c.bond.source.string == this.wstring)).map(c => c.bond);
 
         // Remove duplicates and obsolete cases
         proposedBonds = proposedBonds.filter(p =>
@@ -7793,8 +7689,7 @@ Namespace.BondsGraphic = class
     flashProposed(bond, count=3) 
     {
         if (!this.drawnBonds.some(b => this._sameReferents(b, bond))) {
-            const bondGraphic = 
-                new Namespace.BondGraphic(bond, 'proposed', this);
+            const bondGraphic = new Namespace.BondGraphic(bond, 'proposed', this);
             this.wkspUi.flash(bondGraphic, count);
         }
     }
@@ -7809,8 +7704,7 @@ Namespace.BondsGraphic = class
     flashGrope(bond, count=3)
     {
         if (!this.drawnBonds.some(b => this._sameReferents(b, bond))) {
-            const bondGraphic = 
-                new Namespace.BondGraphic(bond, 'grope', this);
+            const bondGraphic = new Namespace.BondGraphic(bond, 'grope', this);
             this.wkspUi.flash(bondGraphic, count);
         }        
     }
@@ -7903,24 +7797,20 @@ Namespace.BondGraphic = class
         // Get the control point (for drawing a curved line)
         const sn = parent.wkspUi.copycat.slipnet;
         const stringDp = parent.stringGraphic.drawParams;
-        const bump = bond.directionCategory == sn.right ? 
-            1.0*stringDp.fontSize : 0.4*stringDp.fontSize;
+        const bump = bond.directionCategory == sn.right ? 1.0*stringDp.fontSize : 0.4*stringDp.fontSize;
         dp.ptc = {x: (dp.pta.x + dp.ptb.x)/2, y: Math.min(dp.pta.y, dp.ptb.y) - bump};
 
         // Calculate the grope lines
         const CalcZigzagLine = Namespace.UiUtils.CalcZigzagLine;
         const gBump =  0.25*stringDp.fontSize;
         const ptg = {x: (dp.pta.x + dp.ptb.x)/2, y: (dp.pta.y + dp.ptb.y)/2 - gBump};
-        dp.gropeLineA = CalcZigzagLine(ctx, dp.pta.x, dp.pta.y, 
-            dp.pta.x + 0.8*(ptg.x - dp.pta.x), dp.pta.y + 0.8*(ptg.y - dp.pta.y));
-        dp.gropeLineB = CalcZigzagLine(ctx, dp.ptb.x, dp.ptb.y,
-            dp.ptb.x + 0.8*(ptg.x - dp.ptb.x), dp.ptb.y + 0.8*(ptg.y - dp.ptb.y));
+        dp.gropeLineA = CalcZigzagLine(ctx, dp.pta.x, dp.pta.y, dp.pta.x + 0.8*(ptg.x - dp.pta.x), dp.pta.y + 0.8*(ptg.y - dp.pta.y));
+        dp.gropeLineB = CalcZigzagLine(ctx, dp.ptb.x, dp.ptb.y, dp.ptb.x + 0.8*(ptg.x - dp.ptb.x), dp.ptb.y + 0.8*(ptg.y - dp.ptb.y));
 
         // Calculate the arrow points
         dp.arrowLines = [];
         const arrowScale = h/125;
-        const ptab = {x: dp.pta.x/4 + dp.ptc.x/2 + dp.ptb.x/4, 
-                      y: dp.pta.y/4 + dp.ptc.y/2 + dp.ptb.y/4};
+        const ptab = {x: dp.pta.x/4 + dp.ptc.x/2 + dp.ptb.x/4,  y: dp.pta.y/4 + dp.ptc.y/2 + dp.ptb.y/4};
         if (bond.directionCategory == sn.right) {
             let ptaa = {x: ptab.x - arrowScale, y:ptab.y - 0.9*arrowScale};
             let ptac = {x: ptab.x - arrowScale, y:ptab.y + 0.9*arrowScale};
@@ -7969,8 +7859,7 @@ Namespace.CoderackUi = class {
      * @constructor
      * 
      * @param {CopycatUi} copycatUi - The parent Ui.
-     * @param {HTMLElement} parentDiv - The html div that hosts
-     *  this ui.
+     * @param {HTMLElement} parentDiv - The html div that hosts this ui.
      */
     constructor(copycatUi, parentDiv) 
     { 
@@ -8052,9 +7941,7 @@ Namespace.CoderackUi = class {
             // Draw the codelet names
             ctx.font = dp.codeletFont;
             ctx.textAlign = "left";  
-            for (let line of dp.textLines) {
-                ctx.fillText(...line);
-            }
+            dp.textLines.forEach(line => ctx.fillText(...line) );
         }
         else{
             ctx.clearRect(...dp.countRect);
@@ -8071,8 +7958,7 @@ Namespace.CoderackUi = class {
         // Draw the codelet counts
         const coderack = this.copycat.coderack;
         let counts = new Array(this.codeletList.length).fill(0);
-        coderack.codelets.forEach(codelet => 
-            counts[this.codeletDict[codelet.name]]++ );
+        coderack.codelets.forEach(codelet => counts[this.codeletDict[codelet.name]]++ );
         let totalCodelets = counts.reduce((a,b) => a+b, 0);
         ctx.fillStyle = 'black';
         ctx.textAlign = "center";
@@ -8161,20 +8047,17 @@ Namespace.CoderackUi = class {
         dp.gridLines.push({xa:x, ya:dp.tableTopOffset, xb:x, yb:h});        
 
         // Bar graph region
-        dp.barGraphsRect = [x+1, dp.tableTopOffset+1,
-            w-x-1, h - dp.tableTopOffset-1];
+        dp.barGraphsRect = [x+1, dp.tableTopOffset+1, w-x-1, h - dp.tableTopOffset-1];
 
         // Codelet-counts region
-        dp.countRect = [1, dp.tableTopOffset+1,
-            column0Width-1, h - dp.tableTopOffset-1];
+        dp.countRect = [1, dp.tableTopOffset+1, column0Width-1, h - dp.tableTopOffset-1];
 
         // Codelet font size
         const measureString = "Important-object"; // longest codelet word
         fontSize = Math.round(Math.min(w/18, dp.cellHeight/3.4) * 4/3);
         ctx.font = fontSize.toString() + 'px Verdana';
         let meas = ctx.measureText(measureString);
-        while ((meas.width > 0.95*column1Width) || 
-            (meas.actualBoundingBoxAscent > dp.cellHeight/3)) {
+        while ((meas.width > 0.95*column1Width) || (meas.actualBoundingBoxAscent > dp.cellHeight/3)) {
             fontSize--;
             ctx.font = fontSize.toString() + 'px Verdana';
             meas = ctx.measureText(measureString);
@@ -8188,12 +8071,10 @@ Namespace.CoderackUi = class {
         dp.textLines = [];
         for (let r=0; r<dp.nRows; r++) 
         { 
-            let codeletLines = (r < dp.nRows-1) ? 
-                this.codeletList[r].text.split('/') : ['Total'];
+            let codeletLines = (r < dp.nRows-1) ? this.codeletList[r].text.split('/') : ['Total'];
             let cellTop = dp.tableTopOffset + r*dp.cellHeight;
             if (codeletLines.length == 1) {
-                let y = cellTop + 0.5*dp.cellHeight + 
-                    0.5*meas.actualBoundingBoxAscent;
+                let y = cellTop + 0.5*dp.cellHeight + 0.5*meas.actualBoundingBoxAscent;
                 dp.textLines.push([codeletLines[0], x, y]);
             }
             else {
@@ -8207,8 +8088,7 @@ Namespace.CoderackUi = class {
         // Codelet-count coordinates
         dp.countCoords = [];
         for (let r=0; r<dp.nRows; r++) {
-            let y = dp.tableTopOffset + (r + 0.5)*dp.cellHeight + 
-                0.5*meas.actualBoundingBoxAscent;
+            let y = dp.tableTopOffset + (r + 0.5)*dp.cellHeight + 0.5*meas.actualBoundingBoxAscent;
             dp.countCoords.push([column0Width/2, y]);
         }
 
@@ -8228,8 +8108,7 @@ Namespace.CoderackUi = class {
         dp.bars = [];
         for (let r=0; r<dp.nRows-1; r++) {    
             let cellTop = dp.tableTopOffset + r*dp.cellHeight;
-            dp.bars.push({l:barLeft, t:cellTop + 0.1*dp.cellHeight, 
-                w:0.4*w, h:barHeight});
+            dp.bars.push({l:barLeft, t:cellTop + 0.1*dp.cellHeight, w:0.4*w, h:barHeight});
         }
         return true;
     }
@@ -8301,7 +8180,7 @@ Namespace.CopycatUi = class {
     /**
      * @constructor
      * 
-     * @param {Copycat} copycat - The Copycat instance to watch.
+     * @param {Copycat} copycat - The Copycat instance to be visualized.
      */
     constructor(copycat) 
     { 
@@ -8309,26 +8188,17 @@ Namespace.CopycatUi = class {
         this.rafId = null;
 
         // Create the UI elements
-        this.topbarUi = new Namespace.TopbarUi(this, 
-            document.getElementById('topbar_area'));
+        this.topbarUi          = new Namespace.TopbarUi(this, document.getElementById('topbar_area'));
+        this.inputUi           = new Namespace.InputUi(this, document.getElementById('input_area'));
+        this.workspaceHeaderUi = new Namespace.WorkspaceHeaderUi(this, document.getElementById('workspace_header_area'));
+        this.workspaceUi       = new Namespace.WorkspaceUi(this, document.getElementById('workspace_area'));
+        this.slipnetUi         = new Namespace.SlipnetUi(this, document.getElementById('slipnet_area'));
+        this.coderackUi        = new Namespace.CoderackUi(this, document.getElementById('coderack_area')); 
+        this.batchmodeUi       = new Namespace.BatchmodeUi(this, document.getElementById('batchmode_area')); 
 
-        this.inputUi = new Namespace.InputUi(this, 
-            document.getElementById('input_area'));
-        
-        this.workspaceHeaderUi = new Namespace.WorkspaceHeaderUi(this, 
-            document.getElementById('workspace_header_area'));
-
-        this.workspaceUi = new Namespace.WorkspaceUi(this, 
-            document.getElementById('workspace_area'));
-
-        this.slipnetUi = new Namespace.SlipnetUi(this, 
-            document.getElementById('slipnet_area'));
-
-        this.coderackUi = new Namespace.CoderackUi(this, 
-            document.getElementById('coderack_area')); 
-
-        this.uiList = [this.topbarUi, this.inputUi, this.workspaceHeaderUi, 
-            this.workspaceUi, this.slipnetUi, this.coderackUi];
+        this.singleModeUiList  = [this.topbarUi, this.inputUi, this.workspaceHeaderUi, this.workspaceUi, this.slipnetUi, this.coderackUi];
+        this.batchModeUiList   = [this.topbarUi, this.inputUi, this.batchmodeUi];
+        this.uiList = this.singleModeUiList;
 
         // Listen for resize events
         const resizeFunc = this._onResize.bind(this);
@@ -8348,8 +8218,27 @@ Namespace.CopycatUi = class {
      */
     _onCopycatStateChange()
     {
-        this.uiList.forEach( 
-            ui => ui._onCopycatStateChange() );
+        this.uiList.forEach( ui => ui._onCopycatStateChange() );
+    }
+
+
+    /**
+     * Handler for batchmode-toggle events
+     * @private
+     * 
+     */
+    _onBatchModeToggled()
+    {
+        this.batchmodeUi.parentDiv.style.display = this.copycat.batchMode ? 'block' : 'none';
+
+        [this.workspaceHeaderUi, this.workspaceUi, this.slipnetUi, this.coderackUi].forEach( 
+            ui => ui.parentDiv.style.display = this.copycat.batchMode ? 'none' : 'block');
+
+        this.inputUi.parentDiv.style.width = this.copycat.batchMode ? '100%' : '60%';
+
+        this.uiList = this.copycat.batchMode ? this.batchModeUiList : this.singleModeUiList;
+        this._onCopycatStateChange();
+        this._onResize();
     }
 
 
@@ -8360,15 +8249,40 @@ Namespace.CopycatUi = class {
      */
     _onResize()
     { 
-        if ( this.rafId ) { 
-            window.cancelAnimationFrame(this.rafId); }
+        if ( this.rafId ) { window.cancelAnimationFrame(this.rafId); }
 
-        this.rafId = window.requestAnimationFrame( 
-            () => {          
+        this.rafId = window.requestAnimationFrame( () => {          
                 this.uiList.forEach( ui => ui._onResize() );
                 this.rafId = null;
             }
         );
+    }
+
+
+    /**
+     * Makes sure that all input strings are valid.
+     * @private 
+     * 
+     */
+    checkInputStrings()
+    {
+        const wksp = this.copycat.workspace;
+        const inputStrings = this.inputUi.getInputStrings();
+        const wkspStrings = [wksp.initialWString.jstring, wksp.modifiedWString.jstring, wksp.targetWString.jstring];
+        const inputModified = !inputStrings.every((str, idx) => str.toLowerCase() == wkspStrings[idx]);
+        
+        if (inputModified) {
+            if (inputStrings.every(this.copycat.checkInputString)) {
+                this.copycat.setStrings(...inputStrings);
+                return true;
+            } else {
+                this.inputUi.displayMessage('Invalid input!');
+                return false;
+            }
+        }
+        else {
+            return true;
+        }
     }
 
 };
@@ -8417,8 +8331,7 @@ Namespace.CorrsGraphic = class
      * @private 
      */
     _sameReferents(corr1, corr2) {
-        return (corr1.objFromInitial === corr2.objFromInitial) &&
-            (corr1.objFromTarget === corr2.objFromTarget);
+        return (corr1.objFromInitial === corr2.objFromInitial) && (corr1.objFromTarget === corr2.objFromTarget);
     }
 
 
@@ -8428,10 +8341,8 @@ Namespace.CorrsGraphic = class
      * @private 
      */    
     _hasStringSpanningGroups(corr) {
-        return (corr.objFromInitial instanceof Namespace.Group) &&
-            (corr.objFromTarget instanceof Namespace.Group) &&
-            (corr.objFromInitial.spansString()) &&
-            (corr.objFromTarget.spansString());
+        return (corr.objFromInitial instanceof Namespace.Group) && (corr.objFromTarget instanceof Namespace.Group) &&
+               (corr.objFromInitial.spansString()) && (corr.objFromTarget.spansString());
     }
 
 
@@ -8445,11 +8356,10 @@ Namespace.CorrsGraphic = class
     {
         // Check whether the input strings have changed
         const wkspUi = this.wkspUi;
-        if ((this.initialString !== wkspUi.initialStringGraphic.wstring) ||
-            (this.targetString !== wkspUi.targetStringGraphic.wstring)) {
-                this.initialString = wkspUi.initialStringGraphic.wstring;
-                this.targetString = wkspUi.targetStringGraphic.wstring;
-                this.cache = [];
+        if ((this.initialString !== wkspUi.initialStringGraphic.wstring) || (this.targetString !== wkspUi.targetStringGraphic.wstring)) {
+            this.initialString = wkspUi.initialStringGraphic.wstring;
+            this.targetString = wkspUi.targetStringGraphic.wstring;
+            this.cache = [];
         }
 
         // Get all the correspondences that need to be drawn
@@ -8457,16 +8367,13 @@ Namespace.CorrsGraphic = class
         const wksp = copycat.workspace;
         const coderack = copycat.coderack;
 
-        let builtCorrs = copycat.workspace.structures.filter(s => 
-            (s instanceof Namespace.Correspondence));
+        let builtCorrs = copycat.workspace.structures.filter(s => (s instanceof Namespace.Correspondence));
 
         let evaluatedCorrs = coderack.codelets.filter(c =>
-            (c instanceof Namespace.Codelets.CorrespondenceStrengthTester)).
-                map(c => c.correspondence);
+            (c instanceof Namespace.Codelets.CorrespondenceStrengthTester)).map(c => c.correspondence);
 
         let proposedCorrs = coderack.codelets.filter(c =>
-            (c instanceof Namespace.Codelets.CorrespondenceBuilder)). 
-                map(c => c.correspondence);
+            (c instanceof Namespace.Codelets.CorrespondenceBuilder)).map(c => c.correspondence);
 
         // Remove duplicates and obsolete cases
         proposedCorrs = proposedCorrs.filter(p =>
@@ -8518,9 +8425,7 @@ Namespace.CorrsGraphic = class
         if (!correspGraphic) {
             correspGraphic = new Namespace.CorrGraphic(corresp, type, this);
             this.cache.push(correspGraphic);
-            if (this.cache.length > 100) {
-                this.cache.shift();
-            }
+            if (this.cache.length > 100) {this.cache.shift(); }
         }
         correspGraphic.type = type;
         return correspGraphic;
@@ -8536,8 +8441,7 @@ Namespace.CorrsGraphic = class
     flashProposed(corresp, count=3) 
     {
         if (!this.drawnCorrs.some(c => this._sameReferents(c, corresp))) {
-            const correspGraphic = 
-                new Namespace.CorrGraphic(corresp, 'proposed', this);
+            const correspGraphic = new Namespace.CorrGraphic(corresp, 'proposed', this);
             this.wkspUi.flash(correspGraphic, count);
         }
     }
@@ -8552,8 +8456,7 @@ Namespace.CorrsGraphic = class
     flashGrope(corresp, count=3)
     {
         if (!this.drawnCorrs.some(c => this._sameReferents(c, corresp))) {
-            const correspGraphic = 
-                new Namespace.CorrGraphic(corresp, 'grope', this);
+            const correspGraphic = new Namespace.CorrGraphic(corresp, 'grope', this);
             this.wkspUi.flash(correspGraphic, count);
         }        
     }
@@ -8624,20 +8527,14 @@ Namespace.CorrGraphic = class
             ctx.font = dp.footnoteFont;
             ctx.textAlign = 'left';  
 
-            const xOffset = dp.hasStringSpanningGroups ? 0:
-                index * dp.textSpacingX;
-            ctx.fillText((index+1).toString(), 
-                dp.footnotePosX + xOffset, dp.footnotePosY);
-            const cms = this.corr.conceptMappings.concat(
-                this.corr.accessoryConceptMappings);
-            cms.sort( (a, b) => 
-                b.initialDescriptor.depth - a.initialDescriptor.depth);
+            const xOffset = dp.hasStringSpanningGroups ? 0: index * dp.textSpacingX;
+            ctx.fillText((index+1).toString(), dp.footnotePosX + xOffset, dp.footnotePosY);
+            const cms = this.corr.conceptMappings.concat(this.corr.accessoryConceptMappings);
+            cms.sort( (a, b) => b.initialDescriptor.depth - a.initialDescriptor.depth);
             cms.forEach((cm, n) => {
                 const text = cm.initialDescriptor.shortName + ' ' +
-                    String.fromCharCode(8594) + ' ' + 
-                    cm.targetDescriptor.shortName;
-                ctx.fillText(text, dp.textPosX + xOffset, 
-                    dp.textPosY + n*dp.textSpacingY);
+                    String.fromCharCode(8594) + ' ' + cm.targetDescriptor.shortName;
+                ctx.fillText(text, dp.textPosX + xOffset, dp.textPosY + n*dp.textSpacingY);
             });
         }
     }
@@ -8675,12 +8572,9 @@ Namespace.CorrGraphic = class
             ptt = targetGraphic.drawParams.attachPoints['correspRight'];
             ptb = {x: pti.x + w/24, y: pti.y};
             ptc = {x: ptb.x, y: ptt.y};
-            dp.zigzagLinePts = dp.zigzagLinePts.concat(
-                CalcZigzagLine(ctx, pti.x, pti.y, ptb.x, ptb.y));
-            dp.zigzagLinePts = dp.zigzagLinePts.concat(
-                CalcZigzagLine(ctx, ptb.x, ptb.y, ptc.x, ptc.y));
-            dp.zigzagLinePts = dp.zigzagLinePts.concat(
-                CalcZigzagLine(ctx, ptc.x, ptc.y, ptt.x, ptt.y));
+            dp.zigzagLinePts = dp.zigzagLinePts.concat(CalcZigzagLine(ctx, pti.x, pti.y, ptb.x, ptb.y));
+            dp.zigzagLinePts = dp.zigzagLinePts.concat(CalcZigzagLine(ctx, ptb.x, ptb.y, ptc.x, ptc.y));
+            dp.zigzagLinePts = dp.zigzagLinePts.concat(CalcZigzagLine(ctx, ptc.x, ptc.y, ptt.x, ptt.y));
             dp.straightLinePts = [pti, ptb, ptc, ptt];
         }
         else {
@@ -8698,8 +8592,7 @@ Namespace.CorrGraphic = class
             built: []
         };
 
-        dp.textFontSize = Math.round(
-            wkspUi.targetStringGraphic.drawParams.fontSize/2.25);
+        dp.textFontSize = Math.round(wkspUi.targetStringGraphic.drawParams.fontSize/2.25);
         dp.footnoteFont = 'italic ' + dp.textFontSize.toString() + 'px serif';
 
         if (!dp.hasStringSpanningGroups) {
@@ -8717,8 +8610,7 @@ Namespace.CorrGraphic = class
         dp.textSpacingY = 1.2 * dp.textFontSize;
         dp.footnotePosX = dp.textPosX - 0.5*dp.textFontSize;
         dp.footnotePosY = dp.textPosY - 0.5*dp.textFontSize;
-        dp.labelRect = [dp.labelPosX - 0.7*dp.textFontSize,
-            dp.labelPosY - 1.1*dp.textFontSize,
+        dp.labelRect = [dp.labelPosX - 0.7*dp.textFontSize, dp.labelPosY - 1.1*dp.textFontSize,
             1.4*dp.textFontSize, 1.4*dp.textFontSize];
         dp.footnumFont = 'italic bold ' + (dp.textFontSize+2).toString() + 'px serif';
 
@@ -8761,9 +8653,8 @@ Namespace.DescriptionsGraphic = class
         this.wstring = stringGraphic.wstring;
         this.wkspUi = stringGraphic.wkspUi;
 
-        this.descriptionGraphics = 
-            stringGraphic.lettersGraphic.letterGraphics.map(
-                lg => new Namespace.DescriptionGraphic(lg, this));
+        this.descriptionGraphics = stringGraphic.lettersGraphic.letterGraphics.map(
+            lg => new Namespace.DescriptionGraphic(lg, this));
     }
 
 
@@ -8822,11 +8713,9 @@ Namespace.DescriptionGraphic = class
         const descrips = this.letterGraphic.letter.descriptions;
         for (let i=0; i<descrips.length; i++) {
             const descriptor = descrips[i].descriptor;
-            ctx.font =  descriptor.isFullyActive() ? dp.boldFont : dp.normalFont;
-            ctx.fillStyle = descriptor.isFullyActive() ? 
-                wkspUi.activeDescriptionColor : wkspUi.descriptionColor;
-            ctx.fillText(descriptor.shortName, dp.x, 
-                dp.y - i*1.2*dp.fontSize);
+            ctx.font = descriptor.isFullyActive() ? dp.boldFont : dp.normalFont;
+            ctx.fillStyle = descriptor.isFullyActive() ? wkspUi.activeDescriptionColor : wkspUi.descriptionColor;
+            ctx.fillText(descriptor.shortName, dp.x, dp.y - i*1.2*dp.fontSize);
         }
     }            
 
@@ -8914,7 +8803,7 @@ Namespace.Flasher = class
     flash(graphic, flashCount)
     {
         if (flashCount <= 0) { return; }
-        if (this.copycat.stepDelay < 10) { return;} // Don't flash if we're trying to be fast
+        if (this.copycat.stepDelay < 10) { return;} // Don't flash if we're trying to run fast
 
         this.flashables.push( {graphic:graphic, flashCount:flashCount} );
 
@@ -8943,8 +8832,7 @@ Namespace.Flasher = class
     { 
         window.requestAnimationFrame( () => 
         {          
-            this.canvasCtx.clearRect(
-                0, 0, this.canvas.width, this.canvas.height);
+            this.canvasCtx.clearRect(0, 0, this.canvas.width, this.canvas.height);
             
             // Draw the first-in-line item
             const f = this.flashables[0];
@@ -8957,14 +8845,12 @@ Namespace.Flasher = class
             // Erase everything after a delay
             setTimeout( () => {
                 window.requestAnimationFrame( () => {    
-                    this.canvasCtx.clearRect(
-                        0, 0, this.canvas.width, this.canvas.height);
+                    this.canvasCtx.clearRect(0, 0, this.canvas.width, this.canvas.height);
                     
                     if (this.flashables.length === 0) {
                         this.state = 'idle';
                         this.wkspUi.redraw();
-                    } 
-                    else {
+                    } else {
                         setTimeout(
                             () => { this._animationLoop(); }, 
                             Math.min(100, 1.5*this.copycat.stepDelay)
@@ -9021,8 +8907,7 @@ Namespace.GroupsGraphic = class
      * @private 
      */
     _sameReferents(g1, g2) {
-        return (g1.leftObject === g2.leftObject) &&
-            (g1.rightObject === g2.rightObject);
+        return (g1.leftObject === g2.leftObject) && (g1.rightObject === g2.rightObject);
     }
 
 
@@ -9092,9 +8977,7 @@ Namespace.GroupsGraphic = class
         if (!groupGraphic) {
             groupGraphic = new Namespace.GroupGraphic(group, type, this);
             this.cache.push(groupGraphic);
-            if (this.cache.length > 100) {
-                this.cache.shift();
-            }
+            if (this.cache.length > 100) { this.cache.shift(); }
         }
 
         groupGraphic.type = type;
@@ -9111,8 +8994,7 @@ Namespace.GroupsGraphic = class
     flashProposed(group, count=3) 
     {
         if (!this.drawnGroups.some(c => this._sameReferents(c, group))) {
-            const groupGraphic = 
-                new Namespace.GroupGraphic(group, 'proposed', this);
+            const groupGraphic = new Namespace.GroupGraphic(group, 'proposed', this);
             this.wkspUi.flash(groupGraphic, count);
         }
     }
@@ -9127,8 +9009,7 @@ Namespace.GroupsGraphic = class
     flashGrope(group, count=3)
     {
         if (!this.drawnGroups.some(c => this._sameReferents(c, group))) {
-            const groupGraphic = 
-                new Namespace.GroupGraphic(group, 'grope', this);
+            const groupGraphic = new Namespace.GroupGraphic(group, 'grope', this);
             this.wkspUi.flash(groupGraphic, count);
         }        
     }
@@ -9241,12 +9122,9 @@ Namespace.GroupGraphic = class
         ptb = {x: dp.x + dp.w, y: dp.y};
         ptc = {x: dp.x + dp.w, y: dp.y + dp.h};
         ptd = {x: dp.x + 3*dp.w/4, y: dp.y + dp.h};
-        dp.zigzagRightPts = dp.zigzagRightPts.concat(
-            CalcZigzagLine(ctx, pta.x, pta.y, ptb.x, ptb.y));
-        dp.zigzagRightPts = dp.zigzagRightPts.concat(
-            CalcZigzagLine(ctx, ptb.x, ptb.y, ptc.x, ptc.y));
-        dp.zigzagRightPts = dp.zigzagRightPts.concat(
-            CalcZigzagLine(ctx, ptc.x, ptc.y, ptd.x, ptd.y));
+        dp.zigzagRightPts = dp.zigzagRightPts.concat( CalcZigzagLine(ctx, pta.x, pta.y, ptb.x, ptb.y) );
+        dp.zigzagRightPts = dp.zigzagRightPts.concat( CalcZigzagLine(ctx, ptb.x, ptb.y, ptc.x, ptc.y) );
+        dp.zigzagRightPts = dp.zigzagRightPts.concat( CalcZigzagLine(ctx, ptc.x, ptc.y, ptd.x, ptd.y) );
 
         const sn = this.parent.wkspUi.copycat.slipnet;
         dp.arrowLines = [];
@@ -9306,8 +9184,7 @@ Namespace.HelpDialog = class extends Namespace.Dialog
      * @constructor
      * 
      * @param {CopycatUi} copycatUi - The parent Ui.
-     * @param {HTMLElement} parent - The html div that hosts
-     *  the dialog.
+     * @param {HTMLElement} parent - The html div that hosts the dialog.
      */
     constructor(parent) 
     {
@@ -9318,12 +9195,10 @@ Namespace.HelpDialog = class extends Namespace.Dialog
 
     _buildUi()
     {
-        Namespace.UiUtils.StyleElement(
-            this.userDiv, {overflowX:'auto', overflowY:'scroll'});
+        Namespace.UiUtils.StyleElement(this.userDiv, {overflowX:'auto', overflowY:'scroll'});
 
         this.textDiv = Namespace.UiUtils.CreateElement('div', 'text-div',
-            this.userDiv, {left:'3%', width:'94%', height:'100%',
-            fontSize:'20px', fontFamily:this.fontFamily}
+            this.userDiv, {left:'3%', width:'94%', height:'100%', fontSize:'20px', fontFamily:this.fontFamily}
         );
 
         this.textDiv.innerHTML =
@@ -9408,8 +9283,7 @@ Namespace.InputUi = class {
         this.drawParams = {};
 
         this.bkgndColor = '#b3ddcc';
-        this.inputFont = {family:'serif', weight: 'bold', 
-            style: 'italic', size: '3.5vmin'};
+        this.inputFont = {family:'serif', weight: 'bold', style: 'italic', size: '3.5vmin'};
         this.inputFontColor = '#1581e7';
         this.answerFontColor = '#d20000';
         this.inputDisabledFontColor = '#6eb4f2';
@@ -9438,18 +9312,15 @@ Namespace.InputUi = class {
 
         // Create the text-input elements
         const wa = this.initialStringInput = UiUtils.CreateElement('input',
-            'initial-string-input', this.mainDiv, {left:'3%'},  
-            {type:'text'});
+            'initial-string-input', this.mainDiv, {left:'3%'}, {type:'text'});
         wa.onkeyup = this._onKeyup.bind(this);
 
         const wb = this.modifiedStringInput = UiUtils.CreateElement('input',
-            'modified-string-input', this.mainDiv, {left:'27%'},  
-            {type:'text'});
+            'modified-string-input', this.mainDiv, {left:'27%'}, {type:'text'});
         wb.onkeyup = this._onKeyup.bind(this);
 
         const wc = this.targetStringInput = UiUtils.CreateElement('input',
-            'target-string-input', this.mainDiv, {left:'55%'},  
-            {type:'text'});
+            'target-string-input', this.mainDiv, {left:'55%'}, {type:'text'});
         wc.onkeyup = this._onKeyup.bind(this);
 
         const wd = this.answerStringInput = UiUtils.CreateElement('input',
@@ -9469,9 +9340,9 @@ Namespace.InputUi = class {
             w.setAttribute('spellcheck', 'false');
         }
         const wksp = this.copycat.workspace;
-        this.initialStringInput.value = wksp.initialJString;
-        this.modifiedStringInput.value = wksp.modifiedJString;
-        this.targetStringInput.value = wksp.targetJString;
+        this.initialStringInput.value = wksp.initialWString.jstring;
+        this.modifiedStringInput.value = wksp.modifiedWString.jstring;
+        this.targetStringInput.value = wksp.targetWString.jstring;
         this.answerStringInput.value = '?';
 
         // Arrpws
@@ -9521,9 +9392,7 @@ Namespace.InputUi = class {
      */
     getInputStrings()
     {
-        const rawStrings = [this.initialStringInput.value, 
-            this.modifiedStringInput.value, this.targetStringInput.value];
-
+        const rawStrings = [this.initialStringInput.value, this.modifiedStringInput.value, this.targetStringInput.value];
         const normStrings = rawStrings.map(s => s.trim().toLowerCase());
 
         this.initialStringInput.value = normStrings[0];
@@ -9571,7 +9440,7 @@ Namespace.InputUi = class {
     {
         const copycat = this.copycat;
         const ans = copycat.workspace.finalAnswer;
-        this.answerStringInput.value = ans || '?';
+        this.answerStringInput.value = (copycat.batchMode) ? '?' : ans || '?';
         this._setInputsEnabled(copycat.state != 'running');
     } 
 
@@ -9600,12 +9469,9 @@ Namespace.InputUi = class {
         this.modifiedStringInput.disabled = !enabled;
         this.targetStringInput.disabled = !enabled;
 
-        this.initialStringInput.style.color = enabled ? 
-            this.inputFontColor : this.inputDisabledFontColor;
-        this.modifiedStringInput.style.color = enabled ? 
-            this.inputFontColor : this.inputDisabledFontColor;
-        this.targetStringInput.style.color = enabled ? 
-            this.inputFontColor : this.inputDisabledFontColor;
+        this.initialStringInput.style.color = enabled ? this.inputFontColor : this.inputDisabledFontColor;
+        this.modifiedStringInput.style.color = enabled ? this.inputFontColor : this.inputDisabledFontColor;
+        this.targetStringInput.style.color = enabled ? this.inputFontColor : this.inputDisabledFontColor;
     }
 };
 
@@ -9648,15 +9514,13 @@ Namespace.LettersGraphic = class
         if (stringGraphic.quadrant != 2) {
             const wstring = this.stringGraphic.wstring;
             for (let i=0; i<wstring.length; i++) {
-                this.letterGraphics.push( 
-                    new Namespace.LetterGraphic(wstring.letters[i], i, this) );
+                this.letterGraphics.push( new Namespace.LetterGraphic(wstring.letters[i], i, this) );
             }
         }
         else {
             const jstring = this.stringGraphic.jstring;
             for (let i=0; i<jstring.length; i++) {
-                this.letterGraphics.push( 
-                    new Namespace.LetterGraphic(jstring[i], i, this) );
+                this.letterGraphics.push( new Namespace.LetterGraphic(jstring[i], i, this) );
             }        
         }
 
@@ -9719,8 +9583,7 @@ Namespace.LetterGraphic = class
         const dp = this.drawParams; 
         ctx.font = dp.font;
         ctx.textAlign = 'left';
-        ctx.fillStyle = (this.stringGraphic == wkspUi.answerStringGraphic) ? 
-            wkspUi.answerLetterColor : wkspUi.letterColor;
+        ctx.fillStyle = (this.stringGraphic == wkspUi.answerStringGraphic) ? wkspUi.answerLetterColor : wkspUi.letterColor;
         ctx.fillText(this.char, dp.x, dp.y);
     }            
 
@@ -9746,13 +9609,11 @@ Namespace.LetterGraphic = class
     
         // Calculate the letter's bounding box
         const charMetrics = ctx.measureText(this.char);
-        dp.charWidth = charMetrics.actualBoundingBoxLeft + 
-            charMetrics.actualBoundingBoxRight;
+        dp.charWidth = charMetrics.actualBoundingBoxLeft + charMetrics.actualBoundingBoxRight;
         const charHeight = charMetrics.fontBoundingBoxAscent;
     
         dp.x = (this.index === 0) ? stringDp.stringStartX :
-            this.parent.letterGraphics[this.index-1].drawParams.bbox.r + 
-            stringDp.charSpacing;
+            this.parent.letterGraphics[this.index-1].drawParams.bbox.r + stringDp.charSpacing;
         dp.y = stringDp.baselineY;
 
         dp.bbox = {
@@ -9832,13 +9693,8 @@ Namespace.ReplacementsGraphic = class
 
         // Draw all the replacements that have been found so far
         const wksp = this.wkspUi.workspace;
-
-        const replacements = wksp.initialWString.letters.map(
-            ltr => ltr.replacement).filter(repl => !!repl);
-
-        replacements.forEach(r => {
-            this._getReplacementGraphic(r).redraw(ctx);
-        });
+        const replacements = wksp.initialWString.letters.map(ltr => ltr.replacement).filter(repl => !!repl);
+        replacements.forEach(r => { this._getReplacementGraphic(r).redraw(ctx); });
     }
 
 
@@ -9901,8 +9757,7 @@ Namespace.ReplacementGraphic = class
         ctx.setLineDash([]);
 
         ctx.beginPath();
-        ctx.ellipse(dp.cx, dp.cy, dp.radX, dp.radY, 
-            dp.rotAngle, dp.startAngle, dp.endAngle);
+        ctx.ellipse(dp.cx, dp.cy, dp.radX, dp.radY, dp.rotAngle, dp.startAngle, dp.endAngle);
         ctx.stroke();        
     }
 
@@ -9997,8 +9852,7 @@ Namespace.RuleGraphic = class
             ctx.textAlign = 'center';
             ctx.setLineDash([]);
             ctx.font = dp.font;
-            dp.textLines.forEach(line => 
-                ctx.fillText(line.text, line.x, line.y));
+            dp.textLines.forEach(line => ctx.fillText(line.text, line.x, line.y));
 
             ctx.beginPath();
             ctx.rect(...dp.rect1);
@@ -10057,16 +9911,13 @@ Namespace.RuleGraphic = class
         const maxLineWidth = Math.max(...measures.map(m => m.width));
         const left = xc - 0.5*maxLineWidth;
         const top = y0 - measures[0].actualBoundingBoxAscent;
-        const bbox = {x:left, y:top, w:maxLineWidth, 
-            h: y0 + yStep*(lines.length-1) - top};
+        const bbox = {x:left, y:top, w:maxLineWidth, h: y0 + yStep*(lines.length-1) - top};
         
         let inflate = 0.66 * fontSize;
-        dp.rect1 = [bbox.x - inflate, bbox.y - inflate, 
-            bbox.w + 2*inflate, bbox.h + 2*inflate];
+        dp.rect1 = [bbox.x - inflate, bbox.y - inflate, bbox.w + 2*inflate, bbox.h + 2*inflate];
             
         inflate = 1.0 * fontSize;
-        dp.rect2 = [bbox.x - inflate, bbox.y - inflate, 
-            bbox.w + 2*inflate, bbox.h + 2*inflate];
+        dp.rect2 = [bbox.x - inflate, bbox.y - inflate, bbox.w + 2*inflate, bbox.h + 2*inflate];
     }
 
 };
@@ -10268,12 +10119,9 @@ Namespace.SlipnetUi = class {
                 if (node) { 
                     const cx = prevCellRight + 0.5*cellWidths[c];
                     const cy = topOffset + r*cellHeight + dp.maxRadius + 1;
-                    dp.circleCoords[c][r] = 
-                        {x:cx, y:cy};
-                    dp.squareCoords[c][r] = 
-                        {x:cx-mr-1, y:cy-mr-1, w:2*mr+2, h:2*mr+2};
-                    dp.textCoords[c][r] = 
-                        {x:cx, y:cy + dp.maxRadius + dp.labelFontSize*0.85};
+                    dp.circleCoords[c][r] = {x:cx, y:cy};
+                    dp.squareCoords[c][r] = {x:cx-mr-1, y:cy-mr-1, w:2*mr+2, h:2*mr+2};
+                    dp.textCoords[c][r] = {x:cx, y:cy + dp.maxRadius + dp.labelFontSize*0.85};
                 }
             }
             prevCellRight += cellWidths[c];
@@ -10444,12 +10292,10 @@ Namespace.StringGraphic = class
     getChildGraphic(wrappedObject)
     {
         if (wrappedObject instanceof Namespace.Letter) {
-            return this.lettersGraphic.letterGraphics.find( 
-                lg => lg.letter == wrappedObject );
+            return this.lettersGraphic.letterGraphics.find( lg => lg.letter == wrappedObject );
         }
         else if (wrappedObject instanceof Namespace.Group) {
-            return this.groupsGraphic.groupGraphics.find( 
-                g => g.group == wrappedObject );
+            return this.groupsGraphic.groupGraphics.find( g => g.group == wrappedObject );
         }
         return null;
     }
@@ -10476,11 +10322,9 @@ Namespace.StringGraphic = class
       
         // Draw our child graphics 
         // (Note that the drawing logic assumes the drawing order shown here.)
-        [this.lettersGraphic, this.descriptionsGraphic, 
-            this.groupsGraphic, this.bondsGraphic].forEach( g => { 
-                if (g) { g.redraw(ctx); }
-            }
-        );
+        [this.lettersGraphic, this.descriptionsGraphic, this.groupsGraphic, this.bondsGraphic].forEach( g => { 
+            if (g) { g.redraw(ctx); }
+        });
     }
 
     
@@ -10541,25 +10385,19 @@ Namespace.StringGraphic = class
         
         dp.emWidth = ctx.measureText('m').width;
         
-        dp.stringCenterX = (this.quadrant == 0 || this.quadrant == 3) ? 
-            w/4 - w/80 : 3*w/4 + w/80;
+        dp.stringCenterX = (this.quadrant == 0 || this.quadrant == 3) ? w/4 - w/80 : 3*w/4 + w/80;
             
-        const charMetrics = this.jstring.split('').map(
-            c => ctx.measureText(c) );
-        const sumOfCharWidths = charMetrics.reduce( (a,b) => 
-            a + b.actualBoundingBoxLeft + b.actualBoundingBoxRight, 0 );
+        const charMetrics = this.jstring.split('').map( c => ctx.measureText(c) );
+        const sumOfCharWidths = charMetrics.reduce( (a,b) => a + b.actualBoundingBoxLeft + b.actualBoundingBoxRight, 0 );
         
         const nChars = this.jstring.length;
-        dp.charSpacing = Math.min(5*sumOfCharWidths/nChars, 
-            (0.40*w - sumOfCharWidths)/(nChars-1));
+        dp.charSpacing = Math.min(5*sumOfCharWidths/nChars, (0.40*w - sumOfCharWidths)/(nChars-1));
 
         dp.stringWidth = sumOfCharWidths + dp.charSpacing*(nChars-1);
         dp.stringStartX = dp.stringCenterX - dp.stringWidth/2;
 
-        dp.maxCharAscent = Math.max(
-            ...(charMetrics.map(m => m.actualBoundingBoxAscent)));
-        dp.maxCharDescent = Math.max(
-            ...(charMetrics.map(m => m.actualBoundingBoxDescent)));
+        dp.maxCharAscent = Math.max(...(charMetrics.map(m => m.actualBoundingBoxAscent)));
+        dp.maxCharDescent = Math.max(...(charMetrics.map(m => m.actualBoundingBoxDescent)));
         dp.top = dp.baselineY - dp.maxCharAscent;
     }
 };
@@ -10625,7 +10463,7 @@ Namespace.TopbarUi = class {
         this.logoImg.className += " noselect";
 
         this.titleSpan = UiUtils.CreateElement('span', 'title-span', 
-            this.mainDiv, {top:'0%', height:'100%', left:'10vh', width:'auto%', 
+            this.mainDiv, {top:'0%', height:'100%', left:'10vh', width:'auto', 
             display:'flex', alignItems:'center', justifyContent:'left',
             color:'#404040', fontFamily:'Arial', fontWeight:'bold', 
             fontStyle:'italic', fontSize: '4.25vh'}
@@ -10634,7 +10472,7 @@ Namespace.TopbarUi = class {
         this.titleSpan.className += " noselect";
 
         this.helpBtn = UiUtils.CreateElement('button', 'help-btn',
-            this.mainDiv, {top:'22%', height:'56%', right:'2vh', width:'auto',
+            this.mainDiv, {top:'22%', height:'56%', right:'2vh', width:'10vh',
             display:'flex', alignItems:'center', justifyContent:'center',
             color:'#404040', fontFamily:'Arial', fontWeight:'normal',
             fontSize: '3vh', background:'#dfdfdf', border:'1px solid #404040' }
@@ -10642,6 +10480,16 @@ Namespace.TopbarUi = class {
         this.helpBtn.innerHTML = '&nbsp;&nbsp;Help&nbsp;&nbsp;';
         this.helpBtn.className += " noselect";
         this.helpBtn.onclick = this._onHelpBtnClick.bind(this);
+
+        this.batchModeBtn = UiUtils.CreateElement('button', 'batchmode-btn',
+            this.mainDiv, {top:'22%', height:'56%', right:'15vh', width:'auto',
+            display:'flex', alignItems:'center', justifyContent:'center',
+            color:'#404040', fontFamily:'Arial', fontWeight:'normal',
+            fontSize: '1.4vh', background:'#dfdfdf', border:'1px solid #404040' }
+        );
+        this.batchModeBtn.innerHTML = '&nbsp;Toggle&nbsp;<br>&nbsp;Batch Mode&nbsp;';
+        this.batchModeBtn.className += " noselect";
+        this.batchModeBtn.onclick = this._onBatchModeBtnClick.bind(this);
 
         this.helpDialog = new Namespace.HelpDialog(document.getElementById('app_area'));
     }
@@ -10654,7 +10502,9 @@ Namespace.TopbarUi = class {
      */
     _onCopycatStateChange()
     {
-        // Nothing to do here
+        const running = (this.copycat.state == 'running');
+        this.batchModeBtn.disabled = running; 
+        this.batchModeBtn.style.opacity = running ? '0.4' : '1.0';
     }
 
 
@@ -10684,6 +10534,16 @@ Namespace.TopbarUi = class {
         }
     }
 
+
+    /**
+     * Handler for batchmode-button clicks.
+     * @private
+     * 
+     */
+    _onBatchModeBtnClick()
+    {    
+        this.copycat.toggleBatchMode(!this.copycat.batchMode);
+    }
 
 };
 
@@ -10718,21 +10578,21 @@ Namespace.UiUtils = class {
  */
 Namespace.UiUtils.CreateElement = function(type, id, parent, styles, props) 
 {
-    var elem = document.createElement(type);
+    const elem = document.createElement(type);
     elem.id = id;
     if (parent) { parent.append(elem); }
 
     if (styles) {
-        for (var styName in styles) {
+        for (let styName in styles) {
             if (Object.prototype.hasOwnProperty.call(styles, styName)) {
-                var val = styles[styName];
+                let val = styles[styName];
                 if (typeof val === 'number') { val = val.toString() + 'px'; }
                 elem.style[styName] = val;
             }
         }
     }
     if (props) {
-        for (var propName in props) {
+        for (let propName in props) {
             if (Object.prototype.hasOwnProperty.call(props, propName)) {
                 elem[propName] = props[propName];
             }
@@ -10755,9 +10615,9 @@ Namespace.UiUtils.CreateElement = function(type, id, parent, styles, props)
  */
 Namespace.UiUtils.StyleElement = function(elem, styles) 
 {
-    for (var propName in styles) {
+    for (let propName in styles) {
         if (Object.prototype.hasOwnProperty.call(styles, propName)) {
-            var val = styles[propName];
+            let val = styles[propName];
             if (typeof val === 'number') { val = val.toString() + 'px'; }
             elem.style[propName] = val;
         }
@@ -10905,9 +10765,7 @@ Namespace.UiUtils.CalcZigzagLine = function(ctx, xa, ya, xb, yb)
     
 /**
  * @classdesc
- * This class is responsible for drawing the Workspace
- *   header area.
- * 
+ * This class is responsible for drawing the Workspace header area.
  */
 Namespace.WorkspaceHeaderUi = class 
 {
@@ -10915,8 +10773,7 @@ Namespace.WorkspaceHeaderUi = class
      * @constructor
      * 
      * @param {CopycatUi} copycatUi - The parent Ui.
-     * @param {HTMLElement} parentDiv - The html div that hosts
-     *  this ui.
+     * @param {HTMLElement} parentDiv - The html div that hosts this ui.
      */
     constructor(copycatUi, parentDiv) 
     { 
@@ -11015,7 +10872,7 @@ Namespace.WorkspaceHeaderUi = class
     {
         const copycat = this.copycat;
 
-        if (this._checkInputStrings()) {
+        if (this.copycatUi.checkInputStrings()) {
             if (copycat.state == 'ready' || copycat.state == 'done') {
                 copycat.start();
             }
@@ -11033,7 +10890,7 @@ Namespace.WorkspaceHeaderUi = class
      */
     _onStepBtnClick()
     {
-        if (this._checkInputStrings()) {
+        if (this.copycatUi.checkInputStrings()) {
             this.copycat.singleStep();
         }
     }
@@ -11057,7 +10914,7 @@ Namespace.WorkspaceHeaderUi = class
      */
     _onResetBtnClick()
     {
-        if ( (this.copycat.state != 'running') && this._checkInputStrings()) {
+        if ( (this.copycat.state != 'running') && this.copycatUi.checkInputStrings()) {
             this.copycat.reset();
         }
     }
@@ -11100,34 +10957,6 @@ Namespace.WorkspaceHeaderUi = class
 
 
     /**
-     * Checks whether all input strings are valid.
-     * @private 
-     * 
-     */
-    _checkInputStrings()
-    {
-        const wksp = this.copycat.workspace;
-        const inputStrings = this.copycatUi.inputUi.getInputStrings();
-        const wkspStrings = [wksp.initialJString, wksp.modifiedJString, wksp.targetJString];
-        const inputModified = !inputStrings.every((str, idx) => str.toLowerCase() == wkspStrings[idx]);
-        
-        if (inputModified) {
-            if (inputStrings.every(this.copycat.checkInputString)) {
-                this.copycat.setStrings(...inputStrings);
-                return true;
-            }   
-            else {
-                this.copycatUi.inputUi.displayMessage('Invalid input!');
-                return false;
-            }
-        }
-        else {
-            return true;
-        }
-    }
-
- 
-    /**
      * Updates the enabled/disabled state of the control buttons,
      * based on the current copycat state.
      * @private
@@ -11135,43 +10964,33 @@ Namespace.WorkspaceHeaderUi = class
      */
     _updateEnabledState()
     {
-        const controls = [this.stepBtn, this.goBtn, this.pauseBtn, this.resetBtn];
-        for (let ctrl of controls) {
-            this._setEnabled(ctrl, true);
-        }
+        const setEnabled = function(ctrl, enabled) { 
+            ctrl.disabled = !enabled; 
+            ctrl.style.opacity = enabled ? '1.0' : '0.4';
+        };
+
+        [this.stepBtn, this.goBtn, this.pauseBtn, this.resetBtn].forEach( ctrl => setEnabled(ctrl, true) );
 
         switch (this.copycat.state) 
         {
             case 'ready':
-                this._setEnabled(this.pauseBtn, false);
+                setEnabled(this.pauseBtn, false);
                 break;
             case 'paused':
-                this._setEnabled(this.pauseBtn, false);
+                setEnabled(this.pauseBtn, false);
                 break;
             case 'running':
-                this._setEnabled(this.stepBtn, false);
-                this._setEnabled(this.goBtn, false);
-                this._setEnabled(this.resetBtn, false);
+                setEnabled(this.stepBtn, false);
+                setEnabled(this.goBtn, false);
+                setEnabled(this.resetBtn, false);
                 break;
             case 'done':
-                this._setEnabled(this.stepBtn, false);
-                this._setEnabled(this.pauseBtn, false);
+                setEnabled(this.stepBtn, false);
+                setEnabled(this.pauseBtn, false);
                 break;
             default:
                 break;
         }
-    }
-
-
-    /**
-     * Enables or disables a given UI element.
-     * @private
-     * 
-     */
-    _setEnabled(element, enabled)
-    {
-        element.disabled = !enabled;
-        element.style.opacity = enabled ? '1.0' : '0.4';
     }
 
 
@@ -11238,17 +11057,14 @@ Namespace.WorkspaceHeaderUi = class
         ctx.font = dp.subTitleFont;
         ctx.fillStyle = dp.titleFontColor;
         ctx.clearRect(...dp.subTitleRect);
-        ctx.fillText('(Codelets run: ' + numCodeletsRun.toString() + ')', 
-            ...dp.subTitleLoc);
+        ctx.fillText('(Codelets run: ' + numCodeletsRun.toString() + ')', ...dp.subTitleLoc);
 
         // Draw the thermometer stem
-        const temperature = Math.max(0, Math.min(100, 
-            copycat.temperature.value().toFixed(0))); 
+        const temperature = Math.max(0, Math.min(100, copycat.temperature.value().toFixed(0))); 
         ctx.fillStyle = 'red';
         ctx.strokeStyle = 'black';
         ctx.clearRect(...dp.hgRect);
-        ctx.fillRect(dp.hgRect[0], dp.hgRect[1], 
-            (dp.hgRect[2]-1)*(temperature/100), dp.hgRect[3]);
+        ctx.fillRect(dp.hgRect[0], dp.hgRect[1], (dp.hgRect[2]-1)*(temperature/100), dp.hgRect[3]);
         UiUtils.DrawLine(ctx, ...dp.hgTopLine);
         UiUtils.DrawLine(ctx, ...dp.hgBtmLine);
                
@@ -11468,8 +11284,7 @@ Namespace.WorkspaceUi = class
         const ctx = canvas.getContext("2d");
 
         // Resize the canvas if necessary
-        if ( !UiUtils.RightsizeCanvas(canvas) ||
-             !UiUtils.RightsizeCanvas(this.flasher.canvas)) { return; } 
+        if ( !UiUtils.RightsizeCanvas(canvas) || !UiUtils.RightsizeCanvas(this.flasher.canvas)) { return; } 
 
         // Bounce out if the input strings haven't been set
         if (!this.copycat.workspace.initialWString) { return; }
@@ -11479,9 +11294,7 @@ Namespace.WorkspaceUi = class
 
         // Re-draw all the graphics
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        this.allGraphics.forEach( 
-            g => g.redraw(ctx) 
-        );
+        this.allGraphics.forEach( g => g.redraw(ctx) );
     }
 
 

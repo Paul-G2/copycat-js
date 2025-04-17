@@ -16,7 +16,7 @@
      * 
      * @param {Copycat} ctx - The Copycat instance.
      * @param {Number} urgency - The urgency of the codelet.
-     * @param {Array} args - Arguments to pass to the codelet.
+     * @param {Array} args - Arguments to pass to the codelet. (Empty for this codelet.)
      * @param {Number} birthdate - The birthdate of the codelet.
      */
     constructor(ctx, urgency, args, birthdate) 
@@ -32,10 +32,9 @@
     {
         const ctx = this.ctx;
         const wksp = ctx.workspace;
-        const rule = wksp.rule;
 
         // If we don't have a rule, then fizzle. 
-        if (!rule) { return; }
+        if (!wksp.rule) { return; }
 
         let bondDensity = 1.0;
         const totalLength = wksp.initialWString.length + wksp.targetWString.length;
@@ -57,14 +56,12 @@
             const result = wksp.rule.applyRuleToTarget();
             if (result) {
                 wksp.finalAnswer = result;
-            }
-            else {
+            } else {
                 ctx.temperature.clampUntil(ctx.coderack.numCodeletsRun + 100);
             }
         }
     }
 
-    
 };
 
 })( window.CopycatJS = window.CopycatJS || {} );

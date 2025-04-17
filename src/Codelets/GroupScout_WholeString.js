@@ -53,8 +53,7 @@
                     lmGroup.groupCategory, lmGroup.directionCategory, lmGroup.facet);
             }
             else {
-                ctx.coderack.proposeGroup([leftmost], [], sn.samenessGroup, null,
-                    sn.letterCategory);
+                ctx.coderack.proposeGroup([leftmost], [], sn.samenessGroup, null, sn.letterCategory);
             }
             return;
         }
@@ -74,8 +73,7 @@
         if (!bonds.length) { return; }
 
         const groupCategory = chosenBond.category.getRelatedNode(sn.groupCategory);
-        ctx.coderack.proposeGroup(
-            objects, bonds, groupCategory, chosenBond.directionCategory, chosenBond.facet);
+        ctx.coderack.proposeGroup(objects, bonds, groupCategory, chosenBond.directionCategory, chosenBond.facet);
     }
 
 
@@ -103,9 +101,8 @@
                 if ([chosenBond.category, bond.category].includes(this.ctx.slipnet.sameness)) {
                     return [];
                 }
-                const newBond = new Namespace.Bond(bond.destination, bond.source, 
-                    chosenBond.category, chosenBond.facet, bond.destDescriptor, 
-                    bond.sourceDescriptor);
+                const newBond = new Namespace.Bond(bond.destination, bond.source, chosenBond.category, 
+                    chosenBond.facet, bond.destDescriptor, bond.sourceDescriptor);
                 result.push(newBond);
             }
         }

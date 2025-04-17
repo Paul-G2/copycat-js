@@ -48,8 +48,8 @@
         if (!objsExist) { return; }
 
         // Provide UI feedback
-        if (this.ctx.ui) {
-            this.ctx.ui.workspaceUi.corrsGraphic.flashProposed(corresp);
+        if (ctx.ui && !ctx.batchMode) {
+            ctx.ui.workspaceUi.corrsGraphic.flashProposed(corresp);
         }
 
         corresp.updateStrength();

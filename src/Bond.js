@@ -6,8 +6,7 @@
 /**
  * @classdesc
  * A Bond is a relation between Letters and/or Groups in the same string. 
- * For example, a letter-successorship relation between 'a' and  
- * 'b' in the string 'abc.'
+ * For example, a letter-successorship relation between 'a' and 'b' in the string 'abc'.
  */
  Namespace.Bond = class {
 
@@ -16,19 +15,15 @@
      * 
      * @param {WorkspaceObject} from - The source object of the bond.
      * @param {WorkspaceObject} to - The destination object of the bond.
-     * @param {SlipNode} category - The bond category 
-     *   (successor, predecessor, or sameness).
-     * @param {SlipNode} facet - The facet of the bond category 
-     *   (letterCategory or length).
-     * @param {SlipNode} fromDescriptor - The facet's value for the 
-     *   source object, e.g. 'a'.
-     * @param {SlipNode} toDescriptor - The facet's value for the 
-     *   destination object, e.g. 'b'.
+     * @param {SlipNode} category - The bond category (successor, predecessor, or sameness).
+     * @param {SlipNode} facet - The facet of the bond category (letterCategory or length).
+     * @param {SlipNode} fromDescriptor - The facet's value for the source object, e.g. 'a'.
+     * @param {SlipNode} toDescriptor - The facet's value for the destination object, e.g. 'b'.
      */
     constructor(from, to, category, facet, fromDescriptor, toDescriptor) 
     { 
         // WorkspaceStructure members
-        this.ctx = from.ctx;
+        this.wksp = from.wksp;
         this.string = from.string;
         this.totalStrength = 0;
 
@@ -41,11 +36,11 @@
 
         this.leftObject = this.source;
         this.rightObject = this.destination;
-        this.directionCategory = this.ctx.slipnet.right;
+        this.directionCategory = this.wksp.ctx.slipnet.right;
         if (this.source.leftIndex > this.destination.rightIndex) {
             this.leftObject = this.destination;
             this.rightObject = this.source;
-            this.directionCategory = this.ctx.slipnet.left;
+            this.directionCategory = this.wksp.ctx.slipnet.left;
         }
         if (fromDescriptor == toDescriptor){
             this.directionCategory = null;
@@ -75,7 +70,7 @@
      */
     build()
     {
-        this.ctx.workspace.structures.push(this);
+        this.wksp.structures.push(this);
         this.string.bonds.push(this);
         this.leftObject.bonds.push(this);
         this.rightObject.bonds.push(this);  
@@ -96,8 +91,7 @@
      */
     break()
     {
-        const wksp = this.ctx.workspace;
-        wksp.structures = wksp.structures.filter(s => s !== this);
+        this.wksp.structures = this.wksp.structures.filter(s => s !== this);
         this.string.bonds = this.string.bonds.filter(s => s !== this);
         this.leftObject.bonds = this.leftObject.bonds.filter(s => s !== this);
         this.rightObject.bonds = this.rightObject.bonds.filter(s => s !== this);
@@ -114,7 +108,7 @@
     {
         return new Namespace.Bond(
             this.destination, this.source,
-            this.category.getRelatedNode(this.ctx.slipnet.opposite),
+            this.category.getRelatedNode(this.wksp.ctx.slipnet.opposite),
             this.facet, this.destDescriptor, this.sourceDescriptor
         );
     }
@@ -126,19 +120,12 @@
      */
     updateStrength()
     {
-        // Calculate the internal strength:
-        
-        // Bonds between objects of same type (ie. letter or group) are 
-        // stronger than bonds between different types
-        const memberCompatibility = (this.source instanceof Namespace.Letter) ==
-            (this.destination instanceof Namespace.Letter) ? 1.0 : 0.7;
-
-        // Letter category bonds are stronger
-        const facetFactor = 
-            (this.facet == this.ctx.slipnet.letterCategory) ? 1.0 : 0.7;
-
-        let internalStrength = Math.min(100, 
-            memberCompatibility * facetFactor * this.category.bondDegreeOfAssociation() );
+        // Calculate the internal strength.
+        // (Bonds between objects of same type (ie. letter or group) are stronger than 
+        // bonds between different types, and letter bonds are stronger than length bonds.)
+        const compat = (this.source instanceof Namespace.Letter) == (this.destination instanceof Namespace.Letter) ? 1.0 : 0.7;
+        const facetFactor = (this.facet == this.wksp.ctx.slipnet.letterCategory) ? 1.0 : 0.7;
+        let internalStrength = Math.min(100, compat * facetFactor * this.category.bondDegreeOfAssociation() );
 
         // External strength:
         let externalStrength = 0;
@@ -147,6 +134,7 @@
             (this.rightObject.letterDistance(b.rightObject) !== 0) &&
             (this.category == b.category) &&
             (this.directionCategory == b.directionCategory) ? 1 : 0);
+
         const nsupporters = supports.reduce((a, b) => a + b, 0);
         if (nsupporters > 0) {
             const density = 100 * Math.sqrt(this._localDensity());
@@ -163,7 +151,7 @@
 
 
     /**
-     * Returns a measure of the density in the parent string of
+     * Returns a measure of the density in the workspace strings of
      * bonds with the same bond-category and same direction-category 
      * as this bond.
      * 
@@ -171,23 +159,16 @@
      */
     _localDensity()
     {
-        const wobjs = this.ctx.workspace.objects;
         let slotSum = 0;
         let supportSum = 0;
-        for (let obj1 of wobjs.filter(o => o.string == this.string)) {
-            for (let obj2 of wobjs) {
-                if (obj1.isBeside(obj2)) {
-                    slotSum += 1;
-                    for ( const b of this.string.bonds ) {
-                        if (b == this) { continue; }
-                        const sameCategories = (b.category == this.category) && 
-                            (b.directionCategory == this.directionCategory); 
-                        const sameEnds = ((this.source == obj1) && (this.destination == obj2)) || 
-                            ((this.source == obj2) && (this.destination == obj1));
-                        if ( sameCategories && sameEnds ) {
-                            supportSum += 1;
-                        }
-                    }
+        
+        for (let obj1 of this.wksp.objects.filter(o => o.string == this.string)) {
+            for (let obj2 of this.wksp.objects.filter(o2 => obj1.isBeside(o2)) ) {
+                slotSum += 1;
+                for (const b of this.string.bonds.filter(b => b != this)) {
+                    const sameCats = (b.category == this.category) && (b.directionCategory == this.directionCategory); 
+                    const sameEnds = ((this.source == obj1) && (this.destination == obj2)) || ((this.source == obj2) && (this.destination == obj1));
+                    if (sameCats && sameEnds) { supportSum += 1; }
                 }
             }
         }

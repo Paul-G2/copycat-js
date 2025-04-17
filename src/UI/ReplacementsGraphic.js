@@ -44,13 +44,8 @@ Namespace.ReplacementsGraphic = class
 
         // Draw all the replacements that have been found so far
         const wksp = this.wkspUi.workspace;
-
-        const replacements = wksp.initialWString.letters.map(
-            ltr => ltr.replacement).filter(repl => !!repl);
-
-        replacements.forEach(r => {
-            this._getReplacementGraphic(r).redraw(ctx);
-        });
+        const replacements = wksp.initialWString.letters.map(ltr => ltr.replacement).filter(repl => !!repl);
+        replacements.forEach(r => { this._getReplacementGraphic(r).redraw(ctx); });
     }
 
 
@@ -113,8 +108,7 @@ Namespace.ReplacementGraphic = class
         ctx.setLineDash([]);
 
         ctx.beginPath();
-        ctx.ellipse(dp.cx, dp.cy, dp.radX, dp.radY, 
-            dp.rotAngle, dp.startAngle, dp.endAngle);
+        ctx.ellipse(dp.cx, dp.cy, dp.radX, dp.radY, dp.rotAngle, dp.startAngle, dp.endAngle);
         ctx.stroke();        
     }
 

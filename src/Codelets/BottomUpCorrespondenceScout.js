@@ -16,7 +16,7 @@
      * 
      * @param {Copycat} ctx - The Copycat instance.
      * @param {Number} urgency - The urgency of the codelet.
-     * @param {Array} args - Arguments to pass to the codelet.
+     * @param {Array} args - Arguments to pass to the codelet. (Empty for this codelet.)
      * @param {Number} birthdate - The birthdate of the codelet.
      */
     constructor(ctx, urgency, args, birthdate) 
@@ -47,10 +47,9 @@
         if (objFromInitial.spansString() != objFromTarget.spansString()) { return; }
 
         // Provide UI feedback.
-        if (this.ctx.ui) {
-            const dummyCorresp = new Namespace.Correspondence(
-                objFromInitial, objFromTarget, [], false);
-            this.ctx.ui.workspaceUi.corrsGraphic.flashGrope(dummyCorresp);
+        if (ctx.ui && !ctx.batchMode) {
+            const dummyCorresp = new Namespace.Correspondence(objFromInitial, objFromTarget, [], false);
+            ctx.ui.workspaceUi.corrsGraphic.flashGrope(dummyCorresp);
         }
 
         // Get concept mappings between the two objects.
@@ -72,9 +71,8 @@
         if (objFromInitial.spansString() && objFromTarget.spansString() && (sn.opposite.activation != 100)) 
         {
             const opposites = distinguishingMappings.filter(m => 
-                m.initialDescType == sn.stringPositionCategory &&
-                m.initialDescType != sn.bondFacet
-            );
+                (m.initialDescType == sn.stringPositionCategory) && (m.initialDescType != sn.bondFacet));
+
             if (opposites.every(m => m.label == sn.opposite)) {
                 const initialDescTypes = opposites.map(m => m.initialDescType);
                 if (initialDescTypes.includes(sn.directionCategory)) {
@@ -87,8 +85,7 @@
         }
         
         // Propose a correspondence.
-        ctx.coderack.proposeCorrespondence(objFromInitial, objFromTarget, 
-            conceptMappings, flipTargetObject);
+        ctx.coderack.proposeCorrespondence(objFromInitial, objFromTarget, conceptMappings, flipTargetObject);
     }
 
 

@@ -29,8 +29,7 @@
      */
     synopsis(type)
     {
-        const s = this.name;
-        return !type ? s : '<Codelet: ' + s + '>';
+        return !type ? this.name : '<Codelet: ' + this.name + '>';
     }
 };
 

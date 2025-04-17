@@ -17,8 +17,7 @@ Namespace.Dialog = class
      * @param {Number} width - The dialog width, in percentage units
      * @param {Number} height - The dialog height, in percentage units.
      * @param {String} [title] - Text to be displayed on the dialog's title bar.
-     * @param {Boolean} [modal=false] - Whether the dialog is modal. (Currently 
-     *      only non-modal is supported.)
+     * @param {Boolean} [modal=false] - Whether the dialog is modal. (Currently only non-modal is supported.)
      * @param {String} [bkgndColor] - The dialog's background color.
      * @param {String} [titleBarColor] - The dialog's title bar color.
      */
@@ -39,8 +38,7 @@ Namespace.Dialog = class
         this.fontFamily    = 'verdana, arial, helvetica, sans-serif';
 
         // Create the user interface
-        this._initUi( (title || ""), (bkgndColor || 'white'), 
-            (titleBarColor || bkgndColor || 'white') );      
+        this._initUi( (title || ""), (bkgndColor || 'white'), (titleBarColor || bkgndColor || 'white') );      
     }
 
 
@@ -88,17 +86,13 @@ Namespace.Dialog = class
             backgroundColor:titleBarColor, fontSize:titleFontSize, fontFamily:this.fontFamily} 
         );
         this.closeDiv.className += ' noselect';
-        this.closeDiv.addEventListener( (UiUtils.isTouchDevice() ? 'touchstart' : 'click'), 
-            this._onTitleBarClose.bind(this) ); 
-        this.closeDiv.addEventListener( 
-            'mouseover', function() { this.closeDiv.style.fontWeight = 'bold'; }.bind(this) ); 
-        this.closeDiv.addEventListener( 
-            'mouseout',  function() { this.closeDiv.style.fontWeight = 'normal'; }.bind(this) ); 
+        this.closeDiv.addEventListener( (UiUtils.isTouchDevice() ? 'touchstart' : 'click'), this._onTitleBarClose.bind(this) ); 
+        this.closeDiv.addEventListener('mouseover', function() { this.closeDiv.style.fontWeight = 'bold'; }.bind(this) ); 
+        this.closeDiv.addEventListener('mouseout',  function() { this.closeDiv.style.fontWeight = 'normal'; }.bind(this) ); 
 
         // User content div
         this.userDiv = UiUtils.CreateElement('div', 'dialog_userdiv', this.mainDiv); 
-        UiUtils.StyleElement(this.userDiv, {bottom:'0px', left:'0px', 
-            width:'100%', height:'95%'} ); 
+        UiUtils.StyleElement(this.userDiv, {bottom:'0px', left:'0px', width:'100%', height:'95%'} ); 
     }
 
 
@@ -168,11 +162,8 @@ Namespace.Dialog = class
             this.startPos = {x:rect.left, y:rect.top};
             this.mouseDownLoc = mouseLoc;
 
-            document.addEventListener( 
-                (Namespace.UiUtils.isTouchDevice() ? 'touchmove' : 'mousemove'), this.dragMoveFunc );  
-
-            document.addEventListener( 
-                (Namespace.UiUtils.isTouchDevice() ? 'touchend touchcancel' : 'mouseup'), this.dragEndFunc );  
+            document.addEventListener( (Namespace.UiUtils.isTouchDevice() ? 'touchmove' : 'mousemove'), this.dragMoveFunc );  
+            document.addEventListener( (Namespace.UiUtils.isTouchDevice() ? 'touchend touchcancel' : 'mouseup'), this.dragEndFunc );  
         }
     }
 
@@ -211,11 +202,8 @@ Namespace.Dialog = class
     // eslint-disable-next-line no-unused-vars
     _onDragEnd(event)
     {
-        document.removeEventListener( 
-            (Namespace.UiUtils.isTouchDevice() ? 'touchmove' : 'mousemove'), this.dragMoveFunc );  
-
-        document.removeEventListener( 
-            (Namespace.UiUtils.isTouchDevice() ? 'touchend touchcancel' : 'mouseup'), this.dragEndFunc );  
+        document.removeEventListener( (Namespace.UiUtils.isTouchDevice() ? 'touchmove' : 'mousemove'), this.dragMoveFunc );  
+        document.removeEventListener( (Namespace.UiUtils.isTouchDevice() ? 'touchend touchcancel' : 'mouseup'), this.dragEndFunc );  
     }
 
 
@@ -240,7 +228,6 @@ Namespace.Dialog = class
                 }
             }
         }
-
         if ( (typeof(cx1) == 'undefined') || (typeof(cy1) == 'undefined') ) {
             cx1 = cy1 = null;
         }

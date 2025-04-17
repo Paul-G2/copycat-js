@@ -50,7 +50,7 @@ Namespace.TopbarUi = class {
         this.logoImg.className += " noselect";
 
         this.titleSpan = UiUtils.CreateElement('span', 'title-span', 
-            this.mainDiv, {top:'0%', height:'100%', left:'10vh', width:'auto%', 
+            this.mainDiv, {top:'0%', height:'100%', left:'10vh', width:'auto', 
             display:'flex', alignItems:'center', justifyContent:'left',
             color:'#404040', fontFamily:'Arial', fontWeight:'bold', 
             fontStyle:'italic', fontSize: '4.25vh'}
@@ -59,7 +59,7 @@ Namespace.TopbarUi = class {
         this.titleSpan.className += " noselect";
 
         this.helpBtn = UiUtils.CreateElement('button', 'help-btn',
-            this.mainDiv, {top:'22%', height:'56%', right:'2vh', width:'auto',
+            this.mainDiv, {top:'22%', height:'56%', right:'2vh', width:'10vh',
             display:'flex', alignItems:'center', justifyContent:'center',
             color:'#404040', fontFamily:'Arial', fontWeight:'normal',
             fontSize: '3vh', background:'#dfdfdf', border:'1px solid #404040' }
@@ -67,6 +67,16 @@ Namespace.TopbarUi = class {
         this.helpBtn.innerHTML = '&nbsp;&nbsp;Help&nbsp;&nbsp;';
         this.helpBtn.className += " noselect";
         this.helpBtn.onclick = this._onHelpBtnClick.bind(this);
+
+        this.batchModeBtn = UiUtils.CreateElement('button', 'batchmode-btn',
+            this.mainDiv, {top:'22%', height:'56%', right:'15vh', width:'auto',
+            display:'flex', alignItems:'center', justifyContent:'center',
+            color:'#404040', fontFamily:'Arial', fontWeight:'normal',
+            fontSize: '1.4vh', background:'#dfdfdf', border:'1px solid #404040' }
+        );
+        this.batchModeBtn.innerHTML = '&nbsp;Toggle&nbsp;<br>&nbsp;Batch Mode&nbsp;';
+        this.batchModeBtn.className += " noselect";
+        this.batchModeBtn.onclick = this._onBatchModeBtnClick.bind(this);
 
         this.helpDialog = new Namespace.HelpDialog(document.getElementById('app_area'));
     }
@@ -79,7 +89,9 @@ Namespace.TopbarUi = class {
      */
     _onCopycatStateChange()
     {
-        // Nothing to do here
+        const running = (this.copycat.state == 'running');
+        this.batchModeBtn.disabled = running; 
+        this.batchModeBtn.style.opacity = running ? '0.4' : '1.0';
     }
 
 
@@ -109,6 +121,16 @@ Namespace.TopbarUi = class {
         }
     }
 
+
+    /**
+     * Handler for batchmode-button clicks.
+     * @private
+     * 
+     */
+    _onBatchModeBtnClick()
+    {    
+        this.copycat.toggleBatchMode(!this.copycat.batchMode);
+    }
 
 };
 

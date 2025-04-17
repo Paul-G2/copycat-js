@@ -117,8 +117,7 @@ Namespace.WorkspaceUi = class
         const ctx = canvas.getContext("2d");
 
         // Resize the canvas if necessary
-        if ( !UiUtils.RightsizeCanvas(canvas) ||
-             !UiUtils.RightsizeCanvas(this.flasher.canvas)) { return; } 
+        if ( !UiUtils.RightsizeCanvas(canvas) || !UiUtils.RightsizeCanvas(this.flasher.canvas)) { return; } 
 
         // Bounce out if the input strings haven't been set
         if (!this.copycat.workspace.initialWString) { return; }
@@ -128,9 +127,7 @@ Namespace.WorkspaceUi = class
 
         // Re-draw all the graphics
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        this.allGraphics.forEach( 
-            g => g.redraw(ctx) 
-        );
+        this.allGraphics.forEach( g => g.redraw(ctx) );
     }
 
 

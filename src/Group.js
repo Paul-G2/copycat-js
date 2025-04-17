@@ -13,14 +13,10 @@
     /**
      * @constructor
      * 
-     * @param {WorkspaceString} str - The string containing the 
-     *     grouped objects.
-     * @param {SlipNode} groupCategory - The group category (successor or 
-     *     predecessor or sameness).
-     * @param {SlipNode} dirCategory - The direction category (left or 
-     *      right or null).
-     * @param {SlipNode} facet - The description type of the 
-     *      bonds in the Group. 
+     * @param {WorkspaceString} str - The string containing the grouped objects.
+     * @param {SlipNode} groupCategory - The group category (successor or predecessor or sameness).
+     * @param {SlipNode} dirCategory - The direction category (left or right or null).
+     * @param {SlipNode} facet - The description type of the bonds in the Group. 
      * @param {Array<WorkspaceObject>} objectList - The objects in the Group. 
      * @param {Array<Bond>} bondList - The bonds in the Group.
      * 
@@ -37,8 +33,7 @@
         this.facet = facet;
         this.objectList = objectList;
         this.bondList = bondList;
-        this.bondCategory = this.groupCategory.getRelatedNode(
-            this.ctx.slipnet.bondCategory);
+        this.bondCategory = this.groupCategory.getRelatedNode(this.wksp.ctx.slipnet.bondCategory);
 
         const leftObject = objectList[0];
         const rightObject = objectList[objectList.length-1];
@@ -62,19 +57,14 @@
     _addDescriptions()
     {
         const addDescription = function(group, descriptionType, descriptor) {
-            group.descriptions.push( 
-                new Namespace.Description(group, descriptionType, descriptor)
-            );
+            group.descriptions.push( new Namespace.Description(group, descriptionType, descriptor) );
         };
 
-        const sn = this.ctx.slipnet;
+        const sn = this.wksp.ctx.slipnet;
         if (this.bondList && this.bondList.length) {
-            this.bondDescriptions.push( 
-                new Namespace.Description(
-                    this, sn.bondFacet, this.bondList[0].facet));
+            this.bondDescriptions.push( new Namespace.Description(this, sn.bondFacet, this.bondList[0].facet) );
         }
-        this.bondDescriptions.push(
-            new Namespace.Description(this, sn.bondCategory, this.bondCategory));
+        this.bondDescriptions.push( new Namespace.Description(this, sn.bondCategory, this.bondCategory) );
 
         addDescription(this, sn.objectCategory, sn.group);
         addDescription(this, sn.groupCategory, this.groupCategory);
@@ -100,13 +90,13 @@
         }
         
         // Maybe add a length description
+        const ctx = this.wksp.ctx;
         const nobjs = this.objectList.length;
         if (nobjs < 6) {
-            const exp = Math.pow(nobjs,3) * 
-                (100 - this.ctx.slipnet.length.activation) / 100;
-            const val = this.ctx.temperature.getAdjustedProb( Math.pow(0.5, exp) );
+            const exp = Math.pow(nobjs,3) * (100 - ctx.slipnet.length.activation) / 100;
+            const val = ctx.temperature.getAdjustedProb( Math.pow(0.5, exp) );
             const prob = (val < 0.06) ? 0 : val;
-            if (this.ctx.randGen.coinFlip(prob)) {
+            if (ctx.randGen.coinFlip(prob)) {
                 addDescription(this, sn.length, sn.numbers[nobjs - 1]);
             }
         }
@@ -135,9 +125,8 @@
      */
     build()
     {
-        const wksp = this.ctx.workspace;
-        wksp.objects.push(this);
-        wksp.structures.push(this);
+        this.wksp.objects.push(this);
+        this.wksp.structures.push(this);
         this.string.objects.push(this);
         this.objectList.forEach( obj => obj.group = this );
         this.descriptions.forEach( descr => descr.build() );
@@ -167,9 +156,8 @@
         this.descriptions.slice().forEach( descr => descr.break() );
         this.objectList.forEach( obj => obj.group = null );
 
-        const wksp = this.ctx.workspace;
-        wksp.structures = wksp.structures.filter(s => s !== this);
-        wksp.objects = wksp.objects.filter(s => s !== this);
+        this.wksp.structures = this.wksp.structures.filter(s => s !== this);
+        this.wksp.objects = this.wksp.objects.filter(s => s !== this);
         this.string.objects = this.string.objects.filter(s => s !== this);
     }
 
@@ -207,13 +195,11 @@
      */
     flippedVersion()
     {
-        const sn = this.ctx.slipnet;
+        const sn = this.wksp.ctx.slipnet;
         const flippedBonds = this.bondList.map( b => b.flippedVersion() );
         const flippedGroupCat = this.groupCategory.getRelatedNode(sn.opposite);
-        const flippedDirectionCat = 
-            this.directionCategory.getRelatedNode(sn.opposite);
-        return new Namespace.Group(this.string, flippedGroupCat, 
-            flippedDirectionCat, this.facet, this.objectList, flippedBonds);
+        const flippedDirectionCat = this.directionCategory.getRelatedNode(sn.opposite);
+        return new Namespace.Group(this.string, flippedGroupCat, flippedDirectionCat, this.facet, this.objectList, flippedBonds);
     }
 
     
@@ -225,19 +211,14 @@
      */
     isDistinguishingDescriptor(descriptor) 
     {
-        let sn = this.ctx.slipnet;
-        if ((descriptor == sn.letter) || (descriptor == sn.group) || 
-            sn.numbers.includes(descriptor)) {
-                return false;
+        let sn = this.wksp.ctx.slipnet;
+        if ((descriptor == sn.letter) || (descriptor == sn.group) || sn.numbers.includes(descriptor)) {
+            return false;
         }
 
-        for (let obj of this.string.objects) {
-            if ((obj instanceof Namespace.Group) && (obj != this)) {
-                for (let descr of obj.descriptions) {
-                    if (descr.descriptor == descriptor) {
-                        return false;
-                    }
-                }
+        for (let obj of this.string.objects.filter(obj => (obj instanceof Namespace.Group) && (obj != this))) {
+            if (obj.descriptions.some(d => d.descriptor == descriptor)) {
+                return false;
             }
         }
         return true;
@@ -251,18 +232,15 @@
     updateStrength()
     {
         // Internal strength
-        const sn = this.ctx.slipnet;
-        const relatedBondAssociation = this.groupCategory.getRelatedNode(
-            sn.bondCategory).degreeOfAssociation();
+        const sn = this.wksp.ctx.slipnet;
+        const relatedBondAssociation = this.groupCategory.getRelatedNode(sn.bondCategory).degreeOfAssociation();
 
         const bondWeight = Math.pow(relatedBondAssociation, 0.98);
         const nobjs = this.objectList.length;
-        const lengthFactor = (nobjs == 1) ? 5 : (nobjs == 2) ? 
-            20 : (nobjs == 3) ? 60 : 90;
+        const lengthFactor = (nobjs == 1) ? 5 : (nobjs == 2) ? 20 : (nobjs == 3) ? 60 : 90;
 
         const lengthWeight = 100 - bondWeight;
-        let internalStrength = (relatedBondAssociation*bondWeight + 
-            lengthFactor*lengthWeight)/100;
+        let internalStrength = (relatedBondAssociation*bondWeight + lengthFactor*lengthWeight)/100;
 
         // External strength
         let externalStrength = this.spansString() ? 100 : this._localSupport();
@@ -285,8 +263,7 @@
         const numSupporters = this._numberOfLocalSupportingGroups();
         if (numSupporters === 0) { return 0; }
 
-        const supportFactor = Math.min(1, 
-            Math.pow(0.6, 1/Math.pow(numSupporters,3)) );
+        const supportFactor = Math.min(1, Math.pow(0.6, 1/Math.pow(numSupporters,3)) );
         const localDensity = numSupporters/(0.5*this.string.length);
         const densityFactor = 100 * Math.sqrt(localDensity);
         return densityFactor * supportFactor;
@@ -301,16 +278,9 @@
      */
     _numberOfLocalSupportingGroups()
     {
-        let numSupporters = 0;
-        for (let obj of this.string.objects) {
-            if ((obj instanceof Namespace.Group) && this.isOutsideOf(obj)) {
-                if (obj.groupCategory == this.groupCategory && 
-                    obj.directionCategory == this.directionCategory) {
-                        numSupporters += 1;
-                }
-            }
-        }
-        return numSupporters;
+        return this.string.objects.filter(obj => 
+            (obj.groupCategory == this.groupCategory) && (obj.directionCategory == this.directionCategory) &&
+            (obj instanceof Namespace.Group) && this.isOutsideOf(obj)).length;
     }
 
 };

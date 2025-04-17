@@ -14,8 +14,7 @@ Namespace.HelpDialog = class extends Namespace.Dialog
      * @constructor
      * 
      * @param {CopycatUi} copycatUi - The parent Ui.
-     * @param {HTMLElement} parent - The html div that hosts
-     *  the dialog.
+     * @param {HTMLElement} parent - The html div that hosts the dialog.
      */
     constructor(parent) 
     {
@@ -26,12 +25,10 @@ Namespace.HelpDialog = class extends Namespace.Dialog
 
     _buildUi()
     {
-        Namespace.UiUtils.StyleElement(
-            this.userDiv, {overflowX:'auto', overflowY:'scroll'});
+        Namespace.UiUtils.StyleElement(this.userDiv, {overflowX:'auto', overflowY:'scroll'});
 
         this.textDiv = Namespace.UiUtils.CreateElement('div', 'text-div',
-            this.userDiv, {left:'3%', width:'94%', height:'100%',
-            fontSize:'20px', fontFamily:this.fontFamily}
+            this.userDiv, {left:'3%', width:'94%', height:'100%', fontSize:'20px', fontFamily:this.fontFamily}
         );
 
         this.textDiv.innerHTML =

@@ -14,8 +14,7 @@ Namespace.CoderackUi = class {
      * @constructor
      * 
      * @param {CopycatUi} copycatUi - The parent Ui.
-     * @param {HTMLElement} parentDiv - The html div that hosts
-     *  this ui.
+     * @param {HTMLElement} parentDiv - The html div that hosts this ui.
      */
     constructor(copycatUi, parentDiv) 
     { 
@@ -97,9 +96,7 @@ Namespace.CoderackUi = class {
             // Draw the codelet names
             ctx.font = dp.codeletFont;
             ctx.textAlign = "left";  
-            for (let line of dp.textLines) {
-                ctx.fillText(...line);
-            }
+            dp.textLines.forEach(line => ctx.fillText(...line) );
         }
         else{
             ctx.clearRect(...dp.countRect);
@@ -116,8 +113,7 @@ Namespace.CoderackUi = class {
         // Draw the codelet counts
         const coderack = this.copycat.coderack;
         let counts = new Array(this.codeletList.length).fill(0);
-        coderack.codelets.forEach(codelet => 
-            counts[this.codeletDict[codelet.name]]++ );
+        coderack.codelets.forEach(codelet => counts[this.codeletDict[codelet.name]]++ );
         let totalCodelets = counts.reduce((a,b) => a+b, 0);
         ctx.fillStyle = 'black';
         ctx.textAlign = "center";
@@ -206,20 +202,17 @@ Namespace.CoderackUi = class {
         dp.gridLines.push({xa:x, ya:dp.tableTopOffset, xb:x, yb:h});        
 
         // Bar graph region
-        dp.barGraphsRect = [x+1, dp.tableTopOffset+1,
-            w-x-1, h - dp.tableTopOffset-1];
+        dp.barGraphsRect = [x+1, dp.tableTopOffset+1, w-x-1, h - dp.tableTopOffset-1];
 
         // Codelet-counts region
-        dp.countRect = [1, dp.tableTopOffset+1,
-            column0Width-1, h - dp.tableTopOffset-1];
+        dp.countRect = [1, dp.tableTopOffset+1, column0Width-1, h - dp.tableTopOffset-1];
 
         // Codelet font size
         const measureString = "Important-object"; // longest codelet word
         fontSize = Math.round(Math.min(w/18, dp.cellHeight/3.4) * 4/3);
         ctx.font = fontSize.toString() + 'px Verdana';
         let meas = ctx.measureText(measureString);
-        while ((meas.width > 0.95*column1Width) || 
-            (meas.actualBoundingBoxAscent > dp.cellHeight/3)) {
+        while ((meas.width > 0.95*column1Width) || (meas.actualBoundingBoxAscent > dp.cellHeight/3)) {
             fontSize--;
             ctx.font = fontSize.toString() + 'px Verdana';
             meas = ctx.measureText(measureString);
@@ -233,12 +226,10 @@ Namespace.CoderackUi = class {
         dp.textLines = [];
         for (let r=0; r<dp.nRows; r++) 
         { 
-            let codeletLines = (r < dp.nRows-1) ? 
-                this.codeletList[r].text.split('/') : ['Total'];
+            let codeletLines = (r < dp.nRows-1) ? this.codeletList[r].text.split('/') : ['Total'];
             let cellTop = dp.tableTopOffset + r*dp.cellHeight;
             if (codeletLines.length == 1) {
-                let y = cellTop + 0.5*dp.cellHeight + 
-                    0.5*meas.actualBoundingBoxAscent;
+                let y = cellTop + 0.5*dp.cellHeight + 0.5*meas.actualBoundingBoxAscent;
                 dp.textLines.push([codeletLines[0], x, y]);
             }
             else {
@@ -252,8 +243,7 @@ Namespace.CoderackUi = class {
         // Codelet-count coordinates
         dp.countCoords = [];
         for (let r=0; r<dp.nRows; r++) {
-            let y = dp.tableTopOffset + (r + 0.5)*dp.cellHeight + 
-                0.5*meas.actualBoundingBoxAscent;
+            let y = dp.tableTopOffset + (r + 0.5)*dp.cellHeight + 0.5*meas.actualBoundingBoxAscent;
             dp.countCoords.push([column0Width/2, y]);
         }
 
@@ -273,8 +263,7 @@ Namespace.CoderackUi = class {
         dp.bars = [];
         for (let r=0; r<dp.nRows-1; r++) {    
             let cellTop = dp.tableTopOffset + r*dp.cellHeight;
-            dp.bars.push({l:barLeft, t:cellTop + 0.1*dp.cellHeight, 
-                w:0.4*w, h:barHeight});
+            dp.bars.push({l:barLeft, t:cellTop + 0.1*dp.cellHeight, w:0.4*w, h:barHeight});
         }
         return true;
     }

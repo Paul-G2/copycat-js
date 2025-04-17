@@ -23,9 +23,8 @@ Namespace.DescriptionsGraphic = class
         this.wstring = stringGraphic.wstring;
         this.wkspUi = stringGraphic.wkspUi;
 
-        this.descriptionGraphics = 
-            stringGraphic.lettersGraphic.letterGraphics.map(
-                lg => new Namespace.DescriptionGraphic(lg, this));
+        this.descriptionGraphics = stringGraphic.lettersGraphic.letterGraphics.map(
+            lg => new Namespace.DescriptionGraphic(lg, this));
     }
 
 
@@ -84,11 +83,9 @@ Namespace.DescriptionGraphic = class
         const descrips = this.letterGraphic.letter.descriptions;
         for (let i=0; i<descrips.length; i++) {
             const descriptor = descrips[i].descriptor;
-            ctx.font =  descriptor.isFullyActive() ? dp.boldFont : dp.normalFont;
-            ctx.fillStyle = descriptor.isFullyActive() ? 
-                wkspUi.activeDescriptionColor : wkspUi.descriptionColor;
-            ctx.fillText(descriptor.shortName, dp.x, 
-                dp.y - i*1.2*dp.fontSize);
+            ctx.font = descriptor.isFullyActive() ? dp.boldFont : dp.normalFont;
+            ctx.fillStyle = descriptor.isFullyActive() ? wkspUi.activeDescriptionColor : wkspUi.descriptionColor;
+            ctx.fillText(descriptor.shortName, dp.x, dp.y - i*1.2*dp.fontSize);
         }
     }            
 

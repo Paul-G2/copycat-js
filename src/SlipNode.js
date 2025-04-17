@@ -33,14 +33,9 @@ Namespace.SlipNode = class {
         this.shrunkLinkLength = intrinsicLinkLength * 0.4;
         this.incomingLinks = [];
         this.outgoingLinks = [];
-        this.codelets = [];
 
         // Once the Slipnet is constructed, only the following are mutable:
-        this._mutables = {
-            activation: 0,
-            activationBuffer: 0,
-            clampedHigh: false
-        };
+        this._mutables = {activation: 0, activationBuffer: 0, clampedHigh: false};
 
         Object.freeze(this);
     }
@@ -52,8 +47,7 @@ Namespace.SlipNode = class {
      */
     freezeConstants()
     {
-        [this.incomingLinks, this.outgoingLinks, this.codelets].forEach(
-            x => Object.freeze(x) );
+        [this.incomingLinks, this.outgoingLinks, this.codelets].forEach( x => Object.freeze(x) );
     }
 
 
@@ -83,8 +77,7 @@ Namespace.SlipNode = class {
      */
     get categoryLinks() 
     { 
-        return this.outgoingLinks.filter(
-            link => link.type == 'category'); 
+        return this.outgoingLinks.filter(link => link.type == 'category'); 
     }
 
 
@@ -93,8 +86,7 @@ Namespace.SlipNode = class {
      */
     get instanceLinks() 
     { 
-        return this.outgoingLinks.filter(
-            link => link.type == 'instance'); 
+        return this.outgoingLinks.filter(link => link.type == 'instance'); 
     }
 
 
@@ -103,8 +95,7 @@ Namespace.SlipNode = class {
      */
     get propertyLinks() 
     { 
-        return this.outgoingLinks.filter(
-            link => link.type == 'property'); 
+        return this.outgoingLinks.filter(link => link.type == 'property'); 
     }
 
 
@@ -113,8 +104,7 @@ Namespace.SlipNode = class {
      */
     get lateralSlipLinks() 
     { 
-        return this.outgoingLinks.filter(
-            link => link.type == 'lateralSlip'); 
+        return this.outgoingLinks.filter(link => link.type == 'lateralSlip'); 
     }
 
 
@@ -123,8 +113,7 @@ Namespace.SlipNode = class {
      */
     get lateralNonSlipLinks() 
     { 
-        return this.outgoingLinks.filter(
-            link => link.type == 'lateralNonSlip'); 
+        return this.outgoingLinks.filter(link => link.type == 'lateralNonSlip'); 
     }
 
 
@@ -195,8 +184,7 @@ Namespace.SlipNode = class {
      */
     decayActivation()
     {
-        this._mutables.activationBuffer -= 
-            this._mutables.activation * (1 - this.depth/100);
+        this._mutables.activationBuffer -= this._mutables.activation * (1 - this.depth/100);
     }
 
     
@@ -208,9 +196,8 @@ Namespace.SlipNode = class {
     spreadActivation()
     {
         if (this.isFullyActive()) {
-            this.outgoingLinks.forEach(link => 
-                link.destination._mutables.activationBuffer += 
-                    link.intrinsicDegreeOfAssociation() );
+            this.outgoingLinks.forEach( link => 
+                link.destination._mutables.activationBuffer += link.intrinsicDegreeOfAssociation() );
         }
     }
 
@@ -226,16 +213,12 @@ Namespace.SlipNode = class {
         {
             // Add the buffer value to the current activation, and 
             // clamp to [0,100] range.
-            this._mutables.activation = Math.min(100, Math.max(0, 
-                this._mutables.activation + this._mutables.activationBuffer));
+            this._mutables.activation = Math.min(100, Math.max(0, this._mutables.activation + this._mutables.activationBuffer));
 
             // Maybe jump to full activation.
-            if ((this._mutables.activation > 55) && 
-                (this._mutables.activation != 100)) {
-                    const jumpProb = Math.pow(this._mutables.activation/100, 3);
-                    if ( randGen.coinFlip(jumpProb) ) {
-                        this._mutables.activation = 100;
-                    }
+            if ((this._mutables.activation > 55) && (this._mutables.activation != 100)) {
+                const jumpProb = Math.pow(this._mutables.activation/100, 3);
+                if ( randGen.coinFlip(jumpProb) ) { this._mutables.activation = 100; }
             }
         }
         else {
@@ -254,8 +237,7 @@ Namespace.SlipNode = class {
      */
     category()
     {
-        return (this.categoryLinks.length > 0) ? 
-            this.categoryLinks[0].destination : null;
+        return (this.categoryLinks.length > 0) ? this.categoryLinks[0].destination : null;
     }
 
 
@@ -266,8 +248,7 @@ Namespace.SlipNode = class {
      */
     degreeOfAssociation()
     {
-        const linkLength = this.isFullyActive() ? 
-            this.shrunkLinkLength : this.intrinsicLinkLength;
+        const linkLength = this.isFullyActive() ? this.shrunkLinkLength : this.intrinsicLinkLength;
         return 100 - linkLength;
     }
 
@@ -279,8 +260,7 @@ Namespace.SlipNode = class {
      */
     bondDegreeOfAssociation()
     {
-        const result = Math.min(100, 
-                11.0 * Math.sqrt(this.degreeOfAssociation()) );
+        const result = Math.min(100, 11.0 * Math.sqrt(this.degreeOfAssociation()) );
         
         return result;
     }
@@ -316,8 +296,7 @@ Namespace.SlipNode = class {
      */
     isRelatedTo(other)
     {
-        return (this == other) || 
-            this.outgoingLinks.some(link => link.destination == other);
+        return (this == other) || this.outgoingLinks.some(link => link.destination == other);
     }
 
 

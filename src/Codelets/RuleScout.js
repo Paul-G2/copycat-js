@@ -17,7 +17,7 @@
      * 
      * @param {Copycat} ctx - The Copycat instance.
      * @param {Number} urgency - The urgency of the codelet.
-     * @param {Array} args - Arguments to pass to the codelet.
+     * @param {Array} args - Arguments to pass to the codelet. (Empty for this codelet.)
      * @param {Number} birthdate - The birthdate of the codelet.
      */
     constructor(ctx, urgency, args, birthdate) 
@@ -37,8 +37,8 @@
         const coderack = ctx.coderack;
 
         // If not all replacements have been found, then fizzle.
-        const numUnreplaced = wksp.objects.filter(o => (o.string == wksp.initialWString) &&
-            (o instanceof Namespace.Letter) && !o.replacement).length;
+        const numUnreplaced = wksp.objects.filter(o => 
+            (o.string == wksp.initialWString) && (o instanceof Namespace.Letter) && !o.replacement).length;
         if (numUnreplaced !== 0) { return; }
 
         const changedObjects = wksp.initialWString.objects.filter(o => o.changed);
@@ -50,16 +50,15 @@
         }
     
         // Generate a list of distinguishing descriptions for the first object
-        const changed = changedObjects[changedObjects.length-1];
         let objectList = [];
+        const changed = changedObjects[changedObjects.length-1];
         const position = changed.getDescriptor(sn.stringPositionCategory);
         if (position) {
             objectList.push(position);
         }
 
         const letter = changed.getDescriptor(sn.letterCategory);
-        const otherObjectsOfSameLetter = wksp.initialWString.objects.filter(o =>
-            (o != changed) && o.getDescriptionType(letter));
+        const otherObjectsOfSameLetter = wksp.initialWString.objects.filter(o => (o != changed) && o.getDescriptionType(letter));
         if (!otherObjectsOfSameLetter.length) {
             objectList.push(letter);
         }
@@ -70,10 +69,8 @@
             const slippages = wksp.getSlippableMappings();
             for (let node of objectList) {
                 node = node.applySlippages(slippages);
-                if (targetObject.hasDescriptor(node)) {
-                    if (targetObject.isDistinguishingDescriptor(node)) {
-                        newList.push(node);
-                    }
+                if (targetObject.hasDescriptor(node) && targetObject.isDistinguishingDescriptor(node)) {
+                    newList.push(node);
                 }
             }
             objectList = newList; 
@@ -83,10 +80,9 @@
         // Choose the relation 
         let weights = objectList.map(o => ctx.temperature.getAdjustedValue(o.depth));
         const descriptor = ctx.randGen.weightedChoice(objectList, weights);
+        
         objectList = [];
-        if (changed.replacement.relation) {
-            objectList.push(changed.replacement.relation);
-        }
+        if (changed.replacement.relation) { objectList.push(changed.replacement.relation); }
         objectList.push(changed.replacement.objFromModified.getDescriptor(sn.letterCategory));
         weights = objectList.map(o => ctx.temperature.getAdjustedValue(o.depth));
         const relation = ctx.randGen.weightedChoice(objectList, weights);
