@@ -1,6 +1,6 @@
 # copycat-js
 
-[<img src="./md_screenshot-1.jpg">](hhttps://paul-g2.github.io/copycat-js/)
+[<img src="./md_screenshot-1.jpg">](https://paul-g2.github.io/copycat-js/)
 
 </br>
 
