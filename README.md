@@ -13,7 +13,7 @@ and [Melanie Mitchell](https://melaniemitchell.me).
 Copycat is a computer model of human analogy-making. 
 It tries to solve letter puzzles of the form "<b><i>abc</b></i> is to <b><i>abd</b></i> as <b><i>ijk</b></i> is to what?"
 
-It's internal workings are described in great detail in the books 
+Its internal workings are described in great detail in the books 
 [Fluid Concepts and Creative Analogies](https://www.amazon.com/Fluid-Concepts-Creative-Analogies-Fundamental/dp/0465024750), and 
 [Analogy-Making as Perception](https://www.amazon.com/Analogy-Making-Perception-Computer-Modeling-Connectionism/dp/026251544X).
 
