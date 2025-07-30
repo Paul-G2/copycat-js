@@ -67,7 +67,8 @@ Namespace.HelpDialog = class extends Namespace.Dialog
         'uses to perform its work. The number of each type of codelet currently in the coderack is shown in a dynamical ' +
         'bar graph. The last-run codelet is indicated by a black triangle.</p>' +
 
-        '<p>For (much) more information, check out the book <i>Fluid Concepts and Creative Analogies</i> by Douglas Hofstadter et al.</p>';
+        '<p>For (much) more information, check out the book <i>Fluid Concepts and Creative Analogies</i> by Douglas Hofstadter et al., ' + 
+        'and this app&rsquo;s <a href="https://github.com/Paul-G2/copycat-js" target="_blank" rel="noopener noreferrer">repo</a>.</p>';
     }
 
 };
