@@ -5,7 +5,7 @@
 </br>
 
 This is a javascript version of the [Copycat](https://en.wikipedia.org/wiki/Copycat_(software)) program 
-developed by [Douglas Hofstadter](https://cogs.indiana.edu/directory/faculty/profile.php?faculty=dughof) 
+developed by [Douglas Hofstadter](https://en.wikipedia.org/wiki/Douglas_Hofstadter) 
 and [Melanie Mitchell](https://melaniemitchell.me). 
 
 [You can try it out here.](https://paul-g2.github.io/copycat-js/)
