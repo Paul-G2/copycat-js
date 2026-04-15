@@ -34,6 +34,7 @@
     {
         this.codelets = [];
         this.numCodeletsRun = 0;
+        this.lastRunCodelet = null;
     }
 
 
@@ -78,21 +79,16 @@
         if (this.codelets.length === 0) 
         {
             // Post initial codelets
-            const toPost = [];
             const nobjs = this.ctx.workspace.objects.length;
+            const urg = 1;
             if (nobjs === 0) {
-                toPost.push( ['rule-scout', 1] );
+                this.post( this.factory.create('rule-scout', urg, []) );
             }
             else {
-                toPost.push( ['bottom-up-bond-scout', 2*nobjs] );
-                toPost.push( ['replacement-finder', 2*nobjs] );
-                toPost.push( ['bottom-up-correspondence-scout', 2*nobjs] );
-            }
-            for (let item of toPost) {
-                const codeletName = item[0];
-                const numCopies = item[1];
-                for (let c=0; c<numCopies; c++) {
-                    this.post( this.factory.create(codeletName, 1, []) );
+                for (let i=0; i<2*nobjs; i++) {
+                    this.post( this.factory.create('bottom-up-bond-scout', urg, []) );
+                    this.post( this.factory.create('replacement-finder', urg, []) );
+                    this.post( this.factory.create('bottom-up-correspondence-scout', urg, []) );
                 }
             }
         }
@@ -267,33 +263,27 @@
         }
         
         let number = 0;
-        if (codeletName.includes('bond')) 
-        {
-            // Get the number of objects in the workspace with at least 
-            // one open bond slot.
-            const unrelated = wksp.objects.filter(o => 
-                ((o.string == wksp.initialWString) || (o.string == wksp.targetWString)) &&
-                !o.spansString() && 
-                ((!o.leftBond && !o.leftmost) || (!o.rightBond && !o.rightmost)));
-            number = unrelated.length;
+        if (codeletName.includes('correspondence'))  {
+            const uncorresp = wksp.objects.filter(o => ((o.string == wksp.initialWString) || (o.string == wksp.targetWString)) && !o.correspondence);
+            number = uncorresp.length;
         }
-        if (codeletName.includes('group')) 
-        {
+        else if (codeletName.includes('replacement')) {
+            const unreplaced = wksp.objects.filter(o => (o.string == wksp.initialWString) && (o instanceof Namespace.Letter) && !o.replacement);
+            number = unreplaced.length;
+        }
+        else if (codeletName.includes('group')) {
             // Get the number of objects in the workspace that have no group.
             const ungrouped = wksp.objects.filter(o => ((o.string == wksp.initialWString) || (o.string == wksp.targetWString)) && !o.spansString() && !o.group);
             number = ungrouped.length;
         }
-        if (codeletName.includes('replacement')) 
-        {
-            const unreplaced = wksp.objects.filter(o => (o.string == wksp.initialWString) && (o instanceof Namespace.Letter) && !o.replacement);
-            number = unreplaced.length;
+        else if (codeletName.includes('bond')) {
+            // Get the number of objects in the workspace with at least one open bond slot.
+            const unrelated = wksp.objects.filter(o => 
+                ((o.string == wksp.initialWString) || (o.string == wksp.targetWString)) && !o.spansString() && 
+                ((!o.leftBond && !o.leftmost) || (!o.rightBond && !o.rightmost)));
+            number = unrelated.length;
         }
-        if (codeletName.includes('correspondence')) 
-        {
-            const uncorresp = wksp.objects.filter(o => ((o.string == wksp.initialWString) || (o.string == wksp.targetWString)) && !o.correspondence);
-            number = uncorresp.length;
-        }
-
+        
         return (number < random.sqrtBlur(2.0)) ? 1 : (number < random.sqrtBlur(4.0)) ? 2 : 3;
     }
 

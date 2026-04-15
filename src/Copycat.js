@@ -13,60 +13,60 @@
     /**
      * @constructor
      * 
-     * @param {Number|String} randSeed - A seed value for the random number generator.
+     * @param {Number|String} [randSeed=42] - A seed value for the random number generator.
+     * @param {Boolean} [omitGui=false] - Whether to omit the GUI. Set to true during most unit tests.
      */
     constructor(args = {randSeed:42, omitGui:false}) 
     { 
         this.randGen     = new Namespace.RandGen(args.randSeed);
+        this.reporter    = new Namespace.ConsoleReporter();
         this.temperature = new Namespace.Temperature();
         this.slipnet     = new Namespace.Slipnet();
         this.coderack    = new Namespace.Coderack(this);
         this.workspace   = new Namespace.Workspace(this);
-        this.reporter    = new Namespace.ConsoleReporter();
-        this.ui          = args.omitGui ? null : new Namespace.CopycatUi(this); // omitGui is used by unit tests
-        this.batchMode   = false;
-        this.batchSize   = 1000;
-        this.batchCount  = 0;
-        this.batchId     = 0;
+        this.ui          = args.omitGui ? null : new Namespace.CopycatUi(this); 
         this.stepTimerId = null;
         this.stepDelay   = 50;
+        this.batchMode   = false;
+        this.batchSize   = 1000;
+        this.batchChunk  = 5;
+        this.batchCount  = 0;
+        this.batchId     = 0;
 
         this._setState('ready');
     }
     
 
     /**
-     * Sets the input strings.
+     * Sets the input strings from the UI, after checking that they are valid.
+     * @private 
      * 
-     * @param {String} initial - The initial string.
-     * @param {String} modified - The modified string.
-     * @param {String} target - The target string.
      */
-    setStrings(initial, modified, target)
+    setInputStringsFromUi()
     {
+        if (!this.ui) { return false; }
+
         if (this.state == 'running') { 
-            this.reporter.warn(`setStrings request ignored - Copycat is in ${this.state} state`);
-            return; 
+            this.reporter.warn(`setInputStringsFromUi request ignored - Copycat is in ${this.state} state`);
+            return false; 
         }
-        if (![initial, modified, target].every(this.checkInputString)) {
-            this.reporter.warn(`setStrings request ignored - input strings must contain only letters`);
-            return;
+
+        const wksp = this.workspace;
+        const inputStrings = this.ui.inputUi.getInputStrings();
+        const wkspStrings = [wksp.initialWString.jstring, wksp.modifiedWString.jstring, wksp.targetWString.jstring];
+        const inputModified = !inputStrings.every((str, idx) => str.toLowerCase() == wkspStrings[idx]);
+        
+        if (!inputModified) { return true; }
+
+        // Check that the input strings are non-empty and contain only letters 
+        if (inputStrings.every( function(str) { return str.length && !/[^a-z]/i.test(str); }) ) {
+            this.workspace.reset(...inputStrings);
+            this.reset();
+            return true;
+        } else {
+            this.ui.inputUi.displayMessage('Invalid input!');
+            return false;
         }
-        this.workspace.reset(initial, modified, target);
-        this.reset();
-    }
-
-
-    /**
-     * Checks whether an input string is valid (i.e., 
-     * contains only letters).
-     * 
-     * @param {String} string - The string to check
-     * 
-     */
-    checkInputString(string)
-    {
-        return string.length && !/[^a-z]/i.test(string);
     }
 
 
@@ -78,10 +78,10 @@
      */
     toggleBatchMode(value)
     {
-        this.ui.batchmodeUi.clearTable();
         this.reset();
         this.batchMode = value;
-        this.ui._onBatchModeToggled();
+        this.ui?.batchmodeUi.clearTable();
+        this.ui?._onBatchModeToggled();
     }
 
 
@@ -124,7 +124,7 @@
                 this.batchCount = 0;
                 this.batchRun(); 
             } else {
-                this._runNextCodelet();
+                this._codeletLoop();
             }
         } 
     }
@@ -158,7 +158,7 @@
         }
         else {
             this._setState('running');
-            if (!this.batchMode) { this._runNextCodelet(); }
+            if (!this.batchMode) { this._codeletLoop(); }
         }
     }
 
@@ -174,7 +174,7 @@
         }
         else {
             if (this.state != 'paused') { this._setState('paused'); }
-            if (!this.batchMode) { this._runNextCodelet(); }
+            if (!this.batchMode) { this._codeletLoop(); }
         }
     }
 
@@ -203,19 +203,21 @@
      * Runs the next codelet and schedules a subsequent one.
      * @private
      */
-    _runNextCodelet() 
+    _codeletLoop() 
     {
         if (this.batchMode) { return; }
 
+        // Yield to the flasher, if it is active. 
+        if (this.stepTimerId) { return; }
         if (this.ui && !this.ui.workspaceUi.flasher.isIdle()) {
-            this.stepTimerId = window.setTimeout( () => this._runNextCodelet(), 2*this.stepDelay );
+            this.stepTimerId = window.setTimeout( 
+                () => { this.stepTimerId = null; this._codeletLoop(); }, 2*this.stepDelay );
             return;
         }
 
+        // After every 5 codelets, update everything, 
         const currentTime = this.coderack.numCodeletsRun;
-        this.temperature.tryUnclamp(currentTime);
-
-        // After every 5 codelets, we update everything, 
+        this.temperature.tryUnclamp(currentTime);        
         if ((currentTime % 5) === 0) 
         {
             this.workspace.updateEverything();
@@ -227,19 +229,18 @@
         // Run a codelet
         this.coderack.chooseAndRunCodelet();
 
-        // Report progress
-        this._notifyListeners();
+        // Display progress
+        this.ui?.update();
 
         // Are we done?
-        this.stepTimerId = null;
-        if (!this.workspace.finalAnswer) 
-        {
-            if (this.state == 'running') {
-                this.stepTimerId = window.setTimeout( this._runNextCodelet.bind(this), this.stepDelay ); 
-            }   
+        if (this.workspace.finalAnswer) { 
+            this._setState('done'); 
         }
         else {
-            this._setState('done');
+            if (this.state == 'running') {
+                this.stepTimerId = window.setTimeout( 
+                    () => { this.stepTimerId = null; this._codeletLoop(); }, this.stepDelay ); 
+            }   
         }
     }
 
@@ -253,18 +254,7 @@
     _setState(state)
     {
         this.state = state;
-        this._notifyListeners();
-    }
-
-
-    /**
-     * Notifies listeners of a change in state.
-     * @private
-     * 
-     */
-    _notifyListeners()
-    {
-        if (this.ui) { this.ui._onCopycatStateChange(); }
+        this.ui?.update();
     }
 
 
@@ -278,17 +268,16 @@
     {
         this.batchId++;
         const batchId = this.batchId;
-        await new Promise(r => setTimeout(r, 250)); // Process ui events
+
+        // Pause to let the ui update
+        await new Promise(r => setTimeout(r, 250)); 
         if (!this.batchMode || (batchId != this.batchId)) { return; }
 
         const resultsDict = {};
-        let batchChunkSize = 5;
-
-        // eslint-disable-next-line no-constant-condition
         while (this.batchCount < this.batchSize)
         {
-            // Solve the problem batchCunkSize times
-            for (let i = 0; i < batchChunkSize; i++)   
+            // Solve the problem batchChunk times
+            for (let i = 0; i < this.batchChunk; i++)   
             {
                 // Initialize everything
                 this.coderack.reset();
@@ -317,21 +306,20 @@
 
                 // Add the answer to our dictionary
                 const answer = this.workspace.finalAnswer;
-                const temp = this.temperature.lastUnclampedValue;
-                const time = this.coderack.numCodeletsRun;
-                const key = answer + ':' + this.workspace.rule?.synopsis(0) || '';           
+                const ruleStr = this.workspace.rule?.synopsis(0) || '';
+                const key = answer + ':' + ruleStr;           
                 if ( !(key in resultsDict) ) {
-                    resultsDict[key] = {'answer': answer, 'count': 0, 'sumtemp': 0, 'sumtime': 0, 'rule': this.workspace.rule?.synopsis(0) || ''}; 
+                    resultsDict[key] = {'answer': answer, 'count': 0, 'sumtemp': 0, 'sumtime': 0, 'rule': ruleStr}; 
                 }
                 resultsDict[key].count += 1;
-                resultsDict[key].sumtemp += temp;
-                resultsDict[key].sumtime += time;
+                resultsDict[key].sumtemp += this.temperature.lastUnclampedValue;
+                resultsDict[key].sumtime += this.coderack.numCodeletsRun;
 
                 this.batchCount += 1;
             }
 
             // Display progress
-            if (this.ui) { this.ui.batchmodeUi._onBatchResultsUpdated(resultsDict); }
+            this.ui?.batchmodeUi.update(resultsDict);
             await new Promise(r => setTimeout(r, 250)); 
             if (!this.batchMode || (batchId != this.batchId)) { return; }
 
@@ -342,7 +330,7 @@
                     await new Promise(r => setTimeout(r, 500)); 
                 }
                 if (!this.batchMode || (batchId != this.batchId)) { 
-                    return; 
+                    return; // Mode must have changed while we were paused
                 }
                 if ((this.state == 'ready') || (this.state == 'done')) {
                     break;
