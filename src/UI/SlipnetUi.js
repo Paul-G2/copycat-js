@@ -46,7 +46,7 @@ Namespace.SlipnetUi = class {
      * @private
      * 
      */
-    _onCopycatStateChange()
+    update()
     {
         this.redraw();
     } 
@@ -118,13 +118,12 @@ Namespace.SlipnetUi = class {
 
                 // Maybe draw the label
                 if (rescale) {
-                    const nodeText = this.nodeInfoList[n].text;
-                    const adjFontSize = (nodeText.length > 1) ? 
-                        dp.labelFontSize : dp.labelFontSize + 1;
+                    const text = this.nodeInfoList[n].text;
+                    const adjFontSize = (text.length > 1) ? dp.labelFontSize : dp.labelFontSize + 1;
                     ctx.font = 'italic ' + adjFontSize.toString() + 'px serif';
                     ctx.fillStyle = 'black';
                     const tc = dp.textCoords[c][r];
-                    ctx.fillText(nodeText, tc.x, tc.y);
+                    ctx.fillText(text, tc.x, tc.y);
                 }
             }
         }

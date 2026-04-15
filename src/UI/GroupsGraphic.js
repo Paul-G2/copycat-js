@@ -191,7 +191,6 @@ Namespace.GroupGraphic = class
             ctx.beginPath();
             ctx.rect(dp.x, dp.y, dp.w, dp.h);
             ctx.stroke();
-            
             ctx.setLineDash([]);
             UiUtils.DrawLines(ctx, dp.arrowLines);
         }
